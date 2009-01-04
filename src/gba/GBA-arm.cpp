@@ -19,17 +19,7 @@
 #include "../Util.h"
 #include "../System.h"
 #include "agbprint.h"
-#ifdef PROFILING
-#include "prof/prof.h"
-#endif
 
-#ifdef _MSC_VER
- // Disable "empty statement" warnings
- #pragma warning(disable: 4390)
- // Visual C's inline assembler treats "offset" as a reserved word, so we
- // tell it otherwise.  If you want to use it, write "OFFSET" in capitals.
- #define offset offset_
-#endif
 
 ///////////////////////////////////////////////////////////////////////////
 

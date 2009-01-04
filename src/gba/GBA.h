@@ -102,11 +102,6 @@ extern void CPULoop(int);
 extern void CPUCheckDMA(int,int);
 extern bool CPUIsGBAImage(const char *);
 extern bool CPUIsZipFile(const char *);
-#ifdef PROFILING
-#include "prof/prof.h"
-extern void cpuProfil(profile_segment *seg);
-extern void cpuEnableProfiling(int hz);
-#endif
 
 extern struct EmulatedSystem GBASystem;
 

@@ -19,13 +19,6 @@
 #include "../Util.h"
 #include "../System.h"
 #include "agbprint.h"
-#ifdef PROFILING
-#include "prof/prof.h"
-#endif
-
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#endif
 
 ///////////////////////////////////////////////////////////////////////////
 

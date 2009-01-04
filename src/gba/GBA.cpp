@@ -20,9 +20,6 @@
 #include "../common/Port.h"
 #include "../System.h"
 #include "agbprint.h"
-#ifdef PROFILING
-#include "prof/prof.h"
-#endif
 
 #ifdef __GNUC__
 #define _stricmp strcasecmp
@@ -69,11 +66,6 @@ bool cpuEEPROMSensorEnabled = false;
 u32 cpuPrefetch[2];
 
 int cpuTotalTicks = 0;
-#ifdef PROFILING
-int profilingTicks = 0;
-int profilingTicksReload = 0;
-static profile_segment *profilSegment = NULL;
-#endif
 
 #ifdef BKPT_SUPPORT
 u8 freezeWorkRAM[0x40000];
@@ -465,22 +457,6 @@ variable_desc saveGameStruct[] = {
 
 static int romSize = 0x2000000;
 
-#ifdef PROFILING
-void cpuProfil(profile_segment *seg)
-{
-    profilSegment = seg;
-}
-
-void cpuEnableProfiling(int hz)
-{
-  if(hz == 0)
-    hz = 100;
-  profilingTicks = profilingTicksReload = 16777216 / hz;
-  profSetHertz(hz);
-}
-#endif
-
-
 inline int CPUUpdateTicks()
 {
   int cpuLoopTicks = lcdTicks;
@@ -500,13 +476,6 @@ inline int CPUUpdateTicks()
   if(timer3On && !(TM3CNT & 4) && (timer3Ticks < cpuLoopTicks)) {
     cpuLoopTicks = timer3Ticks;
   }
-#ifdef PROFILING
-  if(profilingTicksReload != 0) {
-    if(profilingTicks < cpuLoopTicks) {
-      cpuLoopTicks = profilingTicks;
-    }
-  }
-#endif
 
   if (SWITicks) {
     if (SWITicks < cpuLoopTicks)
@@ -1216,12 +1185,6 @@ bool CPUIsELF(const char *file)
 
 void CPUCleanUp()
 {
-#ifdef PROFILING
-  if(profilingTicksReload) {
-    profCleanup();
-  }
-#endif
-
   if(rom != NULL) {
     free(rom);
     rom = NULL;
@@ -1660,24 +1623,6 @@ void CPUSoftwareInterrupt(int comment)
 #ifdef BKPT_SUPPORT
   if(comment == 0xff) {
     dbgOutput(NULL, reg[0].I);
-    return;
-  }
-#endif
-#ifdef PROFILING
-  if(comment == 0xfe) {
-    profStartup(reg[0].I, reg[1].I);
-    return;
-  }
-  if(comment == 0xfd) {
-    profControl(reg[0].I);
-    return;
-  }
-  if(comment == 0xfc) {
-    profCleanup();
-    return;
-  }
-  if(comment == 0xfb) {
-    profCount();
     return;
   }
 #endif
@@ -3812,28 +3757,6 @@ void CPULoop(int ticks)
       }
 
       timerOverflow = 0;
-
-
-
-#ifdef PROFILING
-      profilingTicks -= clockTicks;
-      if(profilingTicks <= 0) {
-        profilingTicks += profilingTicksReload;
-        if(profilSegment) {
-	  profile_segment *seg = profilSegment;
-	  do {
-	    u16 *b = (u16 *)seg->sbuf;
-	    int pc = ((reg[15].I - seg->s_lowpc) * seg->s_scale)/0x10000;
-	    if(pc >= 0 && pc < seg->ssiz) {
-            b[pc]++;
-	      break;
-          }
-
-	    seg = seg->next;
-	  } while(seg);
-        }
-      }
-#endif
 
       ticks -= clockTicks;
 #ifdef LINK_EMULATION
