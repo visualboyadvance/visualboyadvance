@@ -87,18 +87,6 @@ SET(SRC_GBA
     src/gba/Sram.cpp
 )
 
-SET(SRC_GB
-    src/gb/GB.cpp
-    src/gb/gbCheats.cpp
-    src/gb/gbDis.cpp
-    src/gb/gbGfx.cpp
-    src/gb/gbGlobals.cpp
-    src/gb/gbMemory.cpp
-    src/gb/gbPrinter.cpp
-    src/gb/gbSGB.cpp
-    src/gb/gbSound.cpp
-)
-
 SET(SRC_APU
     src/apu/Blip_Buffer.cpp
     src/apu/Effects_Buffer.cpp
@@ -164,7 +152,6 @@ ADD_LIBRARY (
 	${PROJECT_SRCS}
 	${SRC_MAIN}
 	${SRC_GBA}
-	${SRC_GB}
 	${SRC_APU}
 	${SRC_FEX_MINI}
 )

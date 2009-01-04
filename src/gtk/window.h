@@ -50,7 +50,6 @@ public:
   enum ECartridge
   {
     CartridgeNone,
-    CartridgeGB,
     CartridgeGBA
   };
 
@@ -80,11 +79,7 @@ public:
     SaveNone
   };
 
-  // GB/GBA screen sizes
-  const int m_iGBScreenWidth;
-  const int m_iGBScreenHeight;
-  const int m_iSGBScreenWidth;
-  const int m_iSGBScreenHeight;
+  // GBA screen size
   const int m_iGBAScreenWidth;
   const int m_iGBAScreenHeight;
 
@@ -101,9 +96,6 @@ public:
   void vApplyConfigMute();
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
-  void vApplyConfigGBSystem();
-  void vApplyConfigGBBorder();
-  void vApplyConfigGBPrinter();
   void vApplyConfigGBASaveType();
   void vApplyConfigGBAFlashSize();
   void vUpdateScreen();
@@ -183,8 +175,6 @@ private:
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;
   const float m_fSoundVolumeMax;
-  const int m_iEmulatorTypeMin;
-  const int m_iEmulatorTypeMax;
   const int m_iFilter2xMin;
   const int m_iFilter2xMax;
   const int m_iFilterIBMin;

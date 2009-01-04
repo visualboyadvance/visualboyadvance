@@ -27,8 +27,7 @@
 
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
-#include "../gb/gb.h"
-#include "../gb/gbGlobals.h"
+
 #include "../Util.h"
 #include "inputSDL.h"
 
@@ -40,6 +39,8 @@
 #include "soundconfig.h"
 #include "gameboyconfig.h"
 #include "gameboyadvanceconfig.h"
+
+extern int emulating;
 
 namespace VBA
 {
@@ -366,14 +367,12 @@ void Window::vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI, int _iValue)
   if (_iValue >= 0 && _iValue <= 9)
   {
     m_poCoreConfig->vSetKey("frameskip", _iValue);
-    gbFrameSkip      = _iValue;
     systemFrameSkip  = _iValue;
     m_bAutoFrameskip = false;
   }
   else
   {
     m_poCoreConfig->vSetKey("frameskip", "auto");
-    gbFrameSkip      = 0;
     systemFrameSkip  = 0;
     m_bAutoFrameskip = true;
   }

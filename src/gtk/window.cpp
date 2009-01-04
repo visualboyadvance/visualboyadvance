@@ -28,10 +28,6 @@
 
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
-#include "../gb/gb.h"
-#include "../gb/gbGlobals.h"
-#include "../gb/gbSound.h"
-#include "../gb/gbPrinter.h"
 #include "../Util.h"
 
 #include "tools.h"
@@ -40,7 +36,7 @@
 #include "screenarea-opengl.h"
 
 extern int RGB_LOW_BITS_MASK;
-
+extern int emulating;
 
 namespace VBA
 {
@@ -71,10 +67,6 @@ const Window::SJoypadKey Window::m_astJoypad[] =
 
 Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   Gtk::Window       (_pstWindow),
-  m_iGBScreenWidth  (160),
-  m_iGBScreenHeight (144),
-  m_iSGBScreenWidth (256),
-  m_iSGBScreenHeight(224),
   m_iGBAScreenWidth (240),
   m_iGBAScreenHeight(160),
   m_iFrameskipMin   (0),
@@ -89,8 +81,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
   m_fSoundVolumeMax (2.00f),
-  m_iEmulatorTypeMin(EmulatorAuto),
-  m_iEmulatorTypeMax(EmulatorSGB2),
   m_iFilter2xMin    (FirstFilter),
   m_iFilter2xMax    (LastFilter),
   m_iFilterIBMin    (FirstFilterIB),
@@ -140,9 +130,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigFilterIB();
   vApplyConfigMute();
   vApplyConfigVolume();
-  vApplyConfigGBSystem();
-  vApplyConfigGBBorder();
-  vApplyConfigGBPrinter();
   vApplyConfigGBASaveType();
   vApplyConfigGBAFlashSize();
 
@@ -331,10 +318,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                       poCMI, astShowSpeed[i].m_eShowSpeed));
   }
 
-  // Game Boy menu
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("GameBoyConfigure"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnGameBoyConfigure));
-
   // Game Boy Advance menu
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("GameBoyAdvanceConfigure"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnGameBoyAdvanceConfigure));
@@ -491,8 +474,6 @@ void Window::vInitSystem()
 
   emulating = 0;
 
-  gbFrameSkip = 0;
-  
   m_iFrameCount = 0;
 
   soundInit();
@@ -565,11 +546,6 @@ void Window::vInitConfig()
   m_poCoreConfig->vSetKey("bios_file",         ""           );
   m_poCoreConfig->vSetKey("save_type",         SaveAuto     );
   m_poCoreConfig->vSetKey("flash_size",        64           );
-  m_poCoreConfig->vSetKey("gb_border",         false        );
-  m_poCoreConfig->vSetKey("gb_printer",        false        );
-  m_poCoreConfig->vSetKey("gb_use_bios_file",  false        );
-  m_poCoreConfig->vSetKey("gb_bios_file",      ""           );
-  m_poCoreConfig->vSetKey("emulator_type",     EmulatorAuto );
 
   // Display section
   //
@@ -689,13 +665,6 @@ void Window::vCheckConfig()
   if (iValue != 64 && iValue != 128)
   {
     m_poCoreConfig->vSetKey("flash_size", 64);
-  }
-
-  iValue = m_poCoreConfig->oGetKey<int>("emulator_type");
-  iAdjusted = CLAMP(iValue, m_iEmulatorTypeMin, m_iEmulatorTypeMax);
-  if (iValue != iAdjusted)
-  {
-    m_poCoreConfig->vSetKey("emulator_type", iAdjusted);
   }
 
   // Display section
@@ -827,42 +796,7 @@ void Window::vApplyConfigVolume()
 void Window::vApplyConfigSoundSampleRate()
 {
   long iSoundSampleRate = m_poSoundConfig->oGetKey<int>("sample_rate");
-  if (m_eCartridge == CartridgeGBA)
-  {
-    soundSetSampleRate(iSoundSampleRate);
-  }
-  else if (m_eCartridge == CartridgeGB)
-  {
-    gbSoundSetSampleRate(iSoundSampleRate);
-  }
-}
-
-void Window::vApplyConfigGBSystem()
-{
-  gbEmulatorType = m_poCoreConfig->oGetKey<int>("emulator_type");
-}
-
-void Window::vApplyConfigGBBorder()
-{
-  gbBorderOn = m_poCoreConfig->oGetKey<bool>("gb_border");
-  if (emulating && m_eCartridge == CartridgeGB && gbBorderOn)
-  {
-    gbSgbRenderBorder();
-  }
-  vUpdateScreen();
-}
-
-void Window::vApplyConfigGBPrinter()
-{
-  bool bPrinter = m_poCoreConfig->oGetKey<bool>("gb_printer");
-  if (bPrinter)
-  {
-    gbSerialFunction = gbPrinterSend;
-  }
-  else
-  {
-    gbSerialFunction = NULL;
-  }
+  soundSetSampleRate(iSoundSampleRate);
 }
 
 void Window::vApplyConfigGBASaveType()
@@ -925,30 +859,9 @@ void Window::vSaveJoypadsToConfig()
 
 void Window::vUpdateScreen()
 {
-  if (m_eCartridge == CartridgeGB)
-  {
-    if (gbBorderOn)
-    {
-      m_iScreenWidth     = m_iSGBScreenWidth;
-      m_iScreenHeight    = m_iSGBScreenHeight;
-      gbBorderLineSkip   = m_iSGBScreenWidth;
-      gbBorderColumnSkip = (m_iSGBScreenWidth - m_iGBScreenWidth) / 2;
-      gbBorderRowSkip    = (m_iSGBScreenHeight - m_iGBScreenHeight) / 2;
-    }
-    else
-    {
-      m_iScreenWidth     = m_iGBScreenWidth;
-      m_iScreenHeight    = m_iGBScreenHeight;
-      gbBorderLineSkip   = m_iGBScreenWidth;
-      gbBorderColumnSkip = 0;
-      gbBorderRowSkip    = 0;
-    }
-  }
-  else if (m_eCartridge == CartridgeGBA)
-  {
-    m_iScreenWidth  = m_iGBAScreenWidth;
-    m_iScreenHeight = m_iGBAScreenHeight;
-  }
+
+  m_iScreenWidth  = m_iGBAScreenWidth;
+  m_iScreenHeight = m_iGBAScreenHeight;
 
   g_return_if_fail(m_iScreenWidth >= 1 && m_iScreenHeight >= 1);
 
@@ -984,28 +897,8 @@ bool Window::bLoadROM(const std::string & _rsFile)
   bool bLoaded = false;
   if (eType == IMAGE_GB)
   {
-    bLoaded = gbLoadRom(csFile);
-    if (bLoaded)
-    {
-      m_eCartridge = CartridgeGB;
-      m_stEmulator = GBSystem;
-      
-      useBios = m_poCoreConfig->oGetKey<bool>("gb_use_bios_file");
-      gbGetHardwareType();
-      
-      if (gbHardware & 5)
-      {
-        gbCPUInit(m_poCoreConfig->sGetKey("gb_bios_file").c_str(), useBios);
-      }
-      
-      // If the bios file was rejected by gbCPUInit
-      if (m_poCoreConfig->oGetKey<bool>("gb_use_bios_file") && ! useBios)
-      {
-        m_poCoreConfig->vSetKey("gb_bios_file", "");
-      }
-      
-      gbReset();
-    }
+    vPopupError(_("Game Boy roms are not supported"));
+    return false;
   }
   else if (eType == IMAGE_GBA)
   {
