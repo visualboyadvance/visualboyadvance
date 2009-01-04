@@ -34,7 +34,6 @@ int  systemSaveUpdateCounter;
 int  systemFrameSkip;
 u32  systemColorMap32[0x10000];
 u16  systemColorMap16[0x10000];
-u16  systemGbPalette[24];
 
 int  emulating;
 int  RGB_LOW_BITS_MASK;

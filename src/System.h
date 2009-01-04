@@ -65,7 +65,6 @@ extern void (*dbgSignal)(int sig,int number);
 
 extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
-extern u16 systemGbPalette[24];
 extern int systemRedShift;
 extern int systemGreenShift;
 extern int systemBlueShift;

@@ -415,14 +415,6 @@ void Window::vInitColors(EColorFormat _eColorFormat)
                            | (((i & 0x3e0) >> 5) << systemGreenShift)
                            | (((i & 0x7c00) >> 10) << systemBlueShift));
   }
-
-  for (int i = 0; i < 24; )
-  {
-    systemGbPalette[i++] = (0x1f) | (0x1f << 5) | (0x1f << 10);
-    systemGbPalette[i++] = (0x15) | (0x15 << 5) | (0x15 << 10);
-    systemGbPalette[i++] = (0x0c) | (0x0c << 5) | (0x0c << 10);
-    systemGbPalette[i++] = 0;
-  }
 }
 
 void Window::vApplyConfigScreenArea()
