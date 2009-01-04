@@ -266,18 +266,4 @@ inline int codeTicksAccessSeq32(u32 address) // ARM SEQ
   }
 }
 
-
-// Emulates the Cheat System (m) code
-inline void cpuMasterCodeCheck()
-{
-  if((mastercode) && (mastercode == armNextPC))
-  {
-    u32 joy = 0;
-    if(systemReadJoypads())
-      joy = systemReadJoypad(-1);
-    u32 ext = (joy >> 10);
-    cpuTotalTicks += cheatsCheckKeys(P1^0x3FF, ext);
-  }
-}
-
 #endif // GBACPU_H

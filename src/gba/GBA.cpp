@@ -13,7 +13,6 @@
 #include "Sound.h"
 #include "Sram.h"
 #include "bios.h"
-#include "Cheats.h"
 #include "../NLS.h"
 #include "elf.h"
 #include "../Util.h"
@@ -580,8 +579,6 @@ static bool CPUWriteState(gzFile gzFile)
   flashSaveGame(gzFile);
   soundSaveGame(gzFile);
 
-  cheatsSaveGame(gzFile);
-
   // version 1.5
   rtcSaveGame(gzFile);
 
@@ -708,14 +705,6 @@ static bool CPUReadState(gzFile gzFile)
   }
   soundReadGame(gzFile, version);
 
-  if(version > SAVE_GAME_VERSION_1) {
-    if(skipSaveGameCheats) {
-      // skip cheats list data
-      cheatsReadGameSkip(gzFile, version);
-    } else {
-      cheatsReadGame(gzFile, version);
-    }
-  }
   if(version > SAVE_GAME_VERSION_6) {
     rtcReadGame(gzFile);
   }
@@ -3495,9 +3484,6 @@ void CPULoop(int ticks)
               }
 
               u32 ext = (joy >> 10);
-              // If no (m) code is enabled, apply the cheats at each LCDline
-              if((cheatsEnabled) && (mastercode==0))
-                remainingTicks += cheatsCheckKeys(P1^0x3FF, ext);
               speedup = (ext & 1) ? true : false;
               capture = (ext & 2) ? true : false;
 

@@ -13,7 +13,6 @@
 #include "Sound.h"
 #include "Sram.h"
 #include "bios.h"
-#include "Cheats.h"
 #include "../NLS.h"
 #include "elf.h"
 #include "../Util.h"
@@ -2264,10 +2263,6 @@ static void tester(void) {
 int armExecute()
 {
     do {
-		if( cheatsEnabled ) {
-			cpuMasterCodeCheck();
-		}
-
         if ((armNextPC & 0x0803FFFF) == 0x08020000)
           busPrefetchCount = 0x100;
 

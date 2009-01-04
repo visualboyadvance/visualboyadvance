@@ -59,7 +59,6 @@ SET(SRC_MAIN
 SET(SRC_GBA
     src/gba/agbprint.cpp
     src/gba/bios.cpp
-    src/gba/Cheats.cpp
     src/gba/EEprom.cpp
     src/gba/Flash.cpp
     src/gba/GBA.cpp

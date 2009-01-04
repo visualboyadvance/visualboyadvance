@@ -128,7 +128,6 @@ extern struct EmulatedSystem GBASystem;
 #define R14_FIQ  43
 #define SPSR_FIQ 44
 
-#include "Cheats.h"
 #include "Globals.h"
 #include "EEprom.h"
 #include "Flash.h"
