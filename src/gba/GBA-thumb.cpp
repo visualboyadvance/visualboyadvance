@@ -14,7 +14,6 @@
 #include "Sram.h"
 #include "bios.h"
 #include "../NLS.h"
-#include "elf.h"
 #include "../Util.h"
 #include "../System.h"
 
