@@ -2253,12 +2253,6 @@ int armExecute()
         clockTicks = 0;
         int oldArmNextPC = armNextPC;
 
-#ifndef FINAL_VERSION
-        if (armNextPC == stop) {
-            armNextPC++;
-        }
-#endif
-
         armNextPC = reg[15].I;
         reg[15].I += 4;
         ARM_PREFETCH_NEXT;

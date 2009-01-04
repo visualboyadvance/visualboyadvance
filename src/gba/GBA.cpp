@@ -1460,14 +1460,6 @@ void CPUSoftwareInterrupt(int comment)
 {
   static bool disableMessage = false;
   if(armState) comment >>= 16;
-#ifdef SDL
-  if(comment == 0xf9) {
-    emulating = 0;
-    cpuNextEvent = cpuTotalTicks;
-    cpuBreakLoop = true;
-    return;
-  }
-#endif
   if(useBios) {
 #ifdef GBA_LOGGING
     if(systemVerbose & VERBOSE_SWI) {
@@ -3124,27 +3116,6 @@ void CPUInterrupt()
   biosProtected[3] = 0xe5;
 }
 
-#ifdef SDL
-void log(const char *defaultMsg, ...)
-{
-  char buffer[2048];
-  va_list valist;
-
-  va_start(valist, defaultMsg);
-  vsprintf(buffer, defaultMsg, valist);
-
-  if(out == NULL) {
-    out = fopen("trace.log","w");
-  }
-
-  fputs(buffer, out);
-
-  va_end(valist);
-}
-#else
-extern void winlog(const char *, ...);
-#endif
-
 void CPULoop(int ticks)
 {
   int clockTicks;
@@ -3162,31 +3133,6 @@ void CPULoop(int ticks)
 
 
   for(;;) {
-#ifndef FINAL_VERSION
-    if(systemDebug) {
-      if(systemDebug >= 10 && !holdState) {
-        CPUUpdateCPSR();
-        sprintf(buffer, "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
-                 reg[0].I, reg[1].I, reg[2].I, reg[3].I, reg[4].I, reg[5].I,
-                 reg[6].I, reg[7].I, reg[8].I, reg[9].I, reg[10].I, reg[11].I,
-                 reg[12].I, reg[13].I, reg[14].I, reg[15].I, reg[16].I,
-                 reg[17].I);
-#ifdef SDL
-        log(buffer);
-#else
-        winlog(buffer);
-#endif
-      } else if(!holdState) {
-        sprintf(buffer, "PC=%08x\n", armNextPC);
-#ifdef SDL
-        log(buffer);
-#else
-        winlog(buffer);
-#endif
-      }
-    }
-#endif /* FINAL_VERSION */
-
     if(!holdState && !SWITicks) {
       if(armState) {
         if (!armExecute())
@@ -3679,9 +3625,5 @@ struct EmulatedSystem GBASystem = {
   // emuHasDebugger
   true,
   // emuCount
-#ifdef FINAL_VERSION
   250000
-#else
-  5000
-#endif
 };

@@ -57,19 +57,12 @@ extern void systemShowSpeed(int);
 extern void system10Frames(int);
 extern void systemFrame();
 
-extern void DbgMsg(const char *msg, ...);
-extern void winlog(const char *,...);
-
-extern void (*dbgOutput)(const char *s, u32 addr);
-extern void (*dbgSignal)(int sig,int number);
-
 extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
 extern int systemRedShift;
 extern int systemGreenShift;
 extern int systemBlueShift;
 extern int systemColorDepth;
-extern int systemDebug;
 extern int systemVerbose;
 extern int systemFrameSkip;
 extern int systemSaveUpdateCounter;

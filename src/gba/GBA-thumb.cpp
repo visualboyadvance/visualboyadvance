@@ -1612,11 +1612,6 @@ int thumbExecute()
       busPrefetchCount = 0x100 | (busPrefetchCount & 0xFF);
     clockTicks = 0;
     u32 oldArmNextPC = armNextPC;
-#ifndef FINAL_VERSION
-    if(armNextPC == stop) {
-      armNextPC++;
-    }
-#endif
 
     armNextPC = reg[15].I;
     reg[15].I += 2;
