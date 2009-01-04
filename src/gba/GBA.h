@@ -66,8 +66,6 @@ extern bool armState;
 extern int armMode;
 extern void (*cpuSaveGameFunc)(u32,u8);
 
-extern bool CPUReadGSASnapshot(const char *);
-extern bool CPUWriteGSASnapshot(const char *, const char *, const char *, const char *);
 extern bool CPUWriteBatteryFile(const char *);
 extern bool CPUReadBatteryFile(const char *);
 extern bool CPUExportEepromFile(const char *);
