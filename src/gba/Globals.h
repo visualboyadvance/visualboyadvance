@@ -42,7 +42,6 @@ extern bool speedHack;
 extern int cpuSaveType;
 extern bool mirroringEnable;
 extern bool skipSaveGameBattery; // skip battery data when reading save states
-extern int customBackdropColor;
 
 extern u8 *bios;
 extern u8 *rom;
