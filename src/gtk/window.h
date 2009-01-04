@@ -28,7 +28,7 @@
 #include <libglademm.h>
 
 #include "../System.h"
-#include "../sdl/inputSDL.h"
+#include "inputSDL.h"
 
 #include "configfile.h"
 #include "screenarea.h"

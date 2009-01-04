@@ -30,7 +30,7 @@
 #include "../gb/gb.h"
 #include "../gb/gbGlobals.h"
 #include "../Util.h"
-#include "../sdl/inputSDL.h"
+#include "inputSDL.h"
 
 #include "tools.h"
 #include "intl.h"

@@ -30,7 +30,7 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/checkbutton.h>
 
-#include "../sdl/inputSDL.h"
+#include "inputSDL.h"
 #include "configfile.h"
 
 namespace VBA

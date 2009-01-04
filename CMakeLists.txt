@@ -3,15 +3,9 @@ if( COMMAND cmake_policy )
     cmake_policy( SET CMP0003 NEW )
     cmake_policy( SET CMP0005 OLD )
 endif( COMMAND cmake_policy )
-SET( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts )
 
-# Include the definition of the ASM compiler. It will look for nasm
-# This is probably not needed if CMake 2.6 or above is used
-INCLUDE(CMakeScripts/CMakeDetermineASMCompiler.cmake)
-INCLUDE(CMakeScripts/CMakeASMInformation.cmake)
-
-# The project's name is VBA-M it uses assembly, C and C++ code
-PROJECT(VBA-M ASM C CXX)
+# The project's name is VBA-M it uses C and C++ code
+PROJECT(VBA-M C CXX)
 
 # Both the SDL and the GTK+ frontends are built by default
 # To disable building the SDL frontend add -DNO_SDL=1 on the commandline
@@ -27,49 +21,19 @@ IF( NOT VERSION )
     SET( VERSION "1.8.0-SVN" )
 ENDIF( NOT VERSION )
 
-# Fill in SDLMAIN_LIBRARY on OS X manually to avoid using SDLMain.m
-# OS X users will have to compile and install SDL from source.
-if( APPLE )
-	SET(SDLMAIN_LIBRARY "-lSDLmain")
-endif( APPLE )
-
 # Look for some dependencies using builtin CMake scripts
 FIND_PACKAGE ( ZLIB REQUIRED )
 FIND_PACKAGE ( PNG REQUIRED )
 FIND_PACKAGE ( OpenGL REQUIRED )
 FIND_PACKAGE ( SDL REQUIRED )
+FIND_PACKAGE ( PkgConfig REQUIRED )
 
-# Disable looking for GTK if not going to build the GTK frontend
-# so that pkg-config is not required
-IF(NOT NO_GTK)
-    FIND_PACKAGE ( PkgConfig REQUIRED )
-
-    # These dependencies require pkg-config to be found
-    PKG_CHECK_MODULES ( GTKMM gtkmm-2.4 )
-    PKG_CHECK_MODULES ( GLIBMM glibmm-2.4 )
-    PKG_CHECK_MODULES ( GIOMM giomm-2.4 )
-    PKG_CHECK_MODULES ( GLADEMM libglademm-2.4 )
-    PKG_CHECK_MODULES ( GTKGLMM gtkglextmm-x11-1.2 )
-ENDIF(NOT NO_GTK)
-
-# Check that the dependencies are met to build the SDL frontend
-IF( NOT NO_SDL )
-    IF( SDL_FOUND )
-        SET( CAN_BUILD_VBAM 1 )
-    ENDIF( SDL_FOUND )
-ENDIF( NOT NO_SDL )
-IF( WITH_LIRC )
-        SET( WITHLIRC 1 )
-ELSE( WITH_LIRC )
-        SET( WITHLIRC 0 )
-ENDIF( WITH_LIRC )
-
-# Check that the dependencies are met to build the GTK frontend
-IF( NOT NO_GTK )
-    IF( GLIBMM_FOUND AND GTKMM_FOUND AND GLADEMM_FOUND AND SDL_FOUND )
-        SET( CAN_BUILD_GVBAM 1 )
-    ENDIF( GLIBMM_FOUND AND GTKMM_FOUND AND GLADEMM_FOUND AND SDL_FOUND )
-ENDIF( NOT NO_GTK )
+# These dependencies require pkg-config to be found
+PKG_CHECK_MODULES ( GTKMM gtkmm-2.4 )
+PKG_CHECK_MODULES ( GLIBMM glibmm-2.4 )
+PKG_CHECK_MODULES ( GIOMM giomm-2.4 )
+PKG_CHECK_MODULES ( GLADEMM libglademm-2.4 )
+PKG_CHECK_MODULES ( GTKGLMM gtkglextmm-x11-1.2 )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
@@ -84,34 +48,13 @@ IF( NOT SYSCONFDIR )
 ENDIF( NOT SYSCONFDIR )
 
 # C defines
-ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H -DFINAL_VERSION -DSDL -DUSE_OPENGL -DSYSCONFDIR='"${SYSCONFDIR}"' -DWITH_LIRC='${WITHLIRC}')
+ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H -DFINAL_VERSION -DSDL -DUSE_OPENGL -DSYSCONFDIR='"${SYSCONFDIR}"')
 
 ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"' -DPACKAGE='')
-
-# The debugger is enabled by default
-# The SDL port can't be built without debugging support
-IF( NO_DEBUGGER )
-    IF( CAN_BUILD_VBAM )
-        MESSAGE(STATUS "The SDL port can't be built without debugging support")
-        SET( CAN_BUILD_VBAM 0 )
-    ENDIF( CAN_BUILD_VBAM )
-
-    ADD_DEFINITIONS (-DNO_DEBUGGER)
-ELSE( NO_DEBUGGER )
-    ADD_DEFINITIONS (-DBKPT_SUPPORT)
-ENDIF( NO_DEBUGGER )
-
-# The ASM core is disabled by default because we don't know on which platform we are
-IF( NOT USE_ASM_CORE )
-    ADD_DEFINITIONS (-DC_CORE)
-ENDIF( NOT USE_ASM_CORE )
+ADD_DEFINITIONS (-DNO_DEBUGGER)
+ADD_DEFINITIONS (-DC_CORE)
 
 # Compiler flags
-IF ( WIN32 )
-    SET( CMAKE_ASM_FLAGS "-Isrc/filters/hq/asm/ -O1 -w-orphan-labels")
-ELSE ( WIN32 )
-    SET( CMAKE_ASM_FLAGS "-Isrc/filters/hq/asm/ -O1 -DELF -w-orphan-labels")
-ENDIF ( WIN32 )
 SET( CMAKE_C_FLAGS "-O3 -Wall")
 SET( CMAKE_CXX_FLAGS "-O3 -Wall")
 
@@ -165,19 +108,6 @@ SET(SRC_APU
     src/apu/Multi_Buffer.cpp
 )
 
-SET(SRC_SDL
-    src/sdl/debugger.cpp
-    src/sdl/SDL.cpp
-    src/sdl/dummy.cpp
-    src/sdl/filters.cpp
-    src/sdl/text.cpp
-    src/sdl/inputSDL.cpp
-    src/common/SoundSDL.cpp
-    src/sdl/expr.cpp
-    src/sdl/exprNode.cpp
-    src/sdl/expr-lex.cpp
-)
-
 SET(SRC_FEX_MINI
     src/common/fex_mini.cpp
 )
@@ -192,16 +122,8 @@ SET(SRC_FILTERS
     src/filters/scanline.cpp
 )
 
-SET(SRC_HQ_C
+SET(SRC_HQ
     src/filters/hq/c/hq_implementation.cpp
-)
-
-SET(SRC_HQ_ASM
-    src/filters/hq/asm/hq3x_16.asm
-    src/filters/hq/asm/hq3x_32.asm
-    src/filters/hq/asm/hq4x_16.asm
-    src/filters/hq/asm/hq4x_32.asm
-    src/filters/hq/asm/hq3x32.cpp
 )
 
 SET(SRC_GTK
@@ -221,115 +143,61 @@ SET(SRC_GTK
     src/gtk/screenarea-opengl.cpp
     src/gtk/tools.cpp
     src/gtk/window.cpp
-    src/sdl/inputSDL.cpp
+    src/gtk/inputSDL.cpp
     src/common/SoundSDL.cpp
 )
 
-IF( NOT NO_DEBUGGER )
-    SET(SRC_DEBUGGER
-        src/gba/armdis.cpp
-        src/gba/elf.cpp
-        src/gba/remote.cpp
-    )
-ENDIF( NOT NO_DEBUGGER )
-
-IF(CMAKE_ASM_COMPILER_LOADED AND USE_ASM_SCALERS)
-    SET(SRC_HQ ${SRC_HQ_ASM})
-ELSE(CMAKE_ASM_COMPILER_LOADED AND USE_ASM_SCALERS)
-    SET(SRC_HQ ${SRC_HQ_C})
-ENDIF(CMAKE_ASM_COMPILER_LOADED AND USE_ASM_SCALERS)
+INCLUDE_DIRECTORIES(
+	    ${ZLIB_INCLUDE_DIR}
+	    ${PNG_INCLUDE_DIR}
+	    ${SDL_INCLUDE_DIR}
+)
 
 INCLUDE_DIRECTORIES(
-    ${ZLIB_INCLUDE_DIR}
-    ${PNG_INCLUDE_DIR}
-    ${SDL_INCLUDE_DIR}
+	${GLIBMM_INCLUDE_DIRS}
+	${GIOMM_INCLUDE_DIRS}
+	${GTKMM_INCLUDE_DIRS}
+	${GTKGLMM_INCLUDE_DIRS}
+	${GLADEMM_INCLUDE_DIRS}
 )
 
-IF( CAN_BUILD_GVBAM )
-    INCLUDE_DIRECTORIES(
-        ${GLIBMM_INCLUDE_DIRS}
-        ${GIOMM_INCLUDE_DIRS}
-        ${GTKMM_INCLUDE_DIRS}
-        ${GTKGLMM_INCLUDE_DIRS}
-        ${GLADEMM_INCLUDE_DIRS}
-    )
-
-    LINK_DIRECTORIES(
-        ${GLIBMM_LIBRARY_DIRS}
-        ${GIOMM_LIBRARY_DIRS}
-        ${GTKMM_LIBRARY_DIRS}
-        ${GTKGLMM_LIBRARY_DIRS}
-        ${GLADEMM_LIBRARY_DIRS}
-    )
-ENDIF( CAN_BUILD_GVBAM )
+LINK_DIRECTORIES(
+	${GLIBMM_LIBRARY_DIRS}
+	${GIOMM_LIBRARY_DIRS}
+	${GTKMM_LIBRARY_DIRS}
+	${GTKGLMM_LIBRARY_DIRS}
+	${GLADEMM_LIBRARY_DIRS}
+)
 
 ADD_LIBRARY (
-    vbamcore
-    ${PROJECT_SRCS}
-    ${SRC_MAIN}
-    ${SRC_GBA}
-    ${SRC_GB}
-    ${SRC_APU}
-    ${SRC_FEX_MINI}
-    ${SRC_FILTERS}
-    ${SRC_DEBUGGER}
+	vbamcore
+	${PROJECT_SRCS}
+	${SRC_MAIN}
+	${SRC_GBA}
+	${SRC_GB}
+	${SRC_APU}
+	${SRC_FEX_MINI}
+	${SRC_FILTERS}
 )
 
-IF( CAN_BUILD_VBAM )
-    ADD_EXECUTABLE (
-        vbam
-        WIN32
-        ${SRC_SDL}
-        ${SRC_HQ}
-    )
+ADD_EXECUTABLE (
+	gvbam
+	WIN32
+	MACOSX_BUNDLE
+	${SRC_GTK}
+)
 
-    IF( WIN32 )
-        SET( WIN32_LIBRARIES wsock32 )
-    ENDIF( WIN32 )
+TARGET_LINK_LIBRARIES (
+	gvbam
+	vbamcore
+	${ZLIB_LIBRARY}
+	${PNG_LIBRARY}
+	${GLADEMM_LIBRARIES}
+	${SDL_LIBRARY}
+	${GTKGLMM_LIBRARIES}
+)
 
-    IF( WITH_LIRC )
-        SET( LIRC_CLIENT_LIBRARY lirc_client )
-    ENDIF( WITH_LIRC )
-
-    TARGET_LINK_LIBRARIES (
-        vbam
-        vbamcore
-        ${SDL_LIBRARY}
-        ${ZLIB_LIBRARY}
-        ${PNG_LIBRARY}
-        ${OPENGL_LIBRARY}
-        ${WIN32_LIBRARIES}
-        ${LIRC_CLIENT_LIBRARY}
-    )
-
-    INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/vbam DESTINATION bin)
-    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl/vbam.cfg-example
-            DESTINATION ${SYSCONFDIR}
-            RENAME vbam.cfg)
-
-ENDIF( CAN_BUILD_VBAM )
-
-IF( CAN_BUILD_GVBAM )
-    ADD_EXECUTABLE (
-        gvbam
-        WIN32
-        MACOSX_BUNDLE
-        ${SRC_GTK}
-    )
-
-    TARGET_LINK_LIBRARIES (
-        gvbam
-        vbamcore
-        ${ZLIB_LIBRARY}
-        ${PNG_LIBRARY}
-        ${GLADEMM_LIBRARIES}
-        ${SDL_LIBRARY}
-        ${GTKGLMM_LIBRARIES}
-    )
-
-    INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
-    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/gvbam.desktop DESTINATION share/applications)
-    INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/icons/ DESTINATION share/icons/hicolor PATTERN ".svn" EXCLUDE)
-    INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/ui DESTINATION ${DATA_INSTALL_DIR} PATTERN ".svn" EXCLUDE)
-
-ENDIF( CAN_BUILD_GVBAM )
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/gvbam.desktop DESTINATION share/applications)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/icons/ DESTINATION share/icons/hicolor PATTERN ".svn" EXCLUDE)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/ui DESTINATION ${DATA_INSTALL_DIR} PATTERN ".svn" EXCLUDE)
