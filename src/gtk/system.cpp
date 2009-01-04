@@ -88,11 +88,6 @@ void systemSetTitle(const char * _csTitle)
   GUI()->set_title(_csTitle);
 }
 
-void systemScreenCapture(int _iNum)
-{
-  GUI()->vCaptureScreen(_iNum);
-}
-
 u32 systemGetClock()
 {
     Glib::TimeVal time;

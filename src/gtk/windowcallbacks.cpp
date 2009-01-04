@@ -270,62 +270,6 @@ void Window::vOnRecentFile()
   }
 }
 
-void Window::vOnFileScreenCapture()
-{
-  std::string sCaptureDir = m_poDirConfig->sGetKey("captures");
-
-  Gtk::FileChooserDialog oDialog(*this, _("Save screenshot"),
-                                 Gtk::FILE_CHOOSER_ACTION_SAVE);
-  oDialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  oDialog.add_button(Gtk::Stock::SAVE,   Gtk::RESPONSE_OK);
-
-  if (sCaptureDir == "")
-  {
-    oDialog.set_current_folder(Glib::path_get_dirname(m_sRomFile));
-  }
-  else
-  {
-    oDialog.set_current_folder(sCaptureDir);
-    oDialog.add_shortcut_folder(sCaptureDir);
-  }
-  oDialog.set_current_name(sCutSuffix(Glib::path_get_basename(m_sRomFile)));
-
-  Gtk::FileFilter oPngFilter;
-  oPngFilter.set_name(_("PNG image"));
-  oPngFilter.add_pattern("*.[pP][nN][gG]");
-
-  oDialog.add_filter(oPngFilter);
-
-  while (oDialog.run() == Gtk::RESPONSE_OK)
-  {
-    Glib::ustring sFile = oDialog.get_filename();
-    Glib::ustring sExt = ".png";
-
-    if (! bHasSuffix(sFile, sExt, false))
-    {
-      sFile += sExt;
-    }
-
-    if (Glib::file_test(sFile, Glib::FILE_TEST_EXISTS))
-    {
-      Gtk::MessageDialog oConfirmDialog(*this,
-                                        _("File already exists. Overwrite it?"),
-                                        false,
-                                        Gtk::MESSAGE_QUESTION,
-                                        Gtk::BUTTONS_YES_NO);
-      if (oConfirmDialog.run() != Gtk::RESPONSE_YES)
-      {
-        continue;
-      }
-    }
-
-    if (m_stEmulator.emuWritePNG(sFile.c_str()))
-    {
-      break;
-    }
-  }
-}
-
 void Window::vOnFileClose()
 {
   if (m_eCartridge != CartridgeNone)

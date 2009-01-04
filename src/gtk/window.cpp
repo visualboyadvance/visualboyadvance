@@ -206,10 +206,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileReset));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileScreenCapture"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileScreenCapture));
-  m_listSensitiveWhenPlaying.push_back(poMI);
-
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileClose"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileClose));
   m_listSensitiveWhenPlaying.push_back(poMI);
@@ -1081,27 +1077,6 @@ void Window::vComputeFrameskip(int _iRate)
   }
 
   uiLastTime = uiTime;
-}
-
-void Window::vCaptureScreen(int _iNum)
-{
-  std::string sBaseName;
-  std::string sDir = m_poDirConfig->sGetKey("captures");
-  if (sDir == "")
-  {
-    sDir = m_sUserDataDir;
-  }
-
-  sBaseName = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile));
-
-
-  char * csFile = g_strdup_printf("%s_%02d.png",
-                                  sBaseName.c_str(),
-                                  _iNum);
-
-  m_stEmulator.emuWritePNG(csFile);
-
-  g_free(csFile);
 }
 
 void Window::vCreateFileOpenDialog()

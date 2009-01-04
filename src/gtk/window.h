@@ -89,7 +89,6 @@ public:
   void vDrawScreen();
   void vComputeFrameskip(int _iRate);
   void vShowSpeed(int _iSpeed);
-  void vCaptureScreen(int _iNum);
   void vApplyConfigFilter();
   void vApplyConfigFilterIB();
   void vApplyConfigScreenArea();
@@ -139,7 +138,6 @@ protected:
   virtual void vOnFilePauseToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnFileReset();
   virtual void vOnRecentFile();
-  virtual void vOnFileScreenCapture();
   virtual void vOnFileClose();
   virtual void vOnFileExit();
   virtual void vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI, int _iValue);

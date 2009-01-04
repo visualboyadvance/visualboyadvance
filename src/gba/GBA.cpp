@@ -106,10 +106,6 @@ FILE *out = NULL;
 u32 lastTime = 0;
 int count = 0;
 
-int capture = 0;
-int capturePrevious = 0;
-int captureNumber = 0;
-
 const int TIMER_TICKS[4] = {
   0,
   6,
@@ -952,16 +948,6 @@ bool CPUReadBatteryFile(const char *fileName)
   }
   fclose(file);
   return true;
-}
-
-bool CPUWritePNGFile(const char *fileName)
-{
-  return utilWritePNGFile(fileName, 240, 160, pix);
-}
-
-bool CPUWriteBMPFile(const char *fileName)
-{
-  return utilWriteBMPFile(fileName, 240, 160, pix);
 }
 
 bool CPUIsZipFile(const char * file)
@@ -3335,13 +3321,6 @@ void CPULoop(int ticks)
 
               u32 ext = (joy >> 10);
               speedup = (ext & 1) ? true : false;
-              capture = (ext & 2) ? true : false;
-
-              if(capture && !capturePrevious) {
-                captureNumber++;
-                systemScreenCapture(captureNumber);
-              }
-              capturePrevious = capture;
 
               DISPSTAT |= 1;
               DISPSTAT &= 0xFFFD;
@@ -3702,10 +3681,6 @@ struct EmulatedSystem GBASystem = {
   CPUReadMemState,
   // emuWriteMemState
   CPUWriteMemState,
-  // emuWritePNG
-  CPUWritePNGFile,
-  // emuWriteBMP
-  CPUWriteBMPFile,
   // emuUpdateCPSR
   CPUUpdateCPSR,
   // emuHasDebugger

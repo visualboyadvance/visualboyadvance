@@ -70,8 +70,6 @@ extern bool CPUWriteBatteryFile(const char *);
 extern bool CPUReadBatteryFile(const char *);
 extern bool CPUExportEepromFile(const char *);
 extern bool CPUImportEepromFile(const char *);
-extern bool CPUWritePNGFile(const char *);
-extern bool CPUWriteBMPFile(const char *);
 extern void CPUCleanUp();
 extern void CPUUpdateRender();
 extern void CPUUpdateRenderBuffers(bool);
