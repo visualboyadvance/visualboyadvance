@@ -66,15 +66,6 @@ u32 cpuPrefetch[2];
 
 int cpuTotalTicks = 0;
 
-#ifdef BKPT_SUPPORT
-u8 freezeWorkRAM[0x40000];
-u8 freezeInternalRAM[0x8000];
-u8 freezeVRAM[0x18000];
-u8 freezePRAM[0x400];
-u8 freezeOAM[0x400];
-bool debugger_last;
-#endif
-
 int lcdTicks = (useBios && !skipBios) ? 1008 : 208;
 u8 timerOnOffDelay = 0;
 u16 timer0Value = 0;
@@ -1609,12 +1600,6 @@ void CPUSoftwareInterrupt(int comment)
 {
   static bool disableMessage = false;
   if(armState) comment >>= 16;
-#ifdef BKPT_SUPPORT
-  if(comment == 0xff) {
-    dbgOutput(NULL, reg[0].I);
-    return;
-  }
-#endif
   if(comment == 0xfa) {
     agbPrintFlush();
     return;
@@ -3327,16 +3312,6 @@ void CPULoop(int ticks)
     if(systemDebug) {
       if(systemDebug >= 10 && !holdState) {
         CPUUpdateCPSR();
-#ifdef BKPT_SUPPORT
-		if (debugger_last)
-		{
-		sprintf(buffer, "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
-                 oldreg[0], oldreg[1], oldreg[2], oldreg[3], oldreg[4], oldreg[5],
-                 oldreg[6], oldreg[7], oldreg[8], oldreg[9], oldreg[10], oldreg[11],
-                 oldreg[12], oldreg[13], oldreg[14], oldreg[15], oldreg[16],
-                 oldreg[17]);
-		}
-#endif
         sprintf(buffer, "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
                  reg[0].I, reg[1].I, reg[2].I, reg[3].I, reg[4].I, reg[5].I,
                  reg[6].I, reg[7].I, reg[8].I, reg[9].I, reg[10].I, reg[11].I,

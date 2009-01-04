@@ -32,38 +32,10 @@ static INSN_REGPARM void thumbUnknownInsn(u32 opcode)
   CPUUndefinedException();
 }
 
-#ifdef BKPT_SUPPORT
-static INSN_REGPARM void thumbBreakpoint(u32 opcode)
-{
-  reg[15].I -= 2;
-  armNextPC -= 2;
-  dbgSignal(5, opcode & 255);
-  clockTicks = -1;
-}
-#endif
-
 // Common macros //////////////////////////////////////////////////////////
 
-#ifdef BKPT_SUPPORT
-# define THUMB_CONSOLE_OUTPUT(a,b) do {                     \
-    if ((opcode == 0x4000) && (reg[0].I == 0xC0DED00D)) {   \
-      dbgOutput((a), (b));                                  \
-    }                                                       \
-} while (0)
-# define UPDATE_OLDREG do {                                 \
-    if (debugger_last) {                                    \
-        snprintf(oldbuffer, sizeof(oldbuffer), "%08X",      \
-                 armState ? reg[15].I - 4 : reg[15].I - 2); \
-        int i;						    \
-        for (i = 0; i < 18; i++) {                          \
-            oldreg[i] = reg[i].I;                           \
-        }                                                   \
-    }                                                       \
-} while (0)
-#else
-# define THUMB_CONSOLE_OUTPUT(a,b)
-# define UPDATE_OLDREG
-#endif
+#define THUMB_CONSOLE_OUTPUT(a,b)
+#define UPDATE_OLDREG
 
 #define NEG(i) ((i) >> 31)
 #define POS(i) ((~(i)) >> 31)
@@ -1493,11 +1465,7 @@ static INSN_REGPARM void thumbF8(u32 opcode)
 
 typedef INSN_REGPARM void (*insnfunc_t)(u32 opcode);
 #define thumbUI thumbUnknownInsn
-#ifdef BKPT_SUPPORT
- #define thumbBP thumbBreakpoint
-#else
- #define thumbBP thumbUnknownInsn
-#endif
+#define thumbBP thumbUnknownInsn
 static insnfunc_t thumbInsnTable[1024] = {
   thumb00_00,thumb00_01,thumb00_02,thumb00_03,thumb00_04,thumb00_05,thumb00_06,thumb00_07,  // 00
   thumb00_08,thumb00_09,thumb00_0A,thumb00_0B,thumb00_0C,thumb00_0D,thumb00_0E,thumb00_0F,
