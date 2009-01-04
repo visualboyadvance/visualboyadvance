@@ -34,27 +34,14 @@ enum EFilter
 {
   FirstFilter,
   FilterNone = FirstFilter,
-  Filter2xSaI,
-  FilterSuper2xSaI,
-  FilterSuperEagle,
-  FilterPixelate,
-  FilterAdMame2x,
-  FilterBilinear,
-  FilterBilinearPlus,
-  FilterScanlines,
-  FilterScanlinesTV,
-  FilterHq2x,
-  FilterLq2x,
-  LastFilter = FilterLq2x
+  LastFilter = FilterNone
 };
 
 enum EFilterIB
 {
   FirstFilterIB,
   FilterIBNone = FirstFilterIB,
-  FilterIBSmart,
-  FilterIBMotionBlur,
-  LastFilterIB = FilterIBMotionBlur
+  LastFilterIB = FilterIBNone
 };
 
 enum EFilterDepth

@@ -112,16 +112,6 @@ SET(SRC_FEX_MINI
     src/common/fex_mini.cpp
 )
 
-SET(SRC_FILTERS
-    src/filters/2xSaI.cpp
-    src/filters/admame.cpp
-    src/filters/bilinear.cpp
-    src/filters/hq2x.cpp
-    src/filters/interframe.cpp
-    src/filters/pixel.cpp
-    src/filters/scanline.cpp
-)
-
 SET(SRC_HQ
     src/filters/hq/c/hq_implementation.cpp
 )
@@ -177,7 +167,6 @@ ADD_LIBRARY (
 	${SRC_GB}
 	${SRC_APU}
 	${SRC_FEX_MINI}
-	${SRC_FILTERS}
 )
 
 ADD_EXECUTABLE (

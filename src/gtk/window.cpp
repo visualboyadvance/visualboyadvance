@@ -447,8 +447,6 @@ void Window::vInitColors(EColorFormat _eColorFormat)
     systemGbPalette[i++] = (0x0c) | (0x0c << 5) | (0x0c << 10);
     systemGbPalette[i++] = 0;
   }
-
-  Init_2xSaI(32);
 }
 
 void Window::vApplyConfigScreenArea()

@@ -18,33 +18,6 @@
 
 #include "filters.h"
 
-void _2xSaI        (u8 *, u32, u8 *, u8 *, u32, int, int);
-void _2xSaI32      (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Super2xSaI    (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Super2xSaI32  (u8 *, u32, u8 *, u8 *, u32, int, int);
-void SuperEagle    (u8 *, u32, u8 *, u8 *, u32, int, int);
-void SuperEagle32  (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Pixelate      (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Pixelate32    (u8 *, u32, u8 *, u8 *, u32, int, int);
-void AdMame2x      (u8 *, u32, u8 *, u8 *, u32, int, int);
-void AdMame2x32    (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Bilinear      (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Bilinear32    (u8 *, u32, u8 *, u8 *, u32, int, int);
-void BilinearPlus  (u8 *, u32, u8 *, u8 *, u32, int, int);
-void BilinearPlus32(u8 *, u32, u8 *, u8 *, u32, int, int);
-void Scanlines     (u8 *, u32, u8 *, u8 *, u32, int, int);
-void Scanlines32   (u8 *, u32, u8 *, u8 *, u32, int, int);
-void ScanlinesTV   (u8 *, u32, u8 *, u8 *, u32, int, int);
-void ScanlinesTV32 (u8 *, u32, u8 *, u8 *, u32, int, int);
-void hq2x          (u8 *, u32, u8 *, u8 *, u32, int, int);
-void hq2x32        (u8 *, u32, u8 *, u8 *, u32, int, int);
-void lq2x          (u8 *, u32, u8 *, u8 *, u32, int, int);
-void lq2x32        (u8 *, u32, u8 *, u8 *, u32, int, int);
-
-void SmartIB       (u8 *, u32, int, int);
-void SmartIB32     (u8 *, u32, int, int);
-void MotionBlurIB  (u8 *, u32, int, int);
-void MotionBlurIB32(u8 *, u32, int, int);
 
 namespace VBA
 {
@@ -56,18 +29,7 @@ struct {
 }
 static const astFilters[] =
 {
-  { "None",                1, { 0,            0              } },
-  { "2xSaI",               2, { _2xSaI,       _2xSaI32       } },
-  { "Super 2xSaI",         2, { Super2xSaI,   Super2xSaI32   } },
-  { "Super Eagle",         2, { SuperEagle,   SuperEagle32   } },
-  { "Pixelate",            2, { Pixelate,     Pixelate32     } },
-  { "AdvanceMAME Scale2x", 2, { AdMame2x,     AdMame2x32     } },
-  { "Bilinear",            2, { Bilinear,     Bilinear32     } },
-  { "Bilinear Plus",       2, { BilinearPlus, BilinearPlus32 } },
-  { "Scanlines",           2, { Scanlines,    Scanlines32    } },
-  { "TV Mode",             2, { ScanlinesTV,  ScanlinesTV32  } },
-  { "hq2x",                2, { hq2x,         hq2x32         } },
-  { "lq2x",                2, { lq2x,         lq2x32         } }
+  { "None",                1, { NULL,         NULL           } }
 };
 
 struct {
@@ -76,9 +38,7 @@ struct {
 }
 static const astFiltersIB[] =
 {
-  { "None",                      { 0,            0              } },
-  { "Smart interframe blending", { SmartIB,      SmartIB32      } },
-  { "Interframe motion blur",    { MotionBlurIB, MotionBlurIB32 } }
+  { "None",                      { NULL,         NULL           } }
 };
 
 Filter pvGetFilter(EFilter _eFilter, EFilterDepth _eDepth)
