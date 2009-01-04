@@ -61,7 +61,6 @@ SET( CMAKE_CXX_FLAGS "-O3 -Wall")
 # Source files definition
 SET(SRC_MAIN
     src/Util.cpp
-    src/common/Patch.cpp
     src/common/memgzio.c
 )
 
@@ -98,10 +97,6 @@ SET(SRC_APU
 
 SET(SRC_FEX_MINI
     src/common/fex_mini.cpp
-)
-
-SET(SRC_HQ
-    src/filters/hq/c/hq_implementation.cpp
 )
 
 SET(SRC_GTK
