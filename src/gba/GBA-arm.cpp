@@ -17,7 +17,6 @@
 #include "elf.h"
 #include "../Util.h"
 #include "../System.h"
-#include "agbprint.h"
 
 
 ///////////////////////////////////////////////////////////////////////////

@@ -148,23 +148,3 @@ void systemOnSoundShutdown()
 void systemOnWriteDataToSoundBuffer(const u16 * finalWave, int length)
 {
 }
-
-void debuggerMain()
-{
-}
-
-void debuggerSignal(int, int)
-{
-}
-
-void debuggerOutput(const char *, u32)
-{
-}
-
-void debuggerBreakOnWrite(u32 address, u32 oldvalue, u32 value, int size, int t)
-{
-}
-
-void (*dbgMain)() = debuggerMain;
-void (*dbgSignal)(int, int) = debuggerSignal;
-void (*dbgOutput)(const char *, u32) = debuggerOutput;

@@ -18,7 +18,6 @@
 #include "../Util.h"
 #include "../common/Port.h"
 #include "../System.h"
-#include "agbprint.h"
 
 #ifdef __GNUC__
 #define _stricmp strcasecmp
@@ -1461,10 +1460,6 @@ void CPUSoftwareInterrupt(int comment)
 {
   static bool disableMessage = false;
   if(armState) comment >>= 16;
-  if(comment == 0xfa) {
-    agbPrintFlush();
-    return;
-  }
 #ifdef SDL
   if(comment == 0xf9) {
     emulating = 0;
@@ -2800,8 +2795,6 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
   if(romSize < 0x1fe2000) {
     *((u16 *)&rom[0x1fe209c]) = 0xdffa; // SWI 0xFA
     *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
-  } else {
-    agbPrintEnable(false);
   }
 }
 

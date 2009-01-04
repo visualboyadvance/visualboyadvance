@@ -56,7 +56,6 @@ SET(SRC_MAIN
 )
 
 SET(SRC_GBA
-    src/gba/agbprint.cpp
     src/gba/bios.cpp
     src/gba/EEprom.cpp
     src/gba/Flash.cpp
