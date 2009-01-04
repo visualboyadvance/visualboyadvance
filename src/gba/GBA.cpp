@@ -1267,10 +1267,6 @@ void CPUCleanUp()
     ioMem = NULL;
   }
 
-#ifndef NO_DEBUGGER
-  elfCleanUp();
-#endif //NO_DEBUGGER
-
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   emulating = 0;
@@ -1300,29 +1296,6 @@ int CPULoadRom(const char *szFile)
 
   u8 *whereToLoad = cpuIsMultiBoot ? workRAM : rom;
 
-#ifndef NO_DEBUGGER
-  if(CPUIsELF(szFile)) {
-    FILE *f = fopen(szFile, "rb");
-    if(!f) {
-      systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"),
-                    szFile);
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
-      return 0;
-    }
-    bool res = elfRead(szFile, romSize, f);
-    if(!res || romSize == 0) {
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
-      elfCleanUp();
-      return 0;
-    }
-  } else
-#endif //NO_DEBUGGER
   if(!utilLoad(szFile,
                       utilIsGBAImage,
                       whereToLoad,

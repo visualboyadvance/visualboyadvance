@@ -7,12 +7,6 @@ endif( COMMAND cmake_policy )
 # The project's name is VBA-M it uses C and C++ code
 PROJECT(VBA-M C CXX)
 
-# Both the SDL and the GTK+ frontends are built by default
-# To disable building the SDL frontend add -DNO_SDL=1 on the commandline
-# To disable building the GTK+ frontend add -DNO_GTK=1 on the commandline
-# To disable building the debugger, add -DNO_DEBUGGER=1.
-# The SDL frontend can't be built without debugger support
-# To use ASM scalers, add -DUSE_ASM_SCALERS=1
 # To use the ASM core, add -DUSE_ASM_CORE=1
 # Set the version number with -DVERSION=X.X.X-uber
 
@@ -51,8 +45,6 @@ ENDIF( NOT SYSCONFDIR )
 ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H -DFINAL_VERSION -DSDL -DUSE_OPENGL -DSYSCONFDIR='"${SYSCONFDIR}"')
 
 ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"' -DPACKAGE='')
-ADD_DEFINITIONS (-DNO_DEBUGGER)
-ADD_DEFINITIONS (-DC_CORE)
 
 # Compiler flags
 SET( CMAKE_C_FLAGS "-O3 -Wall")
