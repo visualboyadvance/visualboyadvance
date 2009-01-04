@@ -37,10 +37,7 @@
 #include "tools.h"
 #include "intl.h"
 #include "screenarea-cairo.h"
-
-#ifdef USE_OPENGL
 #include "screenarea-opengl.h"
-#endif // USE_OPENGL
 
 extern int RGB_LOW_BITS_MASK;
 
@@ -463,12 +460,10 @@ void Window::vApplyConfigScreenArea()
   {
     switch (eVideoOutput)
     {
-#ifdef USE_OPENGL
       case OutputOpenGL:
         vInitColors(ColorFormatBGR);
         m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
         break;
-#endif // USE_OPENGL
       case OutputCairo:
       default:
         vInitColors(ColorFormatRGB);
@@ -584,11 +579,7 @@ void Window::vInitConfig()
   m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
   m_poDisplayConfig->vSetKey("filter2x",            FilterNone     );
   m_poDisplayConfig->vSetKey("filterIB",            FilterIBNone   );
-#ifdef USE_OPENGL
   m_poDisplayConfig->vSetKey("output",              OutputOpenGL   );
-#else
-  m_poDisplayConfig->vSetKey("output",              OutputCairo    );
-#endif // USE_OPENGL
 
 
   // Sound section

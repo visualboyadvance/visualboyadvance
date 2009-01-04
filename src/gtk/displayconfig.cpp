@@ -123,7 +123,7 @@ void DisplayConfigDialog::vOnOutputChanged(VBA::Window::EVideoOutput _eOutput)
   
   if (_eOutput == VBA::Window::OutputOpenGL && m_poOutputOpenGLRadioButton->get_active())
     m_poConfig->vSetKey("output", VBA::Window::OutputOpenGL);
-  else if (_eOutput == VBA::Window::OutputCairo && m_poOutputCairoRadioButton->get_active())
+  else
     m_poConfig->vSetKey("output", VBA::Window::OutputCairo);
 
   m_poWindow->vApplyConfigScreenArea();
