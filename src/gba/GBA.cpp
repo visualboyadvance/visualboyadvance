@@ -17,21 +17,17 @@
 #include "../common/Port.h"
 #include "../System.h"
 
+#ifdef LINK_EMULATION
+#include "GBALink.h"
+#endif
+
 #ifdef __GNUC__
 #define _stricmp strcasecmp
 #endif
 
 
 extern int emulating;
-#ifdef LINK_EMULATION
-extern int linktime;
-extern void StartLink(u16);
-extern void StartJOYLink(u16);
-extern void StartGPLink(u16);
-extern void LinkSSend(u16);
-extern void LinkUpdate(int);
-extern int linktime2;
-#endif
+
 int SWITicks = 0;
 int IRQTicks = 0;
 
@@ -2081,7 +2077,7 @@ void CPUUpdateRegister(u32 address, u16 value)
     break;
   case 0x12a:
 #ifdef LINK_EMULATION
-    if(linkenable && lspeed)
+    if(linkenable)
       LinkSSend(value);
 #endif
     {

@@ -44,6 +44,7 @@ ENDIF( NOT SYSCONFDIR )
 ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H -DSDL -DUSE_OPENGL -DSYSCONFDIR='"${SYSCONFDIR}"')
 ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"')
 ADD_DEFINITIONS (-DGBA_LOGGING)
+ADD_DEFINITIONS (-DLINK_EMULATION)
 
 # Compiler flags
 SET( CMAKE_C_FLAGS "-O3 -Wall")
@@ -60,6 +61,7 @@ SET(SRC_GBA
     src/gba/Flash.cpp
     src/gba/GBA.cpp
     src/gba/GBAGfx.cpp
+    src/gba/GBALink.cpp
     src/gba/GBA-thumb.cpp
     src/gba/GBA-arm.cpp
     src/gba/Globals.cpp
