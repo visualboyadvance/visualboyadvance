@@ -12,7 +12,6 @@
 #include "Flash.h"
 #include "Sound.h"
 #include "Sram.h"
-#include "bios.h"
 #include "../NLS.h"
 #include "../Util.h"
 #include "../common/Port.h"
@@ -64,7 +63,7 @@ u32 cpuPrefetch[2];
 
 int cpuTotalTicks = 0;
 
-int lcdTicks = (useBios && !skipBios) ? 1008 : 208;
+int lcdTicks = 1008;
 u8 timerOnOffDelay = 0;
 u16 timer0Value = 0;
 bool timer0On = false;
@@ -139,186 +138,6 @@ u8 memoryWaitSeq32[16] =
 
 
 u8 biosProtected[4];
-
-#ifdef WORDS_BIGENDIAN
-bool cpuBiosSwapped = false;
-#endif
-
-u32 myROM[] = {
-0xEA000006,
-0xEA000093,
-0xEA000006,
-0x00000000,
-0x00000000,
-0x00000000,
-0xEA000088,
-0x00000000,
-0xE3A00302,
-0xE1A0F000,
-0xE92D5800,
-0xE55EC002,
-0xE28FB03C,
-0xE79BC10C,
-0xE14FB000,
-0xE92D0800,
-0xE20BB080,
-0xE38BB01F,
-0xE129F00B,
-0xE92D4004,
-0xE1A0E00F,
-0xE12FFF1C,
-0xE8BD4004,
-0xE3A0C0D3,
-0xE129F00C,
-0xE8BD0800,
-0xE169F00B,
-0xE8BD5800,
-0xE1B0F00E,
-0x0000009C,
-0x0000009C,
-0x0000009C,
-0x0000009C,
-0x000001F8,
-0x000001F0,
-0x000000AC,
-0x000000A0,
-0x000000FC,
-0x00000168,
-0xE12FFF1E,
-0xE1A03000,
-0xE1A00001,
-0xE1A01003,
-0xE2113102,
-0x42611000,
-0xE033C040,
-0x22600000,
-0xE1B02001,
-0xE15200A0,
-0x91A02082,
-0x3AFFFFFC,
-0xE1500002,
-0xE0A33003,
-0x20400002,
-0xE1320001,
-0x11A020A2,
-0x1AFFFFF9,
-0xE1A01000,
-0xE1A00003,
-0xE1B0C08C,
-0x22600000,
-0x42611000,
-0xE12FFF1E,
-0xE92D0010,
-0xE1A0C000,
-0xE3A01001,
-0xE1500001,
-0x81A000A0,
-0x81A01081,
-0x8AFFFFFB,
-0xE1A0000C,
-0xE1A04001,
-0xE3A03000,
-0xE1A02001,
-0xE15200A0,
-0x91A02082,
-0x3AFFFFFC,
-0xE1500002,
-0xE0A33003,
-0x20400002,
-0xE1320001,
-0x11A020A2,
-0x1AFFFFF9,
-0xE0811003,
-0xE1B010A1,
-0xE1510004,
-0x3AFFFFEE,
-0xE1A00004,
-0xE8BD0010,
-0xE12FFF1E,
-0xE0010090,
-0xE1A01741,
-0xE2611000,
-0xE3A030A9,
-0xE0030391,
-0xE1A03743,
-0xE2833E39,
-0xE0030391,
-0xE1A03743,
-0xE2833C09,
-0xE283301C,
-0xE0030391,
-0xE1A03743,
-0xE2833C0F,
-0xE28330B6,
-0xE0030391,
-0xE1A03743,
-0xE2833C16,
-0xE28330AA,
-0xE0030391,
-0xE1A03743,
-0xE2833A02,
-0xE2833081,
-0xE0030391,
-0xE1A03743,
-0xE2833C36,
-0xE2833051,
-0xE0030391,
-0xE1A03743,
-0xE2833CA2,
-0xE28330F9,
-0xE0000093,
-0xE1A00840,
-0xE12FFF1E,
-0xE3A00001,
-0xE3A01001,
-0xE92D4010,
-0xE3A03000,
-0xE3A04001,
-0xE3500000,
-0x1B000004,
-0xE5CC3301,
-0xEB000002,
-0x0AFFFFFC,
-0xE8BD4010,
-0xE12FFF1E,
-0xE3A0C301,
-0xE5CC3208,
-0xE15C20B8,
-0xE0110002,
-0x10222000,
-0x114C20B8,
-0xE5CC4208,
-0xE12FFF1E,
-0xE92D500F,
-0xE3A00301,
-0xE1A0E00F,
-0xE510F004,
-0xE8BD500F,
-0xE25EF004,
-0xE59FD044,
-0xE92D5000,
-0xE14FC000,
-0xE10FE000,
-0xE92D5000,
-0xE3A0C302,
-0xE5DCE09C,
-0xE35E00A5,
-0x1A000004,
-0x05DCE0B4,
-0x021EE080,
-0xE28FE004,
-0x159FF018,
-0x059FF018,
-0xE59FD018,
-0xE8BD5000,
-0xE169F00C,
-0xE8BD5000,
-0xE25EF004,
-0x03007FF0,
-0x09FE2000,
-0x09FFC000,
-0x03007FE0
-};
 
 variable_desc saveGameStruct[] = {
   { &DISPCNT  , sizeof(u16) },
@@ -541,8 +360,6 @@ static bool CPUWriteState(gzFile gzFile)
 
   utilGzWrite(gzFile, &rom[0xa0], 16);
 
-  utilWriteInt(gzFile, useBios);
-
   utilGzWrite(gzFile, &reg[0], sizeof(reg));
 
   utilWriteData(gzFile, saveGameStruct);
@@ -627,18 +444,6 @@ static bool CPUReadState(gzFile gzFile)
       if(romname[i] < 32)
         romname[i] = 32;
     systemMessage(MSG_CANNOT_LOAD_SGM, N_("Cannot load save game for %s"), romname);
-    return false;
-  }
-
-  bool ub = utilReadInt(gzFile) ? true : false;
-
-  if(ub != useBios) {
-    if(useBios)
-      systemMessage(MSG_SAVE_GAME_NOT_USING_BIOS,
-                    N_("Save game is not using the BIOS files"));
-    else
-      systemMessage(MSG_SAVE_GAME_USING_BIOS,
-                    N_("Save game is using the BIOS file"));
     return false;
   }
 
@@ -1457,9 +1262,8 @@ void CPUSoftwareInterrupt()
 
 void CPUSoftwareInterrupt(int comment)
 {
-  static bool disableMessage = false;
   if(armState) comment >>= 16;
-  if(useBios) {
+
 #ifdef GBA_LOGGING
     if(systemVerbose & VERBOSE_SWI) {
       log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
@@ -1471,258 +1275,6 @@ void CPUSoftwareInterrupt(int comment)
     }
 #endif
     CPUSoftwareInterrupt();
-    return;
-  }
-  // This would be correct, but it causes problems if uncommented
-  //  else {
-  //    biosProtected = 0xe3a02004;
-  //  }
-
-  switch(comment) {
-  case 0x00:
-    BIOS_SoftReset();
-    ARM_PREFETCH;
-    break;
-  case 0x01:
-    BIOS_RegisterRamReset();
-    break;
-  case 0x02:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("Halt: (VCOUNT = %2d)\n",
-          VCOUNT);
-    }
-#endif
-    holdState = true;
-    holdType = -1;
-    cpuNextEvent = cpuTotalTicks;
-    break;
-  case 0x03:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("Stop: (VCOUNT = %2d)\n",
-          VCOUNT);
-    }
-#endif
-    holdState = true;
-    holdType = -1;
-    stopState = true;
-    cpuNextEvent = cpuTotalTicks;
-    break;
-  case 0x04:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("IntrWait: 0x%08x,0x%08x (VCOUNT = %2d)\n",
-          reg[0].I,
-          reg[1].I,
-          VCOUNT);
-    }
-#endif
-    CPUSoftwareInterrupt();
-    break;
-  case 0x05:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("VBlankIntrWait: (VCOUNT = %2d)\n",
-          VCOUNT);
-    }
-#endif
-    CPUSoftwareInterrupt();
-    break;
-  case 0x06:
-    CPUSoftwareInterrupt();
-    break;
-  case 0x07:
-    CPUSoftwareInterrupt();
-    break;
-  case 0x08:
-    BIOS_Sqrt();
-    break;
-  case 0x09:
-    BIOS_ArcTan();
-    break;
-  case 0x0A:
-    BIOS_ArcTan2();
-    break;
-  case 0x0B:
-    {
-      int len = (reg[2].I & 0x1FFFFF) >>1;
-      if (!(((reg[0].I & 0xe000000) == 0) ||
-         ((reg[0].I + len) & 0xe000000) == 0))
-      {
-        if ((reg[2].I >> 24) & 1)
-        {
-          if ((reg[2].I >> 26) & 1)
-          SWITicks = (7 + memoryWait32[(reg[1].I>>24) & 0xF]) * (len>>1);
-          else
-          SWITicks = (8 + memoryWait[(reg[1].I>>24) & 0xF]) * (len);
-        }
-        else
-        {
-          if ((reg[2].I >> 26) & 1)
-          SWITicks = (10 + memoryWait32[(reg[0].I>>24) & 0xF] +
-              memoryWait32[(reg[1].I>>24) & 0xF]) * (len>>1);
-          else
-          SWITicks = (11 + memoryWait[(reg[0].I>>24) & 0xF] +
-              memoryWait[(reg[1].I>>24) & 0xF]) * len;
-        }
-      }
-    }
-    BIOS_CpuSet();
-    break;
-  case 0x0C:
-    {
-      int len = (reg[2].I & 0x1FFFFF) >>5;
-      if (!(((reg[0].I & 0xe000000) == 0) ||
-         ((reg[0].I + len) & 0xe000000) == 0))
-      {
-        if ((reg[2].I >> 24) & 1)
-          SWITicks = (6 + memoryWait32[(reg[1].I>>24) & 0xF] +
-              7 * (memoryWaitSeq32[(reg[1].I>>24) & 0xF] + 1)) * len;
-        else
-          SWITicks = (9 + memoryWait32[(reg[0].I>>24) & 0xF] +
-              memoryWait32[(reg[1].I>>24) & 0xF] +
-              7 * (memoryWaitSeq32[(reg[0].I>>24) & 0xF] +
-              memoryWaitSeq32[(reg[1].I>>24) & 0xF] + 2)) * len;
-      }
-    }
-    BIOS_CpuFastSet();
-    break;
-  case 0x0D:
-    BIOS_GetBiosChecksum();
-    break;
-  case 0x0E:
-    BIOS_BgAffineSet();
-    break;
-  case 0x0F:
-    BIOS_ObjAffineSet();
-    break;
-  case 0x10:
-    {
-      int len = CPUReadHalfWord(reg[2].I);
-      if (!(((reg[0].I & 0xe000000) == 0) ||
-         ((reg[0].I + len) & 0xe000000) == 0))
-        SWITicks = (32 + memoryWait[(reg[0].I>>24) & 0xF]) * len;
-    }
-    BIOS_BitUnPack();
-    break;
-  case 0x11:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 8;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (9 + memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_LZ77UnCompWram();
-    break;
-  case 0x12:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 8;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (19 + memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_LZ77UnCompVram();
-    break;
-  case 0x13:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 8;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (29 + (memoryWait[(reg[0].I>>24) & 0xF]<<1)) * len;
-    }
-    BIOS_HuffUnComp();
-    break;
-  case 0x14:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 8;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (11 + memoryWait[(reg[0].I>>24) & 0xF] +
-          memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_RLUnCompWram();
-    break;
-  case 0x15:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 9;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (34 + (memoryWait[(reg[0].I>>24) & 0xF] << 1) +
-          memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_RLUnCompVram();
-    break;
-  case 0x16:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 8;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (13 + memoryWait[(reg[0].I>>24) & 0xF] +
-          memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_Diff8bitUnFilterWram();
-    break;
-  case 0x17:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 9;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (39 + (memoryWait[(reg[0].I>>24) & 0xF]<<1) +
-          memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_Diff8bitUnFilterVram();
-    break;
-  case 0x18:
-    {
-      u32 len = CPUReadMemory(reg[0].I) >> 9;
-      if(!(((reg[0].I & 0xe000000) == 0) ||
-          ((reg[0].I + (len & 0x1fffff)) & 0xe000000) == 0))
-        SWITicks = (13 + memoryWait[(reg[0].I>>24) & 0xF] +
-          memoryWait[(reg[1].I>>24) & 0xF]) * len;
-    }
-    BIOS_Diff16bitUnFilter();
-    break;
-  case 0x19:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("SoundBiasSet: 0x%08x (VCOUNT = %2d)\n",
-          reg[0].I,
-          VCOUNT);
-    }
-#endif
-    if(reg[0].I)
-      soundPause();
-    else
-      soundResume();
-    break;
-  case 0x1F:
-    BIOS_MidiKey2Freq();
-    break;
-  case 0x2A:
-    BIOS_SndDriverJmpTableCopy();
-    // let it go, because we don't really emulate this function
-  default:
-#ifdef GBA_LOGGING
-    if(systemVerbose & VERBOSE_SWI) {
-      log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
-          armState ? armNextPC - 4: armNextPC -2,
-          reg[0].I,
-          reg[1].I,
-          reg[2].I,
-          VCOUNT);
-    }
-#endif
-
-    if(!disableMessage) {
-      systemMessage(MSG_UNSUPPORTED_BIOS_FUNCTION,
-                    N_("Unsupported BIOS function %02x called from %08x. A BIOS file is needed in order to get correct behaviour."),
-                    comment,
-                    armMode ? armNextPC - 4: armNextPC - 2);
-      disableMessage = true;
-    }
-    break;
-  }
 }
 
 void CPUCompareVCOUNT()
@@ -2708,24 +2260,14 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
   gbaSaveType = 0;
   eepromInUse = 0;
   saveType = 0;
-  useBios = false;
 
-  if(useBiosFile) {
     int size = 0x4000;
-    if(utilLoad(biosFileName,
+    if(!utilLoad(biosFileName,
                 CPUIsGBABios,
                 bios,
                 size)) {
-      if(size == 0x4000)
-        useBios = true;
-      else
-        systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
+         systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
     }
-  }
-
-  if(!useBios) {
-    memcpy(bios, myROM, sizeof(myROM));
-  }
 
   int i = 0;
 
@@ -2820,7 +2362,7 @@ void CPUReset()
 
   DISPCNT  = 0x0080;
   DISPSTAT = 0x0000;
-  VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
+  VCOUNT   = 0x0000;
   BG0CNT   = 0x0000;
   BG1CNT   = 0x0000;
   BG2CNT   = 0x0000;
@@ -2906,18 +2448,9 @@ void CPUReset()
     reg[R13_SVC].I = 0x03007FE0;
     armIrqEnable = true;
   } else {
-    if(useBios && !skipBios) {
-      reg[15].I = 0x00000000;
-      armMode = 0x13;
-      armIrqEnable = false;
-    } else {
-      reg[13].I = 0x03007F00;
-      reg[15].I = 0x08000000;
-      reg[16].I = 0x00000000;
-      reg[R13_IRQ].I = 0x03007FA0;
-      reg[R13_SVC].I = 0x03007FE0;
-      armIrqEnable = true;
-    }
+    reg[15].I = 0x00000000;
+    armMode = 0x13;
+    armIrqEnable = false;
   }
   armState = true;
   C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;
@@ -2947,7 +2480,7 @@ void CPUReset()
   biosProtected[2] = 0x29;
   biosProtected[3] = 0xe1;
 
-  lcdTicks = (useBios && !skipBios) ? 1008 : 208;
+  lcdTicks = 1008;
   timer0On = false;
   timer0Ticks = 0;
   timer0Reload = 0;
@@ -3019,17 +2552,6 @@ void CPUReset()
 
   CPUUpdateWindow0();
   CPUUpdateWindow1();
-
-  // make sure registers are correctly initialized if not using BIOS
-  if(!useBios) {
-    if(cpuIsMultiBoot)
-      BIOS_RegisterRamReset(0xfe);
-    else
-      BIOS_RegisterRamReset(0xff);
-  } else {
-    if(cpuIsMultiBoot)
-      BIOS_RegisterRamReset(0xfe);
-  }
 
   switch(cpuSaveType) {
   case 0: // automatic

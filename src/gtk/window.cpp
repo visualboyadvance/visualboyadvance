@@ -897,17 +897,8 @@ bool Window::bLoadROM(const std::string & _rsFile)
       m_eCartridge = CartridgeGBA;
       m_stEmulator = GBASystem;
 
-      useBios = m_poCoreConfig->oGetKey<bool>("use_bios_file");
-      CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), useBios);
+      CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
       CPUReset();
-
-      // If the bios file was rejected by CPUInit
-      if (m_poCoreConfig->oGetKey<bool>("use_bios_file") && ! useBios)
-      {
-        m_poUseBiosItem->set_active(false);
-        m_poUseBiosItem->set_sensitive(false);
-        m_poCoreConfig->vSetKey("bios_file", "");
-      }
     }
   }
 
