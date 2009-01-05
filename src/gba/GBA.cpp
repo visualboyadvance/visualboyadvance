@@ -879,9 +879,8 @@ void CPUCleanUp()
   emulating = 0;
 }
 
-int CPULoadRom(const char *szFile)
+bool CPUInitMemory()
 {
-  romSize = 0x2000000;
   if(rom != NULL) {
     CPUCleanUp();
   }
@@ -892,26 +891,84 @@ int CPULoadRom(const char *szFile)
   if(rom == NULL) {
     systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
                   "ROM");
-    return 0;
+    return false;
   }
   workRAM = (u8 *)calloc(1, 0x40000);
   if(workRAM == NULL) {
     systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
                   "WRAM");
-    return 0;
+    return false;
   }
 
+  bios = (u8 *)calloc(1,0x4000);
+  if(bios == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "BIOS");
+    CPUCleanUp();
+    return false;
+  }
+  internalRAM = (u8 *)calloc(1,0x8000);
+  if(internalRAM == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "IRAM");
+    CPUCleanUp();
+    return false;
+  }
+  paletteRAM = (u8 *)calloc(1,0x400);
+  if(paletteRAM == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "PRAM");
+    CPUCleanUp();
+    return false;
+  }
+  vram = (u8 *)calloc(1, 0x20000);
+  if(vram == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "VRAM");
+    CPUCleanUp();
+    return false;
+  }
+  oam = (u8 *)calloc(1, 0x400);
+  if(oam == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "OAM");
+    CPUCleanUp();
+    return false;
+  }
+  pix = (u8 *)calloc(1, 4 * 241 * 162);
+  if(pix == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "PIX");
+    CPUCleanUp();
+    return false;
+  }
+  ioMem = (u8 *)calloc(1, 0x400);
+  if(ioMem == NULL) {
+    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+                  "IO");
+    CPUCleanUp();
+    return false;
+  }
+
+  flashInit();
+  eepromInit();
+
+  CPUUpdateRenderBuffers(true);
+  
+  return true;
+}
+
+int CPULoadRom(const char *szFile)
+{
+  romSize = 0x2000000;
+  
   u8 *whereToLoad = cpuIsMultiBoot ? workRAM : rom;
 
   if(!utilLoad(szFile,
                       utilIsGBAImage,
                       whereToLoad,
                       romSize)) {
-    free(rom);
-    rom = NULL;
-    free(workRAM);
-    workRAM = NULL;
-    return 0;
+	CPUCleanUp();
   }
 
   u16 *temp = (u16 *)(rom+((romSize+1)&~1));
@@ -920,61 +977,6 @@ int CPULoadRom(const char *szFile)
     WRITE16LE(temp, (i >> 1) & 0xFFFF);
     temp++;
   }
-
-  bios = (u8 *)calloc(1,0x4000);
-  if(bios == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "BIOS");
-    CPUCleanUp();
-    return 0;
-  }
-  internalRAM = (u8 *)calloc(1,0x8000);
-  if(internalRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IRAM");
-    CPUCleanUp();
-    return 0;
-  }
-  paletteRAM = (u8 *)calloc(1,0x400);
-  if(paletteRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PRAM");
-    CPUCleanUp();
-    return 0;
-  }
-  vram = (u8 *)calloc(1, 0x20000);
-  if(vram == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "VRAM");
-    CPUCleanUp();
-    return 0;
-  }
-  oam = (u8 *)calloc(1, 0x400);
-  if(oam == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "OAM");
-    CPUCleanUp();
-    return 0;
-  }
-  pix = (u8 *)calloc(1, 4 * 241 * 162);
-  if(pix == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PIX");
-    CPUCleanUp();
-    return 0;
-  }
-  ioMem = (u8 *)calloc(1, 0x400);
-  if(ioMem == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IO");
-    CPUCleanUp();
-    return 0;
-  }
-
-  flashInit();
-  eepromInit();
-
-  CPUUpdateRenderBuffers(true);
 
   return romSize;
 }

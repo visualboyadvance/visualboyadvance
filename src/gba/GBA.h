@@ -82,6 +82,7 @@ extern void doMirroring(bool);
 extern void CPUUpdateRegister(u32, u16);
 extern void applyTimer ();
 extern void CPUInit(const char *,bool);
+bool CPUInitMemory();
 extern void CPUReset();
 extern void CPULoop(int);
 extern void CPUCheckDMA(int,int);
