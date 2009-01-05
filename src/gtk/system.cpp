@@ -148,3 +148,13 @@ void systemOnSoundShutdown()
 void systemOnWriteDataToSoundBuffer(const u16 * finalWave, int length)
 {
 }
+
+void log(const char *defaultMsg, ...)
+{
+  va_list valist;
+
+  va_start(valist, defaultMsg);
+  fprintf(stderr, defaultMsg, valist);
+
+  va_end(valist);
+}
