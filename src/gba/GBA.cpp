@@ -2054,7 +2054,7 @@ void CPUUpdateRegister(u32 address, u16 value)
     timerOnOffDelay|=8;
     cpuNextEvent = cpuTotalTicks;
     break;
-  case 0x128:
+  case 0x128: // REG_SIOCNT
 #ifdef LINK_EMULATION
     if (linkenable)
     {
@@ -2075,7 +2075,7 @@ void CPUUpdateRegister(u32 address, u16 value)
       UPDATE_REG(0x128, value);
     }
     break;
-  case 0x12a:
+  case 0x12a: // REG_SIODATA8 or REG_SIOMLT_SEND
 #ifdef LINK_EMULATION
     if(linkenable)
       LinkSSend(value);
@@ -2091,7 +2091,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x132:
     UPDATE_REG(0x132, value & 0xC3FF);
     break;
-  case 0x134:
+  case 0x134: // REG_RCNT
 #ifdef LINK_EMULATION
     if (linkenable)
       StartGPLink(value);
@@ -2100,7 +2100,7 @@ void CPUUpdateRegister(u32 address, u16 value)
       UPDATE_REG(0x134, value);
 
     break;
-  case 0x140:
+  case 0x140: // REG_HS_CTRL
 #ifdef LINK_EMULATION
     if (linkenable)
       StartJOYLink(value);
