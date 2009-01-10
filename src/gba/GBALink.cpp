@@ -5,6 +5,8 @@
 #include "../common/Port.h"
 #include "GBALink.h"
 
+#define SIO_START		(1<<7)
+
 #define UPDATE_REG(address, value) WRITE16LE(((u16 *)&ioMem[address]),value)
 
 bool linkenable = true;
@@ -24,66 +26,38 @@ static int transferend;
 static int GetSioMode(u16, u16);
 static u16 StartRFU(u16);
 
-void StartLink(u16 value){
-	if(ioMem==NULL)	return;
-		if(adapter){
-			UPDATE_REG(0x128, StartRFU(value));
-			return;
-		}
+void linkUpdateSIOCNT(u16 value){
+	if(linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
+	
+	UPDATE_REG(0x128, value);
+	
+	if (value & SIO_START)
+	{
+		fprintf(stderr, "start\n");
+		UPDATE_REG(0x120, 6200);
+		return;
+	}
+	
+	
 		switch(GetSioMode(value, READ16LE(&ioMem[0x134]))){
 		case MULTIPLAYER:
-			if(value & 0x80){
-				if(!linkid){
-					if(!transfer){
-					/*	if(lanlink.active){
-							if(lanlink.connected){
-								linkdata[0] = READ16LE(&ioMem[0x12a]);
-								savedlinktime = linktime;
-								tspeed = value & 3;
-								ls.Send();
-								transfer = 1;
-								linktime = 0;
-								UPDATE_REG(0x120, linkdata[0]);
-								UPDATE_REG(0x122, 0xffff);
-								WRITE32LE(&ioMem[0x124], 0xffffffff);
-								if(lanlink.speed&&oncewait==false) ls.howmanytimes++;
-								after = false;
-							}
-						} else if(linkmem->numgbas>1){
-							ResetEvent(linksync[0]);
-							linkmem->linkcmd[0] = ('M'<<8)+(value&3);
-							linkmem->linkdata[0] = READ16LE(&ioMem[0x12a]);
-							if(linkmem->numtransfers!=0) linkmem->lastlinktime = linktime;
-							else linkmem->lastlinktime = 0;
-							if((++linkmem->numtransfers)==0) linkmem->numtransfers=2;
-							transfer = 1;
-							linktime = 0;
-							tspeed = value & 3;
-							WRITE32LE(&ioMem[0x120], 0xffffffff);
-							WRITE32LE(&ioMem[0x124], 0xffffffff);
-						}*/
-					}
-				}
-				value &= 0xff7f;
-				value |= (transfer!=0)<<7;
-			}
-			value &= 0xff8b;
-			value |= (linkid ? 0xc : 8);
-			value |= linkid<<4;
+			if(linklog) fprintf(linklogfile, "Attempt to use Multiplayer mode %04x\n", value);
 			UPDATE_REG(0x128, value);
-			if(linkid) UPDATE_REG(0x134, 7);
-			else UPDATE_REG(0x134, 3);
 			break;
 		case NORMAL8:
 			if(linklog) fprintf(linklogfile, "Attempt to use 8-bit Normal mode %04x\n", value);
 			UPDATE_REG(0x128, value);
 			break;
 		case NORMAL32:
-			if(linklog) fprintf(linklogfile, "Attempt to use 32-bit Normal mode %04x %x%x\n", value, READ16LE(&ioMem[0x122]), READ16LE(&ioMem[0x120]));
+			if(linklog) fprintf(linklogfile, "Attempt to use 32-bit Normal mode %04x %02x%02x\n", value, READ16LE(&ioMem[0x122]), READ16LE(&ioMem[0x120]));
 			UPDATE_REG(0x128, value);
 			break;
 		case UART:
 			if(linklog) fprintf(linklogfile, "Attempt to use UART mode %04x\n", value);
+			UPDATE_REG(0x128, value);
+			break;
+		case JOYBUS:
+			if(linklog) fprintf(linklogfile, "Attempt to use JOYBUS mode %04x\n", value);
 			UPDATE_REG(0x128, value);
 			break;
 		default:
@@ -92,8 +66,13 @@ void StartLink(u16 value){
 		}
 }
 
-void StartGPLink(u16 value){
-	if(!value){
+void linkUpdateRCNT(u16 value){
+	if(linklog) fprintf(linklogfile, "RCNT %04x\n", value);
+	
+	UPDATE_REG(0x134, value);
+	
+	
+/*	if(!value){
 		UPDATE_REG(0x134, 0);
 		return;
 	}
@@ -122,7 +101,7 @@ void StartGPLink(u16 value){
 		UPDATE_REG(0x134, value);
 		break;
 	}
-	return;
+	return;*/
 }
 
 void StartJOYLink(u16 value){
@@ -135,7 +114,7 @@ void StartJOYLink(u16 value){
 }
 
 void LinkUpdate(int ticks){
-	linktime += ticks;
+/*	linktime += ticks;
 	if(adapter){
 		linktime2 += ticks;
 		transferend -= ticks;
@@ -148,7 +127,7 @@ void LinkUpdate(int ticks){
 			UPDATE_REG(0x128, READ16LE(&ioMem[0x128]) & 0xff7f);
 		}
 		return;
-	}
+	}*/
 
 	/*if(lanlink.active){
 		if(lanlink.connected){

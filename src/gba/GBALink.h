@@ -13,9 +13,9 @@
 #define RFU_SEND 2
 #define RFU_RECV 3
 
-void StartLink(u16);
+void linkUpdateSIOCNT(u16);
 void StartJOYLink(u16);
-void StartGPLink(u16);
+void linkUpdateRCNT(u16);
 void LinkSSend(u16);
 void LinkUpdate(int);
 

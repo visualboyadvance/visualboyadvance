@@ -2058,7 +2058,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 #ifdef LINK_EMULATION
     if (linkenable)
     {
-      StartLink(value);
+      linkUpdateSIOCNT(value);
     }
     else
 #endif
@@ -2094,7 +2094,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x134: // REG_RCNT
 #ifdef LINK_EMULATION
     if (linkenable)
-      StartGPLink(value);
+      linkUpdateRCNT(value);
     else
 #endif
       UPDATE_REG(0x134, value);
@@ -2722,8 +2722,6 @@ void CPULoop(int ticks)
           }
         } else {
           int framesToSkip = systemFrameSkip;
-          if(speedup)
-            framesToSkip = 9; // try 6 FPS during speedup
 
           if(DISPSTAT & 2) {
             // if in H-Blank, leave it and move to drawing mode
