@@ -524,7 +524,6 @@ void Window::vInitConfig()
   // Directories section
   //
   m_poDirConfig = m_oConfig.poAddSection("Directories");
-  m_poDirConfig->vSetKey("gb_roms",   Glib::get_home_dir());
   m_poDirConfig->vSetKey("gba_roms",  Glib::get_home_dir());
   m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
   m_poDirConfig->vSetKey("saves",     m_sUserDataDir);
@@ -584,11 +583,6 @@ void Window::vCheckConfig()
 
   // Directories section
   //
-  sValue = m_poDirConfig->sGetKey("gb_roms");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-  {
-    m_poDirConfig->vSetKey("gb_roms", Glib::get_home_dir());
-  }
   sValue = m_poDirConfig->sGetKey("gba_roms");
   if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
   {
@@ -1055,7 +1049,6 @@ void Window::vCreateFileOpenDialog()
     return;
   }
 
-  std::string sGBDir  = m_poDirConfig->sGetKey("gb_roms");
   std::string sGBADir = m_poDirConfig->sGetKey("gba_roms");
 
   Gtk::FileChooserDialog * poDialog = new Gtk::FileChooserDialog(*this, _("Open"));
@@ -1064,13 +1057,7 @@ void Window::vCreateFileOpenDialog()
 
   try
   {
-    if (sGBDir != "")
-    {
-      poDialog->add_shortcut_folder(sGBDir);
-      poDialog->set_current_folder(sGBDir);
-    }
-
-    if (sGBADir != "" && sGBADir != sGBDir)
+    if (sGBADir != "")
     {
       poDialog->add_shortcut_folder(sGBADir);
       poDialog->set_current_folder(sGBADir);
@@ -1085,8 +1072,6 @@ void Window::vCreateFileOpenDialog()
   {
     // GBA
     "*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
-    // GB
-    "*.[gG][bB]", "*.[sS][gG][bB]", "*.[cC][gG][bB]", "*.[gG][bB][cC]",
     // Both
     "*.[mM][bB]", "*.[eE][lL][fF]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
   };
@@ -1105,16 +1090,8 @@ void Window::vCreateFileOpenDialog()
     oGBAFilter.add_pattern(acsPattern[i]);
   }
 
-  Gtk::FileFilter oGBFilter;
-  oGBFilter.set_name(_("Gameboy files"));
-  for (int i = 3; i < 7; i++)
-  {
-    oGBFilter.add_pattern(acsPattern[i]);
-  }
-
   poDialog->add_filter(oAllGBAFilter);
   poDialog->add_filter(oGBAFilter);
-  poDialog->add_filter(oGBFilter);
 
   m_poFileOpenDialog = poDialog;
 }
