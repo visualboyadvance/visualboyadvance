@@ -287,6 +287,9 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                     sigc::mem_fun(*this, &Window::vOnPauseWhenInactiveToggled),
                                     poCMI));
 
+  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("EmulatorSelectBios"));
+  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSelectBios));
+
   // Show speed menu
   //
   struct
@@ -534,6 +537,8 @@ void Window::vInitConfig()
   m_poCoreConfig = m_oConfig.poAddSection("Core");
   m_poCoreConfig->vSetKey("load_game_auto",    false        );
   m_poCoreConfig->vSetKey("frameskip",         "auto"       );
+  m_poCoreConfig->vSetKey("use_bios_file",     false        );
+  m_poCoreConfig->vSetKey("bios_file",         ""           );
   m_poCoreConfig->vSetKey("save_type",         SaveAuto     );
   m_poCoreConfig->vSetKey("flash_size",        64           );
 
@@ -614,6 +619,26 @@ void Window::vCheckConfig()
     {
       m_poCoreConfig->vSetKey("frameskip", iAdjusted);
     }
+  }
+
+  sValue = m_poCoreConfig->sGetKey("bios_file");
+  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
+  {
+    m_poCoreConfig->vSetKey("bios_file", "");
+  }
+  if (m_poCoreConfig->sGetKey("bios_file") == "")
+  {
+    m_poCoreConfig->vSetKey("use_bios_file", false);
+  }
+
+  sValue = m_poCoreConfig->sGetKey("gb_bios_file");
+  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
+  {
+    m_poCoreConfig->vSetKey("gb_bios_file", "");
+  }
+  if (m_poCoreConfig->sGetKey("gb_bios_file") == "")
+  {
+    m_poCoreConfig->vSetKey("gb_use_bios_file", false);
   }
 
   iValue = m_poCoreConfig->oGetKey<int>("save_type");
@@ -877,7 +902,7 @@ bool Window::bLoadROM(const std::string & _rsFile)
       m_eCartridge = CartridgeGBA;
       m_stEmulator = GBASystem;
 
-      CPUInit("", true);
+      CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
       CPUReset();
     }
   }
