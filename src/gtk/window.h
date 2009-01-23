@@ -148,7 +148,6 @@ protected:
   virtual void vOnJoypadConfigure();
   virtual void vOnDisplayConfigure();
   virtual void vOnSoundConfigure();
-  virtual void vOnGameBoyConfigure();
   virtual void vOnGameBoyAdvanceConfigure();
   virtual void vOnHelpAbout();
   virtual bool bOnEmuIdle();
