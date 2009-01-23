@@ -434,7 +434,6 @@ void Window::vOnSoundConfigure()
   poDialog->hide();
 }
 
-
 void Window::vOnGameBoyAdvanceConfigure()
 {
   std::string sUiFile = sGetUiFilePath("gameboyadvance.ui");
