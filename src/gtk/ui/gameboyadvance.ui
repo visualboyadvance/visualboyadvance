@@ -147,14 +147,6 @@
                   <object class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkCheckButton" id="BiosCheckButton">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="label" translatable="yes">Use a bios file</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkHBox" id="hbox2">
                         <property name="visible">True</property>
                         <child>

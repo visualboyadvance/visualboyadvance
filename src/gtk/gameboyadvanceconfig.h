@@ -37,7 +37,6 @@ public:
 private:
   void vOnSaveTypeChanged();
   void vOnFlashSizeChanged();
-  void vOnUseBiosChanged();
   void vOnBiosSelectionChanged();
 
   VBA::Window *             m_poWindow;
@@ -45,7 +44,6 @@ private:
   Config::Section *         m_poConfig;
   Gtk::ComboBox *           m_poSaveTypeComboBox;
   Gtk::ComboBox *           m_poFlashSizeComboBox; 
-  Gtk::CheckButton *        m_poBiosCheckButton;
   Gtk::FileChooserButton *  m_poBiosFileChooserButton;
 };
 

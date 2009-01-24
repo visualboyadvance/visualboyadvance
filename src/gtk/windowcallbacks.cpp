@@ -341,49 +341,6 @@ void Window::vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI)
   m_poDisplayConfig->vSetKey("pause_when_inactive", _poCMI->get_active());
 }
 
-void Window::vOnSelectBios()
-{
-  Gtk::FileChooserDialog oDialog(*this, _("Select BIOS file"));
-  oDialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  oDialog.add_button(Gtk::Stock::OPEN,   Gtk::RESPONSE_OK);
-
-  if (m_poCoreConfig->sGetKey("bios_file") != "")
-  {
-    oDialog.set_filename(m_poCoreConfig->sGetKey("bios_file"));
-  }
-
-  const char * acsPattern[] =
-  {
-    "*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
-    "*.[bB][iI][oO][sS]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
-  };
-
-  Gtk::FileFilter oAllFilter;
-  oAllFilter.set_name(_("All files"));
-  oAllFilter.add_pattern("*");
-
-  Gtk::FileFilter oBiosFilter;
-  oBiosFilter.set_name(_("Gameboy Advance BIOS"));
-  for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
-  {
-    oBiosFilter.add_pattern(acsPattern[i]);
-  }
-
-  oDialog.add_filter(oAllFilter);
-  oDialog.add_filter(oBiosFilter);
-
-  oDialog.set_filter(oBiosFilter);
-
-  while (oDialog.run() == Gtk::RESPONSE_OK)
-  {
-    if (Glib::file_test(oDialog.get_filename(), Glib::FILE_TEST_IS_REGULAR))
-    {
-      m_poCoreConfig->vSetKey("bios_file", oDialog.get_filename());
-      break;
-    }
-  }
-}
-
 void Window::vOnShowSpeedToggled(Gtk::CheckMenuItem * _poCMI, int _iShowSpeed)
 {
   if (! _poCMI->get_active())

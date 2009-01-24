@@ -29,12 +29,10 @@ GameBoyAdvanceConfigDialog::GameBoyAdvanceConfigDialog(GtkDialog* _pstDialog, co
 {
   refBuilder->get_widget("SaveTypeComboBox", m_poSaveTypeComboBox);
   refBuilder->get_widget("FlashSizeComboBox", m_poFlashSizeComboBox);
-  refBuilder->get_widget("BiosCheckButton", m_poBiosCheckButton);
   refBuilder->get_widget("BiosFileChooserButton", m_poBiosFileChooserButton);
 
   m_poSaveTypeComboBox->signal_changed().connect(sigc::mem_fun(*this, &GameBoyAdvanceConfigDialog::vOnSaveTypeChanged));
   m_poFlashSizeComboBox->signal_changed().connect(sigc::mem_fun(*this, &GameBoyAdvanceConfigDialog::vOnFlashSizeChanged));
-  m_poBiosCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &GameBoyAdvanceConfigDialog::vOnUseBiosChanged));
   m_poBiosFileChooserButton->signal_selection_changed().connect(sigc::mem_fun(*this, &GameBoyAdvanceConfigDialog::vOnBiosSelectionChanged));
 }
 
@@ -56,10 +54,6 @@ void GameBoyAdvanceConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Wi
     m_poFlashSizeComboBox->set_active(0);
   }
 
-  bool bUseBios = m_poConfig->oGetKey<bool>("use_bios_file");
-  m_poBiosCheckButton->set_active(bUseBios);
-  m_poBiosFileChooserButton->set_sensitive(bUseBios);
-  
   std::string sBios = m_poConfig->oGetKey<std::string>("bios_file");
   m_poBiosFileChooserButton->set_filename(sBios);
   
@@ -105,13 +99,6 @@ void GameBoyAdvanceConfigDialog::vOnFlashSizeChanged()
   }
 
   m_poWindow->vApplyConfigGBAFlashSize();
-}
-
-void GameBoyAdvanceConfigDialog::vOnUseBiosChanged()
-{
-  bool bUseBios = m_poBiosCheckButton->get_active();
-  m_poConfig->vSetKey("use_bios_file", bUseBios);
-  m_poBiosFileChooserButton->set_sensitive(bUseBios);
 }
 
 void GameBoyAdvanceConfigDialog::vOnBiosSelectionChanged()

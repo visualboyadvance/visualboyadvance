@@ -287,9 +287,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                     sigc::mem_fun(*this, &Window::vOnPauseWhenInactiveToggled),
                                     poCMI));
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("EmulatorSelectBios"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSelectBios));
-
   // Show speed menu
   //
   struct

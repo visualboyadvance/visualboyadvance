@@ -144,7 +144,6 @@ protected:
   virtual void vOnVideoFullscreen();
   virtual void vOnDirectories();
   virtual void vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI);
-  virtual void vOnSelectBios();
   virtual void vOnShowSpeedToggled(Gtk::CheckMenuItem * _poCMI, int _iShowSpeed);
   virtual void vOnJoypadConfigure();
   virtual void vOnDisplayConfigure();
