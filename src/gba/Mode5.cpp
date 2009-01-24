@@ -1,6 +1,7 @@
 #include "GBA.h"
 #include "Globals.h"
 #include "GBAGfx.h"
+#include "../common/Port.h"
 
 void mode5RenderLine()
 {

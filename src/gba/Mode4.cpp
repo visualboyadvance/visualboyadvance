@@ -1,6 +1,7 @@
 #include "GBA.h"
 #include "GBAGfx.h"
 #include "Globals.h"
+#include "../common/Port.h"
 
 void mode4RenderLine()
 {
