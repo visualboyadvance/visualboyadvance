@@ -39,7 +39,6 @@ extern int thumbExecute();
 
 
 extern int SWITicks;
-extern u32 mastercode;
 extern bool busPrefetch;
 extern bool busPrefetchEnable;
 extern u32 busPrefetchCount;
@@ -52,8 +51,6 @@ extern u8 memoryWait32[16];
 extern u8 memoryWaitSeq[16];
 extern u8 memoryWaitSeq32[16];
 extern u8 cpuBitsSet[256];
-extern u8 cpuLowestBitSet[256];
-extern void CPUSwitchMode(int mode, bool saveState, bool breakLoop);
 extern void CPUSwitchMode(int mode, bool saveState);
 extern void CPUUpdateCPSR();
 extern void CPUUpdateFlags(bool breakLoop);

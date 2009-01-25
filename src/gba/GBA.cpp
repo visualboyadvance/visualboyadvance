@@ -29,38 +29,38 @@
 extern int emulating;
 
 int SWITicks = 0;
-int IRQTicks = 0;
+static int IRQTicks = 0;
 
-u32 mastercode = 0;
-int layerEnableDelay = 0;
+static int layerEnableDelay = 0;
 bool busPrefetch = false;
 bool busPrefetchEnable = false;
 u32 busPrefetchCount = 0;
-int cpuDmaTicksToUpdate = 0;
+static int cpuDmaTicksToUpdate = 0;
 int cpuDmaCount = 0;
 bool cpuDmaHack = false;
 u32 cpuDmaLast = 0;
-int dummyAddress = 0;
+static int dummyAddress = 0;
 
-bool cpuBreakLoop = false;
+static bool cpuBreakLoop = false;
 int cpuNextEvent = 0;
 
-int gbaSaveType = 0; // used to remember the save type on reset
-bool intState = false;
+static int gbaSaveType = 0; // used to remember the save type on reset
+static bool intState = false;
 bool stopState = false;
 bool holdState = false;
-int holdType = 0;
+int holdType = 0; // useless ?
 bool cpuSramEnabled = true;
 bool cpuFlashEnabled = true;
 bool cpuEEPROMEnabled = true;
 bool cpuEEPROMSensorEnabled = false;
 
 u32 cpuPrefetch[2];
+u8 cpuBitsSet[256];
 
 int cpuTotalTicks = 0;
 
-int lcdTicks = 1008;
-u8 timerOnOffDelay = 0;
+static int lcdTicks = 1008;
+static u8 timerOnOffDelay = 0;
 u16 timer0Value = 0;
 bool timer0On = false;
 int timer0Ticks = 0;
@@ -81,25 +81,23 @@ bool timer3On = false;
 int timer3Ticks = 0;
 int timer3Reload = 0;
 int timer3ClockReload  = 0;
-u32 dma0Source = 0;
-u32 dma0Dest = 0;
-u32 dma1Source = 0;
-u32 dma1Dest = 0;
-u32 dma2Source = 0;
-u32 dma2Dest = 0;
-u32 dma3Source = 0;
-u32 dma3Dest = 0;
+static u32 dma0Source = 0;
+static u32 dma0Dest = 0;
+static u32 dma1Source = 0;
+static u32 dma1Dest = 0;
+static u32 dma2Source = 0;
+static u32 dma2Dest = 0;
+static u32 dma3Source = 0;
+static u32 dma3Dest = 0;
 void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
-void (*renderLine)() = mode0RenderLine;
-bool fxOn = false;
-bool windowOn = false;
-int frameCount = 0;
-char buffer[1024];
-FILE *out = NULL;
-u32 lastTime = 0;
-int count = 0;
+static void (*renderLine)() = mode0RenderLine;
+static bool fxOn = false;
+static bool windowOn = false;
+static int frameCount = 0;
+static u32 lastTime = 0;
+static int count = 0;
 
-const int TIMER_TICKS[4] = {
+static const int TIMER_TICKS[4] = {
   0,
   6,
   8,
@@ -107,12 +105,12 @@ const int TIMER_TICKS[4] = {
 };
 
 const u32  objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
-const u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
-const u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
-const u8 gamepakWaitState0[2] = { 2, 1 };
-const u8 gamepakWaitState1[2] = { 4, 1 };
-const u8 gamepakWaitState2[2] = { 8, 1 };
-const bool isInRom [16]=
+static const u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
+static const u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
+static const u8 gamepakWaitState0[2] = { 2, 1 };
+static const u8 gamepakWaitState1[2] = { 4, 1 };
+static const u8 gamepakWaitState2[2] = { 8, 1 };
+static const bool isInRom [16]=
   { false, false, false, false, false, false, false, false,
     true, true, true, true, true, true, false, false };
 
@@ -135,7 +133,7 @@ u8 memoryWaitSeq32[16] =
 
 u8 biosProtected[4];
 
-variable_desc saveGameStruct[] = {
+static variable_desc saveGameStruct[] = {
   { &DISPCNT  , sizeof(u16) },
   { &DISPSTAT , sizeof(u16) },
   { &VCOUNT   , sizeof(u16) },
@@ -256,7 +254,7 @@ variable_desc saveGameStruct[] = {
 
 static int romSize = 0x2000000;
 
-inline int CPUUpdateTicks()
+static inline int CPUUpdateTicks()
 {
   int cpuLoopTicks = lcdTicks;
 
@@ -289,7 +287,7 @@ inline int CPUUpdateTicks()
   return cpuLoopTicks;
 }
 
-void CPUUpdateWindow0()
+static void CPUUpdateWindow0()
 {
   int x00 = WIN0H>>8;
   int x01 = WIN0H & 255;
@@ -305,7 +303,7 @@ void CPUUpdateWindow0()
   }
 }
 
-void CPUUpdateWindow1()
+static void CPUUpdateWindow1()
 {
   int x00 = WIN1H>>8;
   int x01 = WIN1H & 255;
@@ -383,7 +381,7 @@ static bool CPUWriteState(gzFile gzFile)
   return true;
 }
 
-bool CPUWriteState(const char *file)
+static bool CPUWriteState(const char *file)
 {
   gzFile gzFile = utilGzOpen(file, "wb");
 
@@ -399,7 +397,7 @@ bool CPUWriteState(const char *file)
   return res;
 }
 
-bool CPUWriteMemState(char *memory, int available)
+static bool CPUWriteMemState(char *memory, int available)
 {
   gzFile gzFile = utilMemGzOpen(memory, available, "w");
 
@@ -571,7 +569,7 @@ static bool CPUReadState(gzFile gzFile)
   return true;
 }
 
-bool CPUReadMemState(char *memory, int available)
+static bool CPUReadMemState(char *memory, int available)
 {
   gzFile gzFile = utilMemGzOpen(memory, available, "r");
 
@@ -582,7 +580,7 @@ bool CPUReadMemState(char *memory, int available)
   return res;
 }
 
-bool CPUReadState(const char * file)
+static bool CPUReadState(const char * file)
 {
   gzFile gzFile = utilGzOpen(file, "rb");
 
@@ -596,32 +594,7 @@ bool CPUReadState(const char * file)
   return res;
 }
 
-bool CPUExportEepromFile(const char *fileName)
-{
-  if(eepromInUse) {
-    FILE *file = fopen(fileName, "wb");
-
-    if(!file) {
-      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
-                    fileName);
-      return false;
-    }
-
-    for(int i = 0; i < eepromSize;) {
-      for(int j = 0; j < 8; j++) {
-        if(fwrite(&eepromData[i+7-j], 1, 1, file) != 1) {
-          fclose(file);
-          return false;
-        }
-      }
-      i += 8;
-    }
-    fclose(file);
-  }
-  return true;
-}
-
-bool CPUWriteBatteryFile(const char *fileName)
+static bool CPUWriteBatteryFile(const char *fileName)
 {
   if(gbaSaveType == 0) {
     if(eepromInUse)
@@ -669,7 +642,32 @@ bool CPUWriteBatteryFile(const char *fileName)
   return true;
 }
 
-bool CPUImportEepromFile(const char *fileName)
+/*static bool CPUExportEepromFile(const char *fileName)
+{
+  if(eepromInUse) {
+    FILE *file = fopen(fileName, "wb");
+
+    if(!file) {
+      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
+                    fileName);
+      return false;
+    }
+
+    for(int i = 0; i < eepromSize;) {
+      for(int j = 0; j < 8; j++) {
+        if(fwrite(&eepromData[i+7-j], 1, 1, file) != 1) {
+          fclose(file);
+          return false;
+        }
+      }
+      i += 8;
+    }
+    fclose(file);
+  }
+  return true;
+}
+
+static bool CPUImportEepromFile(const char *fileName)
 {
   FILE *file = fopen(fileName, "rb");
 
@@ -709,9 +707,9 @@ bool CPUImportEepromFile(const char *fileName)
     return false;
   fclose(file);
   return true;
-}
+}*/
 
-bool CPUReadBatteryFile(const char *fileName)
+static bool CPUReadBatteryFile(const char *fileName)
 {
   FILE *file = fopen(fileName, "rb");
 
@@ -749,46 +747,7 @@ bool CPUReadBatteryFile(const char *fileName)
   return true;
 }
 
-bool CPUIsZipFile(const char * file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(_stricmp(p, ".zip") == 0)
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool CPUIsGBAImage(const char * file)
-{
-  cpuIsMultiBoot = false;
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(_stricmp(p, ".gba") == 0)
-        return true;
-      if(_stricmp(p, ".agb") == 0)
-        return true;
-      if(_stricmp(p, ".bin") == 0)
-        return true;
-      if(_stricmp(p, ".elf") == 0)
-        return true;
-      if(_stricmp(p, ".mb") == 0) {
-        cpuIsMultiBoot = true;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-bool CPUIsGBABios(const char * file)
+static bool CPUIsGBABios(const char * file)
 {
   if(strlen(file) > 4) {
     const char * p = strrchr(file,'.');
@@ -810,20 +769,7 @@ bool CPUIsGBABios(const char * file)
   return false;
 }
 
-bool CPUIsELF(const char *file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(_stricmp(p, ".elf") == 0)
-        return true;
-    }
-  }
-  return false;
-}
-
-void CPUCleanUp()
+static void CPUCleanUp()
 {
   if(rom != NULL) {
     free(rom);
@@ -1111,7 +1057,7 @@ static void CPUSwap(u32 *a, u32 *b)
 }
 #endif
 
-void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
+static void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
 {
   //  if(armMode == mode)
   //    return;
@@ -1275,7 +1221,7 @@ void CPUSoftwareInterrupt(int comment)
     CPUSoftwareInterrupt();
 }
 
-void CPUCompareVCOUNT()
+static void CPUCompareVCOUNT()
 {
   if(VCOUNT == (DISPSTAT >> 8)) {
     DISPSTAT |= 4;
@@ -1298,7 +1244,7 @@ void CPUCompareVCOUNT()
 
 }
 
-void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
+static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 {
   int sm = s >> 24;
   int dm = d >> 24;
@@ -2181,7 +2127,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   }
 }
 
-void applyTimer ()
+static void applyTimer ()
 {
   if (timerOnOffDelay & 1)
   {
@@ -2242,9 +2188,6 @@ void applyTimer ()
   timerOnOffDelay = 0;
 }
 
-u8 cpuBitsSet[256];
-u8 cpuLowestBitSet[256];
-
 void CPUInit(const char *biosFileName, bool useBiosFile)
 {
 #ifdef WORDS_BIGENDIAN
@@ -2285,7 +2228,6 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
     for(j = 0; j < 8; j++)
       if(i & (1 << j))
         break;
-    cpuLowestBitSet[i] = j;
   }
 
   for(i = 0; i < 0x400; i++)
@@ -2612,7 +2554,7 @@ void CPUReset()
   SWITicks = 0;
 }
 
-void CPUInterrupt()
+static void CPUInterrupt()
 {
   u32 PC = reg[15].I;
   bool savedState = armState;
