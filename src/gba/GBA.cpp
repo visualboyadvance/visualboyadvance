@@ -48,7 +48,6 @@ static int gbaSaveType = 0; // used to remember the save type on reset
 static bool intState = false;
 bool stopState = false;
 bool holdState = false;
-int holdType = 0; // useless ?
 bool cpuSramEnabled = true;
 bool cpuFlashEnabled = true;
 bool cpuEEPROMEnabled = true;
@@ -212,7 +211,6 @@ static variable_desc saveGameStruct[] = {
   { &IF       , sizeof(u16) },
   { &IME      , sizeof(u16) },
   { &holdState, sizeof(bool) },
-  { &holdType, sizeof(int) },
   { &lcdTicks, sizeof(int) },
   { &timer0On , sizeof(bool) },
   { &timer0Ticks , sizeof(int) },
@@ -2366,7 +2364,6 @@ void CPUReset()
 
   // reset internal state
   holdState = false;
-  holdType = 0;
 
   biosProtected[0] = 0x00;
   biosProtected[1] = 0xf0;
@@ -2959,7 +2956,6 @@ void CPULoop(int ticks)
               intState = false;
               holdState = false;
               stopState = false;
-              holdType = 0;
             }
           }
           else
@@ -2976,7 +2972,6 @@ void CPULoop(int ticks)
               CPUInterrupt();
               holdState = false;
               stopState = false;
-              holdType = 0;
             }
           }
 

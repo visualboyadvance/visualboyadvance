@@ -10,7 +10,6 @@ extern const u32 objTilesAddress[3];
 
 extern bool stopState;
 extern bool holdState;
-extern int holdType;
 extern int cpuNextEvent;
 extern bool cpuSramEnabled;
 extern bool cpuFlashEnabled;
@@ -552,7 +551,6 @@ static inline void CPUWriteByte(u32 address, u8 b)
         if(b == 0x80)
           stopState = true;
         holdState = 1;
-        holdType = -1;
         cpuNextEvent = cpuTotalTicks;
         break;
       default: // every other register
