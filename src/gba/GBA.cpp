@@ -421,7 +421,7 @@ static bool CPUReadState(gzFile gzFile)
 {
   int version = utilReadInt(gzFile);
 
-  if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_1) {
+  if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_11) {
     systemMessage(MSG_UNSUPPORTED_VBA_SGM,
                   N_("Unsupported VisualBoyAdvance save game version %d"),
                   version);
@@ -445,26 +445,15 @@ static bool CPUReadState(gzFile gzFile)
 
   utilReadData(gzFile, saveGameStruct);
 
-  if(version < SAVE_GAME_VERSION_3)
-    stopState = false;
-  else
-    stopState = utilReadInt(gzFile) ? true : false;
+  stopState = utilReadInt(gzFile) ? true : false;
 
-  if(version < SAVE_GAME_VERSION_4)
-  {
-    IRQTicks = 0;
-    intState = false;
-  }
+  IRQTicks = utilReadInt(gzFile);
+  if (IRQTicks>0)
+    intState = true;
   else
   {
-    IRQTicks = utilReadInt(gzFile);
-    if (IRQTicks>0)
-      intState = true;
-    else
-    {
-      intState = false;
-      IRQTicks = 0;
-    }
+    intState = false;
+    IRQTicks = 0;
   }
 
   utilGzRead(gzFile, internalRAM, 0x8000);
@@ -472,10 +461,7 @@ static bool CPUReadState(gzFile gzFile)
   utilGzRead(gzFile, workRAM, 0x40000);
   utilGzRead(gzFile, vram, 0x20000);
   utilGzRead(gzFile, oam, 0x400);
-  if(version < SAVE_GAME_VERSION_6)
-    utilGzRead(gzFile, pix, 4*240*160);
-  else
-    utilGzRead(gzFile, pix, 4*241*162);
+  utilGzRead(gzFile, pix, 4*241*162);
   utilGzRead(gzFile, ioMem, 0x400);
 
   if(skipSaveGameBattery) {
@@ -489,40 +475,7 @@ static bool CPUReadState(gzFile gzFile)
   }
   soundReadGame(gzFile, version);
 
-  if(version > SAVE_GAME_VERSION_6) {
-    rtcReadGame(gzFile);
-  }
-
-  if(version <= SAVE_GAME_VERSION_7) {
-    u32 temp;
-#define SWAP(a,b,c) \
-    temp = (a);\
-    (a) = (b)<<16|(c);\
-    (b) = (temp) >> 16;\
-    (c) = (temp) & 0xFFFF;
-
-    SWAP(dma0Source, DM0SAD_H, DM0SAD_L);
-    SWAP(dma0Dest,   DM0DAD_H, DM0DAD_L);
-    SWAP(dma1Source, DM1SAD_H, DM1SAD_L);
-    SWAP(dma1Dest,   DM1DAD_H, DM1DAD_L);
-    SWAP(dma2Source, DM2SAD_H, DM2SAD_L);
-    SWAP(dma2Dest,   DM2DAD_H, DM2DAD_L);
-    SWAP(dma3Source, DM3SAD_H, DM3SAD_L);
-    SWAP(dma3Dest,   DM3DAD_H, DM3DAD_L);
-  }
-
-  if(version <= SAVE_GAME_VERSION_8) {
-    timer0ClockReload = TIMER_TICKS[TM0CNT & 3];
-    timer1ClockReload = TIMER_TICKS[TM1CNT & 3];
-    timer2ClockReload = TIMER_TICKS[TM2CNT & 3];
-    timer3ClockReload = TIMER_TICKS[TM3CNT & 3];
-
-    timer0Ticks = ((0x10000 - TM0D) << timer0ClockReload) - timer0Ticks;
-    timer1Ticks = ((0x10000 - TM1D) << timer1ClockReload) - timer1Ticks;
-    timer2Ticks = ((0x10000 - TM2D) << timer2ClockReload) - timer2Ticks;
-    timer3Ticks = ((0x10000 - TM3D) << timer3ClockReload) - timer3Ticks;
-    interp_rate();
-  }
+  rtcReadGame(gzFile);
 
   // set pointers!
   layerEnable = layerSettings & DISPCNT;

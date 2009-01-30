@@ -3,17 +3,8 @@
 
 #include "../System.h"
 
-#define SAVE_GAME_VERSION_1 1
-#define SAVE_GAME_VERSION_2 2
-#define SAVE_GAME_VERSION_3 3
-#define SAVE_GAME_VERSION_4 4
-#define SAVE_GAME_VERSION_5 5
-#define SAVE_GAME_VERSION_6 6
-#define SAVE_GAME_VERSION_7 7
-#define SAVE_GAME_VERSION_8 8
-#define SAVE_GAME_VERSION_9 9
-#define SAVE_GAME_VERSION_10 10
-#define SAVE_GAME_VERSION  SAVE_GAME_VERSION_10
+#define SAVE_GAME_VERSION_11 11
+#define SAVE_GAME_VERSION  SAVE_GAME_VERSION_11
 
 typedef struct {
   u8 *address;
