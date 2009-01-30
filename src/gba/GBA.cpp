@@ -109,9 +109,6 @@ static const u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
 static const u8 gamepakWaitState0[2] = { 2, 1 };
 static const u8 gamepakWaitState1[2] = { 4, 1 };
 static const u8 gamepakWaitState2[2] = { 8, 1 };
-static const bool isInRom [16]=
-  { false, false, false, false, false, false, false, false,
-    true, true, true, true, true, true, false, false };
 
 u8 memoryWait[16] =
   { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
@@ -592,73 +589,6 @@ static bool CPUWriteBatteryFile(const char *fileName)
   }
   return true;
 }
-
-/*static bool CPUExportEepromFile(const char *fileName)
-{
-  if(eepromInUse) {
-    FILE *file = fopen(fileName, "wb");
-
-    if(!file) {
-      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
-                    fileName);
-      return false;
-    }
-
-    for(int i = 0; i < eepromSize;) {
-      for(int j = 0; j < 8; j++) {
-        if(fwrite(&eepromData[i+7-j], 1, 1, file) != 1) {
-          fclose(file);
-          return false;
-        }
-      }
-      i += 8;
-    }
-    fclose(file);
-  }
-  return true;
-}
-
-static bool CPUImportEepromFile(const char *fileName)
-{
-  FILE *file = fopen(fileName, "rb");
-
-  if(!file)
-    return false;
-
-  // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
-
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  if(size == 512 || size == 0x2000) {
-    if(fread(eepromData, 1, size, file) != (size_t)size) {
-      fclose(file);
-      return false;
-    }
-    for(int i = 0; i < size;) {
-      u8 tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      i += 4;
-    }
-  } else
-    return false;
-  fclose(file);
-  return true;
-}*/
 
 static bool CPUReadBatteryFile(const char *fileName)
 {
@@ -2141,14 +2071,6 @@ static void applyTimer ()
 
 void CPUInit(const char *biosFileName, bool useBiosFile)
 {
-#ifdef WORDS_BIGENDIAN
-  if(!cpuBiosSwapped) {
-    for(unsigned int i = 0; i < sizeof(myROM)/4; i++) {
-      WRITE32LE(&myROM[i], myROM[i]);
-    }
-    cpuBiosSwapped = true;
-  }
-#endif
   gbaSaveType = 0;
   eepromInUse = 0;
   saveType = 0;
