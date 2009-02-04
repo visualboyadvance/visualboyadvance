@@ -2183,20 +2183,6 @@ static insnfunc_t armInsnTable[4096] = {
 
 // Wrapper routine (execution loop) ///////////////////////////////////////
 
-#if 0
-#include<time.h>
-static void tester(void) {
-  static int ran=0;if(ran)return;ran=1;
-  FILE*f=fopen("p:\\timing.txt","w");if(!f)return;
-  for (int op=/*0*/9; op</*0xF00*/10;op++){if(armInsnTable[op]==arm_UI)continue;
-    int i;for(i=0;i<op;i++)if(armInsnTable[op]==armInsnTable[i])break;if(i<op)continue;
-    for(i=0;i<16;i++)reg[i].I=0x3100000;
-    clock_t s=clock();for(i=0;i<10000000;i++)armInsnTable[op](0);clock_t e=clock();
-    fprintf(f,"arm%03X %6ld\n",op,e-s);fflush(f);
-  }fclose(f);
-}
-#endif
-
 int armExecute()
 {
     do {
