@@ -26,27 +26,27 @@ static inline u32 POS(const u32 i) { return (~i) >> 31;}
 static inline bool ADDCARRY(const u32 a, const u32 b, const u32 c)
 {
 	return	(NEG(a) & NEG(b)) |
-		(NEG(a) & POS(c)) |
-		(NEG(b) & POS(c));
+			(NEG(a) & POS(c)) |
+			(NEG(b) & POS(c));
 }
 
 static inline bool ADDOVERFLOW(const u32 a, const u32 b, const u32 c)
 {
 	return	(NEG(a) & NEG(b) & POS(c)) |
-		(POS(a) & POS(b) & NEG(c));
+			(POS(a) & POS(b) & NEG(c));
 }
 
 static inline bool SUBCARRY(const u32 a, const u32 b, const u32 c)
 {
 	return	(NEG(a) & POS(b)) |
-		(NEG(a) & POS(c)) |
-		(POS(b) & POS(c));
+			(NEG(a) & POS(c)) |
+			(POS(b) & POS(c));
 }
 
 static inline bool SUBOVERFLOW(const u32 a, const u32 b, const u32 c)
 {
 	return	(NEG(a) & POS(b) & POS(c)) |
-		(POS(a) & NEG(b) & NEG(c));
+			(POS(a) & NEG(b) & NEG(c));
 }
 
 // 3-argument ADD/SUB /////////////////////////////////////////////////////

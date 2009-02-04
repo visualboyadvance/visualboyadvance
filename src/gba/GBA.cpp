@@ -25,9 +25,6 @@
 #define _stricmp strcasecmp
 #endif
 
-
-extern int emulating;
-
 int SWITicks = 0;
 static int IRQTicks = 0;
 
@@ -698,8 +695,6 @@ static void CPUCleanUp()
   }
 
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-  emulating = 0;
 }
 
 bool CPUInitMemory()
