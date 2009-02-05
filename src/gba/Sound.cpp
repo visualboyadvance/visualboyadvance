@@ -368,7 +368,6 @@ void flush_samples(Multi_Buffer * buffer)
 			soundResume();
 
 		soundDriver->write(soundFinalWave, soundBufferLen);
-		systemOnWriteDataToSoundBuffer(soundFinalWave, soundBufferLen);
 	}
 }
 
@@ -477,8 +476,6 @@ void soundShutdown()
 		delete soundDriver;
 		soundDriver = 0;
 	}
-
-	systemOnSoundShutdown();
 }
 
 void soundPause()

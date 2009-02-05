@@ -35,7 +35,6 @@
 #include "screenarea-cairo.h"
 #include "screenarea-opengl.h"
 
-extern int RGB_LOW_BITS_MASK;
 extern int emulating;
 
 namespace VBA
@@ -383,37 +382,18 @@ void Window::vInitColors(EColorFormat _eColorFormat)
   {
     case ColorFormatBGR:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      systemRedShift    = 3;
-      systemGreenShift  = 11;
-      systemBlueShift   = 19;
-      RGB_LOW_BITS_MASK = 0x00010101;
+      utilUpdateSystemColorMaps(3, 11, 19);
 #else
-      systemRedShift    = 27;
-      systemGreenShift  = 19;
-      systemBlueShift   = 11;
-      RGB_LOW_BITS_MASK = 0x01010100;
+      utilUpdateSystemColorMaps(27, 19, 11);
 #endif
       break;
     default:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      systemRedShift    = 19;
-      systemGreenShift  = 11;
-      systemBlueShift   = 3;
-      RGB_LOW_BITS_MASK = 0x00010101;
+      utilUpdateSystemColorMaps(19, 11, 3);
 #else
-      systemRedShift    = 11;
-      systemGreenShift  = 19;
-      systemBlueShift   = 27;
-      RGB_LOW_BITS_MASK = 0x01010100;
+      utilUpdateSystemColorMaps(11, 19, 27);
 #endif
       break;
-  }
-
-  for (int i = 0; i < 0x10000; i++)
-  {
-    systemColorMap32[i] = (((i & 0x1f) << systemRedShift)
-                           | (((i & 0x3e0) >> 5) << systemGreenShift)
-                           | (((i & 0x7c00) >> 10) << systemBlueShift));
   }
 }
 

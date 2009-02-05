@@ -25,16 +25,12 @@
 
 // Required vars, used by the emulator core
 //
-int  systemRedShift;
-int  systemGreenShift;
-int  systemBlueShift;
 int  systemVerbose;
 int  systemSaveUpdateCounter;
 int  systemFrameSkip;
 u32  systemColorMap32[0x10000];
 
 int  emulating;
-int  RGB_LOW_BITS_MASK;
 
 inline VBA::Window * GUI()
 {
@@ -80,11 +76,6 @@ void systemFrame()
 {
 }
 
-void systemSetTitle(const char * _csTitle)
-{
-  GUI()->set_title(_csTitle);
-}
-
 u32 systemGetClock()
 {
     Glib::TimeVal time;
@@ -106,14 +97,6 @@ int systemGetSensorY()
   return 0;
 }
 
-void systemGbPrint(u8 * _puiData,
-                   int  _iPages,
-                   int  _iFeed,
-                   int  _iPalette,
-                   int  _iContrast)
-{
-}
-
 void systemScreenMessage(const char * _csMsg)
 {
 }
@@ -128,23 +111,11 @@ bool systemPauseOnFrame()
   return false;
 }
 
-void systemGbBorderOn()
-{
-}
-
 SoundDriver * systemSoundInit()
 {
 	soundShutdown();
 
 	return new SoundSDL();
-}
-
-void systemOnSoundShutdown()
-{
-}
-
-void systemOnWriteDataToSoundBuffer(const u16 * finalWave, int length)
-{
 }
 
 void log(const char *defaultMsg, ...)

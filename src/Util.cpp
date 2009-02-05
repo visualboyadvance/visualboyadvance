@@ -23,10 +23,6 @@ extern "C" {
 #define _stricmp strcasecmp
 #endif // ! _MSC_VER
 
-extern int systemRedShift;
-extern int systemGreenShift;
-extern int systemBlueShift;
-
 extern u32 systemColorMap32[0x10000];
 
 static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
@@ -366,12 +362,12 @@ void utilGBAFindSave(const u8 *data, const int size)
   flashSetSize(flashSize);
 }
 
-void utilUpdateSystemColorMaps()
+void utilUpdateSystemColorMaps(int redShift, int greenShift, int blueShift)
 {
       for(int i = 0; i < 0x10000; i++) {
-        systemColorMap32[i] = ((i & 0x1f) << systemRedShift) |
-          (((i & 0x3e0) >> 5) << systemGreenShift) |
-          (((i & 0x7c00) >> 10) << systemBlueShift);
+        systemColorMap32[i] = ((i & 0x1f) << redShift) |
+          (((i & 0x3e0) >> 5) << greenShift) |
+          (((i & 0x7c00) >> 10) << blueShift);
       }
 }
 
