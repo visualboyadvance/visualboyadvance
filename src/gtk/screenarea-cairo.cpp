@@ -46,7 +46,7 @@ bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
   Cairo::RefPtr< Cairo::SurfacePattern > poPattern;
   Cairo::RefPtr< Cairo::Context >        poContext;
   Cairo::Matrix oMatrix;
-  const int iScaledPitch = (m_iScaledWidth + 1) * sizeof(u32);
+  const int iScaledPitch = m_iScaledWidth * sizeof(u32);
 
   poContext = get_window()->create_cairo_context();
 
@@ -73,7 +73,7 @@ void ScreenAreaCairo::vDrawBlackScreen()
 {
   if (m_puiPixels && is_realized())
   {
-    memset(m_puiPixels, 0, m_iHeight * (m_iWidth + 1) * sizeof(u32));
+    memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
     queue_draw_area(0, 0, get_width(), get_height());
   }
 }

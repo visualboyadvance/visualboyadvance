@@ -177,8 +177,8 @@ bool ScreenArea::bOnCursorTimeout()
 
 void ScreenArea::vDrawPixels(u8 * _puiData)
 {
-  const int iSrcPitch = (m_iWidth + 1) * sizeof(u32);
-  const int iScaledPitch = (m_iScaledWidth + 1) * sizeof(u32);
+  const int iSrcPitch = m_iWidth * sizeof(u32);
+  const int iScaledPitch = m_iScaledWidth * sizeof(u32);
 
   if (m_vFilterIB != NULL)
   {
@@ -200,7 +200,7 @@ void ScreenArea::vDrawPixels(u8 * _puiData)
   }
   else
   {
-    memcpy(m_puiPixels, _puiData + iSrcPitch, m_iHeight * iSrcPitch);
+    memcpy(m_puiPixels, _puiData, m_iHeight * iSrcPitch);
   }
 }
 
@@ -219,10 +219,10 @@ void ScreenArea::vUpdateSize()
   m_iScaledWidth = m_iFilterScale * m_iWidth;
   m_iScaledHeight = m_iFilterScale * m_iHeight;
 
-  m_puiPixels = new u32[(m_iScaledWidth + 1) * m_iScaledHeight];
-  m_puiDelta = new u8[(m_iWidth + 2) * (m_iHeight + 2) * sizeof(u32)];
-  memset(m_puiPixels, 0, (m_iScaledWidth + 1) * m_iScaledHeight * sizeof(u32));
-  memset(m_puiDelta, 255, (m_iWidth + 2) * (m_iHeight + 2) * sizeof(u32));
+  m_puiPixels = new u32[m_iScaledWidth * m_iScaledHeight];
+  m_puiDelta = new u8[m_iWidth * m_iHeight * sizeof(u32)];
+  memset(m_puiPixels, 0, m_iScaledWidth * m_iScaledHeight * sizeof(u32));
+  memset(m_puiDelta, 255, m_iWidth * m_iHeight * sizeof(u32));
 
   set_size_request(m_iScale * m_iWidth, m_iScale * m_iHeight);
 }

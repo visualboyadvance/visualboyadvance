@@ -360,7 +360,7 @@ static bool CPUWriteState(gzFile gzFile)
   utilGzWrite(gzFile, workRAM, 0x40000);
   utilGzWrite(gzFile, vram, 0x20000);
   utilGzWrite(gzFile, oam, 0x400);
-  utilGzWrite(gzFile, pix, 4*241*162);
+  utilGzWrite(gzFile, pix, 4*240*160);
   utilGzWrite(gzFile, ioMem, 0x400);
 
   eepromSaveGame(gzFile);
@@ -453,7 +453,7 @@ static bool CPUReadState(gzFile gzFile)
   utilGzRead(gzFile, workRAM, 0x40000);
   utilGzRead(gzFile, vram, 0x20000);
   utilGzRead(gzFile, oam, 0x400);
-  utilGzRead(gzFile, pix, 4*241*162);
+  utilGzRead(gzFile, pix, 4*240*160);
   utilGzRead(gzFile, ioMem, 0x400);
 
   if(skipSaveGameBattery) {
@@ -753,7 +753,7 @@ bool CPUInitMemory()
     CPUCleanUp();
     return false;
   }
-  pix = (u8 *)calloc(1, 4 * 241 * 162);
+  pix = (u8 *)calloc(1, 4 * 240 * 160);
   if(pix == NULL) {
     systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
                   "PIX");
@@ -2590,7 +2590,7 @@ void CPULoop(int ticks)
             if(frameCount >= framesToSkip)
             {
               (*renderLine)();
-                  u32 *dest = (u32 *)pix + 241 * (VCOUNT+1);
+                  u32 *dest = (u32 *)pix + 240 * VCOUNT;
                   for(int x = 0; x < 240; ) {
                     *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
                     *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];

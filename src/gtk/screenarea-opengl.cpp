@@ -107,7 +107,7 @@ void ScreenAreaGl::vDrawBlackScreen()
 {
   if (m_puiPixels && is_realized())
   {
-    memset(m_puiPixels, 0, m_iHeight * (m_iWidth + 1) * sizeof(u32));
+    memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
     queue_draw_area(0, 0, get_width(), get_height());
   }
 }
@@ -148,8 +148,8 @@ bool ScreenAreaGl::on_expose_event(GdkEventExpose * _pstEvent)
     return false;
 
     glClear( GL_COLOR_BUFFER_BIT );
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, m_iScaledWidth + 1);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iScaledWidth + 1, m_iScaledHeight,
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, m_iScaledWidth);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iScaledWidth, m_iScaledHeight,
                       GL_RGBA, GL_UNSIGNED_BYTE, m_puiPixels);
 
     glBegin(GL_TRIANGLE_STRIP);
