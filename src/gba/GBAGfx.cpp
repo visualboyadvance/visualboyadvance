@@ -35,6 +35,22 @@ static inline void gfxClearArray(u32 *array)
   }
 }
 
+void gfxClearRenderBuffers(bool force)
+{
+  if(!(layerEnable & 0x0100) || force) {
+    gfxClearArray(line0);
+  }
+  if(!(layerEnable & 0x0200) || force) {
+    gfxClearArray(line1);
+  }
+  if(!(layerEnable & 0x0400) || force) {
+    gfxClearArray(line2);
+  }
+  if(!(layerEnable & 0x0800) || force) {
+    gfxClearArray(line3);
+  }
+}
+
 void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 				     u32 *line)
 {

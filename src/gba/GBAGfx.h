@@ -3,6 +3,7 @@
 
 #include "../common/Types.h"
 
+void gfxClearRenderBuffers(bool force);
 void gfxDrawTextScreen(u16, u16, u16, u32 *);
 void gfxDrawRotScreen(u16,
 			     u16, u16,

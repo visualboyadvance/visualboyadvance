@@ -311,35 +311,6 @@ static void CPUUpdateWindow1()
   }
 }
 
-extern u32 line0[240];
-extern u32 line1[240];
-extern u32 line2[240];
-extern u32 line3[240];
-
-#define CLEAR_ARRAY(a) \
-  {\
-    u32 *array = (a);\
-    for(int i = 0; i < 240; i++) {\
-      *array++ = 0x80000000;\
-    }\
-  }\
-
-void CPUUpdateRenderBuffers(bool force)
-{
-  if(!(layerEnable & 0x0100) || force) {
-    CLEAR_ARRAY(line0);
-  }
-  if(!(layerEnable & 0x0200) || force) {
-    CLEAR_ARRAY(line1);
-  }
-  if(!(layerEnable & 0x0400) || force) {
-    CLEAR_ARRAY(line2);
-  }
-  if(!(layerEnable & 0x0800) || force) {
-    CLEAR_ARRAY(line3);
-  }
-}
-
 static bool CPUWriteState(gzFile gzFile)
 {
   utilWriteInt(gzFile, SAVE_GAME_VERSION);
@@ -473,7 +444,7 @@ static bool CPUReadState(gzFile gzFile)
   layerEnable = DISPCNT;
 
   CPUUpdateRender();
-  CPUUpdateRenderBuffers(true);
+  gfxClearRenderBuffers(true);
   CPUUpdateWindow0();
   CPUUpdateWindow1();
   gbaSaveType = 0;
@@ -771,7 +742,7 @@ bool CPUInitMemory()
   flashInit();
   eepromInit();
 
-  CPUUpdateRenderBuffers(true);
+  gfxClearRenderBuffers(true);
   
   return true;
 }
@@ -797,23 +768,6 @@ int CPULoadRom(const char *szFile)
   }
 
   return romSize;
-}
-
-void doMirroring (bool b)
-{
-  u32 mirroredRomSize = (((romSize)>>20) & 0x3F)<<20;
-  u32 mirroredRomAddress = romSize;
-  if ((mirroredRomSize <=0x800000) && (b))
-  {
-    mirroredRomAddress = mirroredRomSize;
-    if (mirroredRomSize==0)
-        mirroredRomSize=0x100000;
-    while (mirroredRomAddress<0x01000000)
-    {
-      memcpy ((u16 *)(rom+mirroredRomAddress), (u16 *)(rom), mirroredRomSize);
-      mirroredRomAddress+=mirroredRomSize;
-    }
-  }
 }
 
 void CPUUpdateRender()
@@ -1487,7 +1441,7 @@ void CPUUpdateRegister(u32 address, u16 value)
       CPUUpdateRender();
       // we only care about changes in BG0-BG3
       if(changeBG) {
-        CPUUpdateRenderBuffers(false);
+        gfxClearRenderBuffers(false);
       }
       break;
     }
@@ -2299,7 +2253,7 @@ void CPUReset()
   saveType = 0;
   layerEnable = DISPCNT;
 
-  CPUUpdateRenderBuffers(true);
+  gfxClearRenderBuffers(true);
 
   for(int i = 0; i < 256; i++) {
     map[i].address = (u8 *)&dummyAddress;
