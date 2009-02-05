@@ -28,12 +28,10 @@
 int  systemRedShift;
 int  systemGreenShift;
 int  systemBlueShift;
-int  systemColorDepth;
 int  systemVerbose;
 int  systemSaveUpdateCounter;
 int  systemFrameSkip;
 u32  systemColorMap32[0x10000];
-u16  systemColorMap16[0x10000];
 
 int  emulating;
 int  RGB_LOW_BITS_MASK;

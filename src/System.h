@@ -57,12 +57,10 @@ extern void systemShowSpeed(int);
 extern void system10Frames(int);
 extern void systemFrame();
 
-extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
 extern int systemRedShift;
 extern int systemGreenShift;
 extern int systemBlueShift;
-extern int systemColorDepth;
 extern int systemVerbose;
 extern int systemFrameSkip;
 extern int systemSaveUpdateCounter;

@@ -455,7 +455,6 @@ void Window::vApplyConfigScreenArea()
 
 void Window::vInitSystem()
 {
-  systemColorDepth = 32;
   systemVerbose = 0 //| VERBOSE_SWI
   			| VERBOSE_UNALIGNED_MEMORY
   			| VERBOSE_ILLEGAL_WRITE | VERBOSE_ILLEGAL_READ

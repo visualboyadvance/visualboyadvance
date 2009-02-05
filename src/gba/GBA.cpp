@@ -2590,79 +2590,6 @@ void CPULoop(int ticks)
             if(frameCount >= framesToSkip)
             {
               (*renderLine)();
-              switch(systemColorDepth) {
-                case 16:
-                {
-                  u16 *dest = (u16 *)pix + 242 * (VCOUNT+1);
-                  for(int x = 0; x < 240;) {
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                    *dest++ = systemColorMap16[lineMix[x++]&0xFFFF];
-                  }
-                  // for filters that read past the screen
-                  *dest++ = 0;
-                }
-                break;
-                case 24:
-                {
-                  u8 *dest = (u8 *)pix + 240 * VCOUNT * 3;
-                  for(int x = 0; x < 240;) {
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                    *((u32 *)dest) = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    dest += 3;
-                  }
-                }
-                break;
-                case 32:
-                {
                   u32 *dest = (u32 *)pix + 241 * (VCOUNT+1);
                   for(int x = 0; x < 240; ) {
                     *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
@@ -2685,9 +2612,6 @@ void CPULoop(int ticks)
                     *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
                     *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
                   }
-                }
-                break;
-              }
             }
             // entering H-Blank
             DISPSTAT |= 2;
