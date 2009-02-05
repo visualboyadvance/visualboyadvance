@@ -470,7 +470,7 @@ static bool CPUReadState(gzFile gzFile)
   rtcReadGame(gzFile);
 
   // set pointers!
-  layerEnable = layerSettings & DISPCNT;
+  layerEnable = DISPCNT;
 
   CPUUpdateRender();
   CPUUpdateRenderBuffers(true);
@@ -820,8 +820,7 @@ void CPUUpdateRender()
 {
   switch(DISPCNT & 7) {
   case 0:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode0RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode0RenderLineNoWindow;
@@ -829,8 +828,7 @@ void CPUUpdateRender()
       renderLine = mode0RenderLineAll;
     break;
   case 1:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode1RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode1RenderLineNoWindow;
@@ -838,8 +836,7 @@ void CPUUpdateRender()
       renderLine = mode1RenderLineAll;
     break;
   case 2:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode2RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode2RenderLineNoWindow;
@@ -847,8 +844,7 @@ void CPUUpdateRender()
       renderLine = mode2RenderLineAll;
     break;
   case 3:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode3RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode3RenderLineNoWindow;
@@ -856,8 +852,7 @@ void CPUUpdateRender()
       renderLine = mode3RenderLineAll;
     break;
   case 4:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode4RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode4RenderLineNoWindow;
@@ -865,8 +860,7 @@ void CPUUpdateRender()
       renderLine = mode4RenderLineAll;
     break;
   case 5:
-    if((!fxOn && !windowOn && !(layerEnable & 0x8000)) ||
-       cpuDisableSfx)
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode5RenderLine;
     else if(fxOn && !windowOn && !(layerEnable & 0x8000))
       renderLine = mode5RenderLineNoWindow;
@@ -1115,7 +1109,7 @@ static void CPUCompareVCOUNT()
   {
       layerEnableDelay--;
       if (layerEnableDelay==1)
-          layerEnable = layerSettings & DISPCNT;
+          layerEnable = DISPCNT;
   }
 
 }
@@ -1472,9 +1466,9 @@ void CPUUpdateRegister(u32 address, u16 value)
 
       if(changeBGon) {
         layerEnableDelay = 4;
-        layerEnable = layerSettings & value & (~changeBGon);
+        layerEnable = value & (~changeBGon);
       } else {
-        layerEnable = layerSettings & value;
+        layerEnable = value;
         // CPUUpdateTicks();
       }
 
@@ -1944,29 +1938,14 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x204:
     {
       memoryWait[0x0e] = memoryWaitSeq[0x0e] = gamepakRamWaitState[value & 3];
+      memoryWait[0x08] = memoryWait[0x09] = gamepakWaitState[(value >> 2) & 3];
+      memoryWaitSeq[0x08] = memoryWaitSeq[0x09] = gamepakWaitState0[(value >> 4) & 1];
 
-      if(!speedHack) {
-        memoryWait[0x08] = memoryWait[0x09] = gamepakWaitState[(value >> 2) & 3];
-        memoryWaitSeq[0x08] = memoryWaitSeq[0x09] =
-          gamepakWaitState0[(value >> 4) & 1];
+      memoryWait[0x0a] = memoryWait[0x0b] = gamepakWaitState[(value >> 5) & 3];
+      memoryWaitSeq[0x0a] = memoryWaitSeq[0x0b] = gamepakWaitState1[(value >> 7) & 1];
 
-        memoryWait[0x0a] = memoryWait[0x0b] = gamepakWaitState[(value >> 5) & 3];
-        memoryWaitSeq[0x0a] = memoryWaitSeq[0x0b] =
-          gamepakWaitState1[(value >> 7) & 1];
-
-        memoryWait[0x0c] = memoryWait[0x0d] = gamepakWaitState[(value >> 8) & 3];
-        memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] =
-          gamepakWaitState2[(value >> 10) & 1];
-      } else {
-        memoryWait[0x08] = memoryWait[0x09] = 3;
-        memoryWaitSeq[0x08] = memoryWaitSeq[0x09] = 1;
-
-        memoryWait[0x0a] = memoryWait[0x0b] = 3;
-        memoryWaitSeq[0x0a] = memoryWaitSeq[0x0b] = 1;
-
-        memoryWait[0x0c] = memoryWait[0x0d] = 3;
-        memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] = 1;
-      }
+      memoryWait[0x0c] = memoryWait[0x0d] = gamepakWaitState[(value >> 8) & 3];
+      memoryWaitSeq[0x0c] = memoryWaitSeq[0x0d] = gamepakWaitState2[(value >> 10) & 1];
 
       for(int i = 8; i < 15; i++) {
         memoryWait32[i] = memoryWait[i] + memoryWaitSeq[i] + 1;
@@ -2318,7 +2297,7 @@ void CPUReset()
   windowOn = false;
   frameCount = 0;
   saveType = 0;
-  layerEnable = DISPCNT & layerSettings;
+  layerEnable = DISPCNT;
 
   CPUUpdateRenderBuffers(true);
 

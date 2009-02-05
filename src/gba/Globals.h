@@ -26,19 +26,11 @@ extern bool armState;
 extern bool armIrqEnable;
 extern u32 armNextPC;
 extern int armMode;
-extern u32 stop;
 extern int saveType;
-extern int frameSkip;
 extern bool speedup;
-extern bool synchronize;
-extern bool cpuDisableSfx;
 extern bool cpuIsMultiBoot;
-extern bool parseDebug;
-extern int layerSettings;
 extern int layerEnable;
-extern bool speedHack;
 extern int cpuSaveType;
-extern bool mirroringEnable;
 extern bool skipSaveGameBattery; // skip battery data when reading save states
 
 extern u8 *bios;
