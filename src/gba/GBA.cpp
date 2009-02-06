@@ -237,6 +237,8 @@ static variable_desc saveGameStruct[] = {
   { &armNextPC , sizeof(u32) },
   { &armMode , sizeof(int) },
   { &saveType , sizeof(int) },
+  { &stopState , sizeof(bool) },
+  { &IRQTicks , sizeof(int) },
   { NULL, 0 }
 };
 
@@ -317,11 +319,6 @@ static bool CPUWriteState(gzFile gzFile)
 
   utilWriteData(gzFile, saveGameStruct);
 
-  // new to version 0.7.1
-  utilWriteInt(gzFile, stopState);
-  // new to version 0.8
-  utilWriteInt(gzFile, IRQTicks);
-
   utilGzWrite(gzFile, internalRAM, 0x8000);
   utilGzWrite(gzFile, paletteRAM, 0x400);
   utilGzWrite(gzFile, workRAM, 0x40000);
@@ -333,8 +330,6 @@ static bool CPUWriteState(gzFile gzFile)
   eepromSaveGame(gzFile);
   flashSaveGame(gzFile);
   soundSaveGame(gzFile);
-
-  // version 1.5
   rtcSaveGame(gzFile);
 
   return true;
@@ -404,10 +399,7 @@ static bool CPUReadState(gzFile gzFile)
 
   utilReadData(gzFile, saveGameStruct);
 
-  stopState = utilReadInt(gzFile) ? true : false;
-
-  IRQTicks = utilReadInt(gzFile);
-  if (IRQTicks>0)
+  if (IRQTicks > 0)
     intState = true;
   else
   {
