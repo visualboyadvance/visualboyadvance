@@ -28,6 +28,65 @@ int gfxBG3X = 0;
 int gfxBG3Y = 0;
 int gfxLastVCOUNT = 0;
 
+LineRenderer gfxChooseRenderer()
+{
+  bool fxOn = ((BLDMOD>>6)&3) != 0;
+  bool windowOn = (layerEnable & 0x6000) ? true : false;
+
+  switch(DISPCNT & 7) {
+  case 0:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode0RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode0RenderLineNoWindow;
+    else
+      return mode0RenderLineAll;
+    break;
+  case 1:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode1RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode1RenderLineNoWindow;
+    else
+      return mode1RenderLineAll;
+    break;
+  case 2:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode2RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode2RenderLineNoWindow;
+    else
+      return mode2RenderLineAll;
+    break;
+  case 3:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode3RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode3RenderLineNoWindow;
+    else
+      return mode3RenderLineAll;
+    break;
+  case 4:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode4RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode4RenderLineNoWindow;
+    else
+      return mode4RenderLineAll;
+    break;
+  case 5:
+    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode5RenderLine;
+    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
+      return mode5RenderLineNoWindow;
+    else
+      return mode5RenderLineAll;
+  default:
+      return mode0RenderLine;
+    break;
+  }
+}
+
 static inline void gfxClearArray(u32 *array)
 {
   for(int i = 0; i < 240; i++) {

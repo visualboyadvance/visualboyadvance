@@ -86,9 +86,7 @@ static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
 void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
-static void (*renderLine)() = mode0RenderLine;
-static bool fxOn = false;
-static bool windowOn = false;
+static LineRenderer renderLine = mode0RenderLine;
 static int frameCount = 0;
 static u32 lastTime = 0;
 static int count = 0;
@@ -230,8 +228,6 @@ static variable_desc saveGameStruct[] = {
   { &dma2Dest , sizeof(u32) },
   { &dma3Source , sizeof(u32) },
   { &dma3Dest , sizeof(u32) },
-  { &fxOn, sizeof(bool) },
-  { &windowOn, sizeof(bool) },
   { &N_FLAG , sizeof(bool) },
   { &C_FLAG , sizeof(bool) },
   { &Z_FLAG , sizeof(bool) },
@@ -443,7 +439,7 @@ static bool CPUReadState(gzFile gzFile)
   // set pointers!
   layerEnable = DISPCNT;
 
-  CPUUpdateRender();
+  renderLine = gfxChooseRenderer();
   gfxClearRenderBuffers(true);
   CPUUpdateWindow0();
   CPUUpdateWindow1();
@@ -768,61 +764,6 @@ int CPULoadRom(const char *szFile)
   }
 
   return romSize;
-}
-
-void CPUUpdateRender()
-{
-  switch(DISPCNT & 7) {
-  case 0:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode0RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode0RenderLineNoWindow;
-    else
-      renderLine = mode0RenderLineAll;
-    break;
-  case 1:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode1RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode1RenderLineNoWindow;
-    else
-      renderLine = mode1RenderLineAll;
-    break;
-  case 2:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode2RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode2RenderLineNoWindow;
-    else
-      renderLine = mode2RenderLineAll;
-    break;
-  case 3:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode3RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode3RenderLineNoWindow;
-    else
-      renderLine = mode3RenderLineAll;
-    break;
-  case 4:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode4RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode4RenderLineNoWindow;
-    else
-      renderLine = mode4RenderLineAll;
-    break;
-  case 5:
-    if(!fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode5RenderLine;
-    else if(fxOn && !windowOn && !(layerEnable & 0x8000))
-      renderLine = mode5RenderLineNoWindow;
-    else
-      renderLine = mode5RenderLineAll;
-  default:
-    break;
-  }
 }
 
 void CPUUpdateCPSR()
@@ -1426,7 +1367,6 @@ void CPUUpdateRegister(u32 address, u16 value)
         // CPUUpdateTicks();
       }
 
-      windowOn = (layerEnable & 0x6000) ? true : false;
       if(change && !((value & 0x80))) {
         if(!(DISPSTAT & 1)) {
           lcdTicks = 1008;
@@ -1436,9 +1376,8 @@ void CPUUpdateRegister(u32 address, u16 value)
           UPDATE_REG(0x04, DISPSTAT);
           CPUCompareVCOUNT();
         }
-        //        (*renderLine)();
       }
-      CPUUpdateRender();
+      renderLine = gfxChooseRenderer();
       // we only care about changes in BG0-BG3
       if(changeBG) {
         gfxClearRenderBuffers(false);
@@ -1605,8 +1544,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x50:
     BLDMOD = value & 0x3FFF;
     UPDATE_REG(0x50, BLDMOD);
-    fxOn = ((BLDMOD>>6)&3) != 0;
-    CPUUpdateRender();
+    renderLine = gfxChooseRenderer();
     break;
   case 0x52:
     COLEV = value & 0x1F1F;
@@ -2247,8 +2185,6 @@ void CPUReset()
   dma3Dest = 0;
   cpuSaveGameFunc = flashSaveDecide;
   renderLine = mode0RenderLine;
-  fxOn = false;
-  windowOn = false;
   frameCount = 0;
   saveType = 0;
   layerEnable = DISPCNT;
