@@ -60,17 +60,17 @@ SET(SRC_GBA
     src/gba/EEprom.cpp
     src/gba/Flash.cpp
     src/gba/GBA.cpp
-    src/gba/GBAGfx.cpp
     src/gba/GBALink.cpp
     src/gba/GBA-thumb.cpp
     src/gba/GBA-arm.cpp
+    src/gba/Gfx.cpp
+    src/gba/GfxMode0.cpp
+    src/gba/GfxMode1.cpp
+    src/gba/GfxMode2.cpp
+    src/gba/GfxMode3.cpp
+    src/gba/GfxMode4.cpp
+    src/gba/GfxMode5.cpp
     src/gba/Globals.cpp
-    src/gba/Mode0.cpp
-    src/gba/Mode1.cpp
-    src/gba/Mode2.cpp
-    src/gba/Mode3.cpp
-    src/gba/Mode4.cpp
-    src/gba/Mode5.cpp
     src/gba/RTC.cpp
     src/gba/Sound.cpp
     src/gba/Sram.cpp

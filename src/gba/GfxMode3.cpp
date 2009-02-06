@@ -1,13 +1,13 @@
 #include "GBA.h"
-#include "GBAGfx.h"
 #include "Globals.h"
+#include "Gfx.h"
 #include "../common/Port.h"
 
-void mode4RenderLine()
+void mode3RenderLine()
 {
   u16 *palette = (u16 *)paletteRAM;
 
-  if(DISPCNT & 0x0080) {
+  if(DISPCNT & 0x80) {
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
@@ -15,24 +15,25 @@ void mode4RenderLine()
     return;
   }
 
-  if(layerEnable & 0x400) {
+  if(layerEnable & 0x0400) {
     int changed = gfxBG2Changed;
 
     if(gfxLastVCOUNT > VCOUNT)
       changed = 3;
 
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
-                        BG2PA, BG2PB, BG2PC, BG2PD,
-                        gfxBG2X, gfxBG2Y, changed,
-                        line2);
+    gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+                          BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+                          BG2PC, BG2PD,
+                          gfxBG2X, gfxBG2Y, changed,
+                          line2);
   }
 
   gfxDrawSprites(lineOBJ);
 
-  u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
+  u32 background = (READ16LE(&palette[0]) | 0x30000000);
 
   for(int x = 0; x < 240; x++) {
-    u32 color = backdrop;
+    u32 color = background;
     u8 top = 0x20;
 
     if(line2[x] < color) {
@@ -40,14 +41,14 @@ void mode4RenderLine()
       top = 0x04;
     }
 
-    if((u8)(lineOBJ[x]>>24) < (u8)(color >> 24)) {
+    if((u8)(lineOBJ[x]>>24) < (u8)(color >>24)) {
       color = lineOBJ[x];
       top = 0x10;
     }
 
     if((top & 0x10) && (color & 0x00010000)) {
       // semi-transparent OBJ
-      u32 back = backdrop;
+      u32 back = background;
       u8 top2 = 0x20;
 
       if(line2[x] < back) {
@@ -79,11 +80,11 @@ void mode4RenderLine()
   gfxLastVCOUNT = VCOUNT;
 }
 
-void mode4RenderLineNoWindow()
+void mode3RenderLineNoWindow()
 {
   u16 *palette = (u16 *)paletteRAM;
 
-  if(DISPCNT & 0x0080) {
+  if(DISPCNT & 0x80) {
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
@@ -91,24 +92,25 @@ void mode4RenderLineNoWindow()
     return;
   }
 
-  if(layerEnable & 0x400) {
+  if(layerEnable & 0x0400) {
     int changed = gfxBG2Changed;
 
     if(gfxLastVCOUNT > VCOUNT)
       changed = 3;
 
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
-                        BG2PA, BG2PB, BG2PC, BG2PD,
-                        gfxBG2X, gfxBG2Y, changed,
-                        line2);
+    gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+                          BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+                          BG2PC, BG2PD,
+                          gfxBG2X, gfxBG2Y, changed,
+                          line2);
   }
 
   gfxDrawSprites(lineOBJ);
 
-  u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
+  u32 background = (READ16LE(&palette[0]) | 0x30000000);
 
   for(int x = 0; x < 240; x++) {
-    u32 color = backdrop;
+    u32 color = background;
     u8 top = 0x20;
 
     if(line2[x] < color) {
@@ -116,7 +118,7 @@ void mode4RenderLineNoWindow()
       top = 0x04;
     }
 
-    if((u8)(lineOBJ[x]>>24) < (u8)(color >> 24)) {
+    if((u8)(lineOBJ[x]>>24) < (u8)(color >>24)) {
       color = lineOBJ[x];
       top = 0x10;
     }
@@ -128,7 +130,7 @@ void mode4RenderLineNoWindow()
       case 1:
         {
           if(top & BLDMOD) {
-            u32 back = backdrop;
+            u32 back = background;
             u8 top2 = 0x20;
 
             if(line2[x] < back) {
@@ -164,7 +166,7 @@ void mode4RenderLineNoWindow()
       }
     } else {
       // semi-transparent OBJ
-      u32 back = backdrop;
+      u32 back = background;
       u8 top2 = 0x20;
 
       if(line2[x] < back) {
@@ -196,11 +198,11 @@ void mode4RenderLineNoWindow()
   gfxLastVCOUNT = VCOUNT;
 }
 
-void mode4RenderLineAll()
+void mode3RenderLineAll()
 {
   u16 *palette = (u16 *)paletteRAM;
 
-  if(DISPCNT & 0x0080) {
+  if(DISPCNT & 0x80) {
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
@@ -230,29 +232,30 @@ void mode4RenderLineAll()
       inWindow1 |= (VCOUNT >= v0 || VCOUNT < v1);
   }
 
-  if(layerEnable & 0x400) {
+  if(layerEnable & 0x0400) {
     int changed = gfxBG2Changed;
 
     if(gfxLastVCOUNT > VCOUNT)
       changed = 3;
 
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
-                        BG2PA, BG2PB, BG2PC, BG2PD,
-                        gfxBG2X, gfxBG2Y, changed,
-                        line2);
+    gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+                          BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+                          BG2PC, BG2PD,
+                          gfxBG2X, gfxBG2Y, changed,
+                          line2);
   }
 
   gfxDrawSprites(lineOBJ);
   gfxDrawOBJWin(lineOBJWin);
 
-  u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
-
   u8 inWin0Mask = WININ & 0xFF;
   u8 inWin1Mask = WININ >> 8;
   u8 outMask = WINOUT & 0xFF;
 
+  u32 background = (READ16LE(&palette[0]) | 0x30000000);
+
   for(int x = 0; x < 240; x++) {
-    u32 color = backdrop;
+    u32 color = background;
     u8 top = 0x20;
     u8 mask = outMask;
 
@@ -283,7 +286,7 @@ void mode4RenderLineAll()
 
     if(color & 0x00010000) {
       // semi-transparent OBJ
-      u32 back = backdrop;
+      u32 back = background;
       u8 top2 = 0x20;
 
       if((mask & 4) && line2[x] < back) {
@@ -314,7 +317,7 @@ void mode4RenderLineAll()
       case 1:
         {
           if(top & BLDMOD) {
-            u32 back = backdrop;
+            u32 back = background;
             u8 top2 = 0x20;
 
             if((mask & 4) && line2[x] < back) {

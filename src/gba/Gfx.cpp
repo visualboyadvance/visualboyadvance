@@ -1,4 +1,4 @@
-#include "GBAGfx.h"
+#include "Gfx.h"
 #include "GBA.h"
 #include "../common/Port.h"
 
