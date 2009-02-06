@@ -3,9 +3,16 @@
 
 #include "../common/Types.h"
 
-// Line renderers
+namespace GFX
+{
+
 typedef void (*LineRenderer)();
-LineRenderer gfxChooseRenderer();
+extern LineRenderer renderLine;
+
+void chooseRenderer();
+void clearRenderBuffers(bool force);
+void updateWindow0();
+void updateWindow1();
 
 void mode0RenderLine();
 void mode0RenderLineNoWindow();
@@ -31,47 +38,6 @@ void mode5RenderLine();
 void mode5RenderLineNoWindow();
 void mode5RenderLineAll();
 
-// Drawing helpers
-void gfxClearRenderBuffers(bool force);
-void gfxDrawTextScreen(u16, u16, u16, u32 *);
-void gfxDrawRotScreen(u16,
-			     u16, u16,
-			     u16, u16,
-			     u16, u16,
-			     u16, u16,
-			     int&, int&,
-			     int,
-			     u32*);
-void gfxDrawRotScreen16Bit(u16,
-				  u16, u16,
-				  u16, u16,
-				  u16, u16,
-				  u16, u16,
-				  int&, int&,
-				  int,
-				  u32*);
-void gfxDrawRotScreen256(u16,
-				u16, u16,
-				u16, u16,
-				u16, u16,
-				u16, u16,
-				int&, int&,
-				int,
-				u32*);
-void gfxDrawRotScreen16Bit160(u16,
-				     u16, u16,
-				     u16, u16,
-				     u16, u16,
-				     u16, u16,
-				     int&, int&,
-				     int,
-				     u32*);
-void gfxDrawSprites(u32 *);
-void gfxDrawOBJWin(u32 *lineOBJWin);
-u32 gfxIncreaseBrightness(u32 color, int coeff);
-u32 gfxDecreaseBrightness(u32 color, int coeff);
-u32 gfxAlphaBlend(u32 color, u32 color2, int ca, int cb);
-
 extern int coeff[32];
 extern u32 line0[240];
 extern u32 line1[240];
@@ -92,5 +58,7 @@ extern int gfxBG2Y;
 extern int gfxBG3X;
 extern int gfxBG3Y;
 extern int gfxLastVCOUNT;
+
+} // namespace GFX
 
 #endif // GFX_H

@@ -1,7 +1,11 @@
 #include "GBA.h"
 #include "Globals.h"
 #include "Gfx.h"
+#include "GfxHelpers.h"
 #include "../common/Port.h"
+
+namespace GFX
+{
 
 void mode0RenderLine()
 {
@@ -490,3 +494,5 @@ void mode0RenderLineAll()
     lineMix[x] = color;
   }
 }
+
+} // namespace GFX

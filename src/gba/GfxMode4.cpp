@@ -1,7 +1,11 @@
 #include "GBA.h"
 #include "Gfx.h"
+#include "GfxHelpers.h"
 #include "Globals.h"
 #include "../common/Port.h"
+
+namespace GFX
+{
 
 void mode4RenderLine()
 {
@@ -355,3 +359,5 @@ void mode4RenderLineAll()
   gfxBG2Changed = 0;
   gfxLastVCOUNT = VCOUNT;
 }
+
+} // namespace GFX

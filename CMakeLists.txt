@@ -64,6 +64,7 @@ SET(SRC_GBA
     src/gba/GBA-thumb.cpp
     src/gba/GBA-arm.cpp
     src/gba/Gfx.cpp
+    src/gba/GfxHelpers.cpp
     src/gba/GfxMode0.cpp
     src/gba/GfxMode1.cpp
     src/gba/GfxMode2.cpp

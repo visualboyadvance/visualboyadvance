@@ -7,7 +7,7 @@
 #include "GBAcpu.h"
 #include "GBAinline.h"
 #include "Globals.h"
-#include "GBAGfx.h"
+#include "Gfx.h"
 #include "EEprom.h"
 #include "Flash.h"
 #include "Sound.h"
@@ -86,7 +86,6 @@ static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
 void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
-static LineRenderer renderLine = mode0RenderLine;
 static int frameCount = 0;
 static u32 lastTime = 0;
 static int count = 0;
@@ -277,38 +276,6 @@ static inline int CPUUpdateTicks()
   return cpuLoopTicks;
 }
 
-static void CPUUpdateWindow0()
-{
-  int x00 = WIN0H>>8;
-  int x01 = WIN0H & 255;
-
-  if(x00 <= x01) {
-    for(int i = 0; i < 240; i++) {
-      gfxInWin0[i] = (i >= x00 && i < x01);
-    }
-  } else {
-    for(int i = 0; i < 240; i++) {
-      gfxInWin0[i] = (i >= x00 || i < x01);
-    }
-  }
-}
-
-static void CPUUpdateWindow1()
-{
-  int x00 = WIN1H>>8;
-  int x01 = WIN1H & 255;
-
-  if(x00 <= x01) {
-    for(int i = 0; i < 240; i++) {
-      gfxInWin1[i] = (i >= x00 && i < x01);
-    }
-  } else {
-    for(int i = 0; i < 240; i++) {
-      gfxInWin1[i] = (i >= x00 || i < x01);
-    }
-  }
-}
-
 static bool CPUWriteState(gzFile gzFile)
 {
   utilWriteInt(gzFile, SAVE_GAME_VERSION);
@@ -431,10 +398,10 @@ static bool CPUReadState(gzFile gzFile)
   // set pointers!
   layerEnable = DISPCNT;
 
-  renderLine = gfxChooseRenderer();
-  gfxClearRenderBuffers(true);
-  CPUUpdateWindow0();
-  CPUUpdateWindow1();
+  GFX::chooseRenderer();
+  GFX::clearRenderBuffers(true);
+  GFX::updateWindow0();
+  GFX::updateWindow1();
   gbaSaveType = 0;
   switch(saveType) {
   case 0:
@@ -730,7 +697,7 @@ bool CPUInitMemory()
   flashInit();
   eepromInit();
 
-  gfxClearRenderBuffers(true);
+  GFX::clearRenderBuffers(true);
   
   return true;
 }
@@ -1369,10 +1336,10 @@ void CPUUpdateRegister(u32 address, u16 value)
           CPUCompareVCOUNT();
         }
       }
-      renderLine = gfxChooseRenderer();
+      GFX::chooseRenderer();
       // we only care about changes in BG0-BG3
       if(changeBG) {
-        gfxClearRenderBuffers(false);
+        GFX::clearRenderBuffers(false);
       }
       break;
     }
@@ -1450,22 +1417,22 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x28:
     BG2X_L = value;
     UPDATE_REG(0x28, BG2X_L);
-    gfxBG2Changed |= 1;
+    GFX::gfxBG2Changed |= 1;
     break;
   case 0x2A:
     BG2X_H = (value & 0xFFF);
     UPDATE_REG(0x2A, BG2X_H);
-    gfxBG2Changed |= 1;
+    GFX::gfxBG2Changed |= 1;
     break;
   case 0x2C:
     BG2Y_L = value;
     UPDATE_REG(0x2C, BG2Y_L);
-    gfxBG2Changed |= 2;
+    GFX::gfxBG2Changed |= 2;
     break;
   case 0x2E:
     BG2Y_H = value & 0xFFF;
     UPDATE_REG(0x2E, BG2Y_H);
-    gfxBG2Changed |= 2;
+    GFX::gfxBG2Changed |= 2;
     break;
   case 0x30:
     BG3PA = value;
@@ -1486,32 +1453,32 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x38:
     BG3X_L = value;
     UPDATE_REG(0x38, BG3X_L);
-    gfxBG3Changed |= 1;
+    GFX::gfxBG3Changed |= 1;
     break;
   case 0x3A:
     BG3X_H = value & 0xFFF;
     UPDATE_REG(0x3A, BG3X_H);
-    gfxBG3Changed |= 1;
+    GFX::gfxBG3Changed |= 1;
     break;
   case 0x3C:
     BG3Y_L = value;
     UPDATE_REG(0x3C, BG3Y_L);
-    gfxBG3Changed |= 2;
+    GFX::gfxBG3Changed |= 2;
     break;
   case 0x3E:
     BG3Y_H = value & 0xFFF;
     UPDATE_REG(0x3E, BG3Y_H);
-    gfxBG3Changed |= 2;
+    GFX::gfxBG3Changed |= 2;
     break;
   case 0x40:
     WIN0H = value;
     UPDATE_REG(0x40, WIN0H);
-    CPUUpdateWindow0();
+    GFX::updateWindow0();
     break;
   case 0x42:
     WIN1H = value;
     UPDATE_REG(0x42, WIN1H);
-    CPUUpdateWindow1();
+    GFX::updateWindow1();
     break;
   case 0x44:
     WIN0V = value;
@@ -1536,7 +1503,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x50:
     BLDMOD = value & 0x3FFF;
     UPDATE_REG(0x50, BLDMOD);
-    renderLine = gfxChooseRenderer();
+    GFX::chooseRenderer();
     break;
   case 0x52:
     COLEV = value & 0x1F1F;
@@ -2176,12 +2143,12 @@ void CPUReset()
   dma3Source = 0;
   dma3Dest = 0;
   cpuSaveGameFunc = flashSaveDecide;
-  renderLine = mode0RenderLine;
+  GFX::chooseRenderer();
   frameCount = 0;
   saveType = 0;
   layerEnable = DISPCNT;
 
-  gfxClearRenderBuffers(true);
+  GFX::clearRenderBuffers(true);
 
   for(int i = 0; i < 256; i++) {
     map[i].address = (u8 *)&dummyAddress;
@@ -2218,8 +2185,8 @@ void CPUReset()
 
   soundReset();
 
-  CPUUpdateWindow0();
-  CPUUpdateWindow1();
+  GFX::updateWindow0();
+  GFX::updateWindow1();
 
   switch(cpuSaveType) {
   case 0: // automatic
@@ -2471,28 +2438,28 @@ void CPULoop(int ticks)
           } else {
             if(frameCount >= framesToSkip)
             {
-              (*renderLine)();
+              GFX::renderLine();
                   u32 *dest = (u32 *)pix + 240 * VCOUNT;
                   for(int x = 0; x < 240; ) {
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
 
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
 
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
 
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
+                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
                   }
             }
             // entering H-Blank
