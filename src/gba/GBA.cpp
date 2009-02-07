@@ -2376,9 +2376,7 @@ void CPULoop(int ticks)
               }
               u32 joy = 0;
               // update joystick information
-              if(systemReadJoypads())
-                // read default joystick
-                joy = systemReadJoypad(-1);
+              joy = systemReadJoypad();
               P1 = 0x03FF ^ (joy & 0x3FF);
               if(cpuEEPROMSensorEnabled)
                 systemUpdateMotionSensor();
@@ -2665,8 +2663,6 @@ struct EmulatedSystem GBASystem = {
   CPUWriteMemState,
   // emuUpdateCPSR
   CPUUpdateCPSR,
-  // emuHasDebugger
-  true,
   // emuCount
   250000
 };

@@ -28,8 +28,6 @@ struct EmulatedSystem {
   bool (*emuWriteMemState)(char *, int);
   // emulator update CPSR (ARM only)
   void (*emuUpdateCPSR)();
-  // emulator has debugger
-  bool emuHasDebugger;
   // clock ticks to emulate
   int emuCount;
 };
@@ -37,10 +35,8 @@ struct EmulatedSystem {
 extern void log(const char *,...);
 
 extern void systemDrawScreen(u32 *pix);
-// updates the joystick data
-extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick
-extern u32 systemReadJoypad(int);
+extern u32 systemReadJoypad();
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
 extern SoundDriver * systemSoundInit();

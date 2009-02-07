@@ -50,14 +50,9 @@ void systemDrawScreen(u32 *pix)
   GUI()->vDrawScreen(pix);
 }
 
-bool systemReadJoypads()
+u32 systemReadJoypad()
 {
-  return true;
-}
-
-u32 systemReadJoypad(int joy)
-{
-  return inputReadJoypad(joy);
+  return inputReadJoypad(-1);
 }
 
 void systemShowSpeed(int _iSpeed)
