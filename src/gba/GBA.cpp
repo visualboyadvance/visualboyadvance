@@ -428,7 +428,6 @@ static bool CPUReadState(gzFile gzFile)
   if(eepromInUse)
     gbaSaveType = 3;
 
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
   if(armState) {
     ARM_PREFETCH;
   } else {
@@ -525,7 +524,6 @@ static bool CPUReadBatteryFile(const char *fileName)
 
   long size = ftell(file);
   fseek(file, 0, SEEK_SET);
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   if(size == 512 || size == 0x2000) {
     if(fread(eepromData, 1, size, file) != (size_t)size) {
@@ -619,8 +617,6 @@ static void CPUCleanUp()
     free(ioMem);
     ioMem = NULL;
   }
-
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 }
 
 bool CPUInitMemory()
@@ -628,8 +624,6 @@ bool CPUInitMemory()
   if(rom != NULL) {
     CPUCleanUp();
   }
-
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   rom = (u8 *)malloc(0x2000000);
   if(rom == NULL) {
@@ -2239,8 +2233,6 @@ void CPUReset()
   }
 
   ARM_PREFETCH;
-
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   cpuDmaHack = false;
 

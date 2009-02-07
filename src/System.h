@@ -58,10 +58,6 @@ extern void systemFrame();
 extern u32 systemColorMap32[0x10000];
 extern int systemVerbose;
 extern int systemFrameSkip;
-extern int systemSaveUpdateCounter;
 extern int systemSpeed;
-
-#define SYSTEM_SAVE_UPDATED 30
-#define SYSTEM_SAVE_NOT_UPDATED 0
 
 #endif // SYSTEM_H

@@ -169,7 +169,6 @@ void eepromWrite(u32 /* address */, u8 value)
       for(int i = 0; i < 8; i++) {
         eepromData[(eepromAddress << 3) + i] = eepromBuffer[i];
       }
-      systemSaveUpdateCounter = SYSTEM_SAVE_UPDATED;
     } else if(eepromBits == 0x41) {
       eepromMode = EEPROM_IDLE;
       eepromByte = 0;

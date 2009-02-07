@@ -441,7 +441,6 @@ void Window::vInitSystem()
   		//	| VERBOSE_DMA0 | VERBOSE_DMA1 | VERBOSE_DMA2 | VERBOSE_DMA3
   			| VERBOSE_UNDEFINED | VERBOSE_AGBPRINT | VERBOSE_SOUNDOUTPUT;
 
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
   systemFrameSkip = 2;
 
   emulating = 0;

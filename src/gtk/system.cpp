@@ -26,7 +26,6 @@
 // Required vars, used by the emulator core
 //
 int  systemVerbose;
-int  systemSaveUpdateCounter;
 int  systemFrameSkip;
 u32  systemColorMap32[0x10000];
 
