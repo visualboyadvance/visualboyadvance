@@ -838,37 +838,28 @@ bool Window::bLoadROM(const std::string & _rsFile)
   m_sRomFile = _rsFile;
   const char * csFile = _rsFile.c_str();
 
-  IMAGE_TYPE eType = utilFindType(csFile);
-  if (eType == IMAGE_UNKNOWN)
+  bool bUsableImage = utilIsUsableGBAImage(csFile);
+  
+  if (!bUsableImage)
   {
     vPopupError(_("Unknown file type %s"), csFile);
     return false;
   }
 
-  bool bLoaded = false;
-  if (eType == IMAGE_GB)
-  {
-    vPopupError(_("Game Boy roms are not supported"));
+  if (!CPUInitMemory())
     return false;
-  }
-  else if (eType == IMAGE_GBA)
+
+  int iSize = CPULoadRom(csFile);
+  bool bLoaded = (iSize > 0);
+  if (bLoaded)
   {
-    if (!CPUInitMemory())
-    	return false;
-    	
-    int iSize = CPULoadRom(csFile);
-    bLoaded = (iSize > 0);
-    if (bLoaded)
-    {
-      m_eCartridge = CartridgeGBA;
-      m_stEmulator = GBASystem;
+    m_eCartridge = CartridgeGBA;
+    m_stEmulator = GBASystem;
 
-      CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
-      CPUReset();
-    }
+    CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
+    CPUReset();
   }
-
-  if (! bLoaded)
+  else
   {
     return false;
   }

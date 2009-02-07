@@ -56,25 +56,7 @@ bool utilIsGBAImage(const char * file)
   return false;
 }
 
-bool utilIsGBImage(const char * file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if((_stricmp(p, ".dmg") == 0) ||
-         (_stricmp(p, ".gb") == 0) ||
-         (_stricmp(p, ".gbc") == 0) ||
-         (_stricmp(p, ".cgb") == 0) ||
-         (_stricmp(p, ".sgb") == 0))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool utilIsGzipFile(const char *file)
+static bool utilIsGzipFile(const char *file)
 {
   if(strlen(file) > 3) {
     const char * p = strrchr(file,'.');
@@ -91,7 +73,7 @@ bool utilIsGzipFile(const char *file)
 }
 
 // strip .gz or .z off end
-void utilStripDoubleExtension(const char *file, char *buffer)
+static void utilStripDoubleExtension(const char *file, char *buffer)
 {
   if(buffer != file) // allows conversion in place
     strcpy(buffer, file);
@@ -147,24 +129,19 @@ static File_Extractor* scan_arc(const char *file, bool (*accept)(const char *),
 	return fe;
 }
 
-static bool utilIsImage(const char *file)
-{
-	return utilIsGBAImage(file) || utilIsGBImage(file);
-}
-
-IMAGE_TYPE utilFindType(const char *file)
+bool utilIsUsableGBAImage(const char *file)
 {
 	char buffer [2048];
-	if ( !utilIsImage( file ) ) // TODO: utilIsArchive() instead?
+	if ( !utilIsGBAImage( file ) ) // TODO: utilIsArchive() instead?
 	{
-		File_Extractor* fe = scan_arc(file,utilIsImage,buffer);
+		File_Extractor* fe = scan_arc(file,utilIsGBAImage,buffer);
 		if(!fe)
-			return IMAGE_UNKNOWN;
+			return false;
 		fex_close(fe);
 		file = buffer;
 	}
 
-	return utilIsGBAImage(file) ? IMAGE_GBA : IMAGE_GB;
+	return true;
 }
 
 static int utilGetSize(int size)
