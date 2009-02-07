@@ -35,7 +35,7 @@ inline VBA::Window * GUI()
   return VBA::Window::poGetInstance();
 }
 
-void systemMessage(int _iId, const char * _csFormat, ...)
+void systemMessage(const char * _csFormat, ...)
 {
   va_list args;
   va_start(args, _csFormat);

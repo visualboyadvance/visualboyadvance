@@ -5,7 +5,6 @@
 
 
 #include "System.h"
-#include "NLS.h"
 #include "Util.h"
 #include "gba/GBA.h"
 #include "gba/Globals.h"
@@ -95,7 +94,7 @@ static File_Extractor* scan_arc(const char *file, bool (*accept)(const char *),
 	File_Extractor* fe = fex_open( file, &err );
 	if(!fe)
 	{
-		systemMessage(MSG_CANNOT_OPEN_FILE, N_("Cannot open file %s: %s"), file, err);
+		systemMessage("Cannot open file %s: %s", file, err);
 		return NULL;
 	}
 
@@ -114,15 +113,14 @@ static File_Extractor* scan_arc(const char *file, bool (*accept)(const char *),
 
 		fex_err_t err = fex_next(fe);
 		if(err) {
-			systemMessage(MSG_BAD_ZIP_FILE, N_("Cannot read archive %s: %s"), file, err);
+			systemMessage("Cannot read archive %s: %s", file, err);
 			fex_close(fe);
 			return NULL;
 		}
 	}
 
 	if(!found) {
-		systemMessage(MSG_NO_IMAGE_ON_ZIP,
-									N_("No image found in file %s"), file);
+		systemMessage("No image found in file %s", file);
 		fex_close(fe);
 		return NULL;
 	}
@@ -175,8 +173,7 @@ u8 *utilLoad(const char *file,
 		image = (u8 *)malloc(utilGetSize(size));
 		if(image == NULL) {
 			fex_close(fe);
-			systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-										"data");
+			systemMessage("Failed to allocate memory for %s", "data");
 			return NULL;
 		}
 		size = fileSize;
@@ -187,8 +184,7 @@ u8 *utilLoad(const char *file,
 	fex_err_t err = fex_read_once(fe, image, read);
 	fex_close(fe);
 	if(err) {
-		systemMessage(MSG_ERROR_READING_IMAGE,
-									N_("Error reading image from %s: %s"), buffer, err);
+		systemMessage("Error reading image from %s: %s", buffer, err);
 		if(data == NULL)
 			free(image);
 		return NULL;

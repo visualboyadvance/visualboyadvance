@@ -34,7 +34,7 @@ extern void systemDrawScreen(u32 *pix);
 // return information about the given joystick, -1 for default joystick
 extern u32 systemReadJoypad();
 extern u32 systemGetClock();
-extern void systemMessage(int, const char *, ...);
+extern void systemMessage(const char *, ...);
 extern SoundDriver * systemSoundInit();
 extern void systemScreenMessage(const char *);
 extern void systemUpdateMotionSensor();

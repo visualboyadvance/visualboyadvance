@@ -13,7 +13,6 @@
 #include "Flash.h"
 #include "Sound.h"
 #include "Sram.h"
-#include "../NLS.h"
 #include "../Util.h"
 #include "../common/Port.h"
 #include "../System.h"
@@ -306,7 +305,7 @@ static bool CPUWriteState(const char *file)
   gzFile gzFile = utilGzOpen(file, "wb");
 
   if(gzFile == NULL) {
-    systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), file);
+    systemMessage("Error creating file %s", file);
     return false;
   }
 
@@ -322,9 +321,7 @@ static bool CPUReadState(gzFile gzFile)
   int version = utilReadInt(gzFile);
 
   if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_11) {
-    systemMessage(MSG_UNSUPPORTED_VBA_SGM,
-                  N_("Unsupported VisualBoyAdvance save game version %d"),
-                  version);
+    systemMessage("Unsupported VisualBoyAdvance save game version %d", version);
     return false;
   }
 
@@ -337,7 +334,7 @@ static bool CPUReadState(gzFile gzFile)
     for(int i = 0; i < 16; i++)
       if(romname[i] < 32)
         romname[i] = 32;
-    systemMessage(MSG_CANNOT_LOAD_SGM, N_("Cannot load save game for %s"), romname);
+    systemMessage("Cannot load save game for %s", romname);
     return false;
   }
 
@@ -391,8 +388,7 @@ static bool CPUReadState(gzFile gzFile)
     gbaSaveType = 5;
     break;
   default:
-    systemMessage(MSG_UNSUPPORTED_SAVE_TYPE,
-                  N_("Unsupported save type %d"), saveType);
+    systemMessage("Unsupported save type %d", saveType);
     break;
   }
   if(eepromInUse)
@@ -442,8 +438,7 @@ static bool CPUWriteBatteryFile(const char *fileName)
     FILE *file = fopen(fileName, "wb");
 
     if(!file) {
-      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
-                    fileName);
+      systemMessage("Error creating file %s", fileName);
       return false;
     }
 
@@ -583,63 +578,54 @@ bool CPUInitMemory()
 
   rom = (u8 *)malloc(0x2000000);
   if(rom == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "ROM");
+    systemMessage("Failed to allocate memory for %s", "ROM");
     return false;
   }
   workRAM = (u8 *)calloc(1, 0x40000);
   if(workRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "WRAM");
+    systemMessage("Failed to allocate memory for %s", "WRAM");
     return false;
   }
 
   bios = (u8 *)calloc(1,0x4000);
   if(bios == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "BIOS");
+    systemMessage("Failed to allocate memory for %s", "BIOS");
     CPUCleanUp();
     return false;
   }
   internalRAM = (u8 *)calloc(1,0x8000);
   if(internalRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IRAM");
+    systemMessage("Failed to allocate memory for %s", "IRAM");
     CPUCleanUp();
     return false;
   }
   paletteRAM = (u8 *)calloc(1,0x400);
   if(paletteRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PRAM");
+    systemMessage("Failed to allocate memory for %s", "PRAM");
     CPUCleanUp();
     return false;
   }
   vram = (u8 *)calloc(1, 0x20000);
   if(vram == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "VRAM");
+    systemMessage("Failed to allocate memory for %s", "VRAM");
     CPUCleanUp();
     return false;
   }
   oam = (u8 *)calloc(1, 0x400);
   if(oam == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "OAM");
+    systemMessage("Failed to allocate memory for %s", "OAM");
     CPUCleanUp();
     return false;
   }
   
   if (!Display::init()) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PIX");
+    systemMessage("Failed to allocate memory for %s", "PIX");
     CPUCleanUp();
     return false;
   }
   ioMem = (u8 *)calloc(1, 0x400);
   if(ioMem == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IO");
+    systemMessage("Failed to allocate memory for %s", "IO");
     CPUCleanUp();
     return false;
   }
@@ -837,7 +823,7 @@ static void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
       reg[17].I = reg[SPSR_UND].I;
     break;
   default:
-    systemMessage(MSG_UNSUPPORTED_ARM_MODE, N_("Unsupported ARM mode %02x"), mode);
+    systemMessage("Unsupported ARM mode %02x", mode);
     break;
   }
   armMode = mode;
@@ -1855,7 +1841,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
                 CPUIsGBABios,
                 bios,
                 size)) {
-         systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
+         systemMessage("Invalid BIOS file size");
     }
 
   int i = 0;

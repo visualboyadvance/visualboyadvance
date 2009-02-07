@@ -12,7 +12,6 @@
 #include "Flash.h"
 #include "Sound.h"
 #include "Sram.h"
-#include "../NLS.h"
 #include "../Util.h"
 #include "../System.h"
 
