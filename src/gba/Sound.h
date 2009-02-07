@@ -25,19 +25,9 @@ void soundResume();
 // Cleans up sound. Afterwards, soundInit() can be called again.
 void soundShutdown();
 
-//// GBA sound options
-
+// Manages the sample rate
 long soundGetSampleRate();
 void soundSetSampleRate(long sampleRate);
-
-//// GBA sound emulation
-
-// GBA sound registers
-#define SGCNT0_H 0x82
-#define FIFOA_L 0xa0
-#define FIFOA_H 0xa2
-#define FIFOB_L 0xa4
-#define FIFOB_H 0xa6
 
 // Resets emulated sound hardware
 void soundReset();
@@ -60,9 +50,5 @@ extern int soundTicks;          // Number of 16.8 MHz clocks until soundTick() w
 // Saves/loads emulator state
 void soundSaveGame( gzFile );
 void soundReadGame( gzFile, int version );
-
-class Multi_Buffer;
-
-void flush_samples(Multi_Buffer * buffer);
 
 #endif // SOUND_H

@@ -12,6 +12,12 @@
 
 #include "../common/SoundDriver.h"
 
+// GBA sound registers
+#define SGCNT0_H 0x82
+#define FIFOA_L 0xa0
+#define FIFOA_H 0xa2
+#define FIFOB_L 0xa4
+#define FIFOB_H 0xa6
 #define NR52 0x84
 
 SoundDriver * soundDriver = 0;
@@ -325,7 +331,7 @@ static void end_frame( blip_time_t time )
 	stereo_buffer->end_frame( time );
 }
 
-void flush_samples(Multi_Buffer * buffer)
+static void flush_samples(Multi_Buffer * buffer)
 {
 	// We want to write the data frame by frame to support legacy audio drivers
 	// that don't use the length parameter of the write method.

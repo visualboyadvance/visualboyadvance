@@ -8,10 +8,6 @@
 #include "GBAcpu.h"
 #include "GBAinline.h"
 #include "Globals.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "Sound.h"
-#include "Sram.h"
 #include "../Util.h"
 #include "../System.h"
 
