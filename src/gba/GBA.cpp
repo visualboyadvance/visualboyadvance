@@ -2601,8 +2601,6 @@ struct EmulatedSystem GBASystem = {
   CPUReadState,
   // emuWriteState
   CPUWriteState,
-  // emuUpdateCPSR
-  CPUUpdateCPSR,
   // emuCount
   250000
 };

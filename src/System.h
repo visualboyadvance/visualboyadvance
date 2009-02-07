@@ -20,8 +20,6 @@ struct EmulatedSystem {
   bool (*emuReadState)(const char *);
   // save state
   bool (*emuWriteState)(const char *);
-  // emulator update CPSR (ARM only)
-  void (*emuUpdateCPSR)();
   // clock ticks to emulate
   int emuCount;
 };
