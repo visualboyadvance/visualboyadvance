@@ -43,12 +43,9 @@ void SoundConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Window * _p
   m_poConfig = _poConfig;
   m_poWindow = _poWindow;
 
-  bool bMute = m_poConfig->oGetKey<bool>("mute");
   float fSoundVolume = m_poConfig->oGetKey<float>("volume");
 
-  if (bMute)
-    m_poVolumeComboBox->set_active(0);
-  else if (0.0f <= fSoundVolume && fSoundVolume <= 0.25f)
+  if (0.0f <= fSoundVolume && fSoundVolume <= 0.25f)
     m_poVolumeComboBox->set_active(1);
   else if (0.25f < fSoundVolume && fSoundVolume <= 0.50f)
     m_poVolumeComboBox->set_active(2);
@@ -81,30 +78,21 @@ void SoundConfigDialog::vOnVolumeChanged()
   int iVolume = m_poVolumeComboBox->get_active_row_number();
   switch (iVolume)
   {
-    case 0: // Mute
-      m_poConfig->vSetKey("mute", true);
-      m_poConfig->vSetKey("volume", 1.0f);
-      break;
     case 1: // 25 %
-      m_poConfig->vSetKey("mute", false);
       m_poConfig->vSetKey("volume", 0.25f);
       break;
     case 2: // 50 %
-      m_poConfig->vSetKey("mute", false);
       m_poConfig->vSetKey("volume", 0.50f);
       break;
     case 4: // 200 %
-      m_poConfig->vSetKey("mute", false);
       m_poConfig->vSetKey("volume", 2.00f);
       break;
     case 3: // 100 %
     default:
-      m_poConfig->vSetKey("mute", false);
       m_poConfig->vSetKey("volume", 1.00f);
       break;
   }
 
-  m_poWindow->vApplyConfigMute();
   m_poWindow->vApplyConfigVolume();
 }
 

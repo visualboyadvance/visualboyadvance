@@ -128,7 +128,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigScreenArea();
   vApplyConfigFilter();
   vApplyConfigFilterIB();
-  vApplyConfigMute();
   vApplyConfigVolume();
   vApplyConfigGBASaveType();
   vApplyConfigGBAFlashSize();
@@ -531,7 +530,6 @@ void Window::vInitConfig()
   // Sound section
   //
   m_poSoundConfig = m_oConfig.poAddSection("Sound");
-  m_poSoundConfig->vSetKey("mute",           false );
   m_poSoundConfig->vSetKey("sample_rate",    44100 );
   m_poSoundConfig->vSetKey("volume",         1.00f );
 
@@ -722,19 +720,6 @@ void Window::vApplyConfigFilterIB()
   if (emulating)
   {
     Display::drawScreen();
-  }
-}
-
-void Window::vApplyConfigMute()
-{
-  bool bMute = m_poSoundConfig->oGetKey<bool>("mute");
-  if (bMute)
-  {
-    soundSetEnable(0x000);
-  }
-  else
-  {
-    soundSetEnable(0x30f);
   }
 }
 

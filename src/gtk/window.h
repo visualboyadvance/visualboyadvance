@@ -92,7 +92,6 @@ public:
   void vApplyConfigFilter();
   void vApplyConfigFilterIB();
   void vApplyConfigScreenArea();
-  void vApplyConfigMute();
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
   void vApplyConfigGBASaveType();
@@ -110,13 +109,6 @@ protected:
     ShowNone,
     ShowPercentage,
     ShowDetailed
-  };
-
-  enum ESoundStatus
-  {
-    SoundOff,
-    SoundMute,
-    SoundOn
   };
 
   enum EColorFormat

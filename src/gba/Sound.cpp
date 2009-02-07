@@ -12,44 +12,23 @@
 
 #include "../common/SoundDriver.h"
 
-#define NR10 0x60
-#define NR11 0x62
-#define NR12 0x63
-#define NR13 0x64
-#define NR14 0x65
-#define NR21 0x68
-#define NR22 0x69
-#define NR23 0x6c
-#define NR24 0x6d
-#define NR30 0x70
-#define NR31 0x72
-#define NR32 0x73
-#define NR33 0x74
-#define NR34 0x75
-#define NR41 0x78
-#define NR42 0x79
-#define NR43 0x7c
-#define NR44 0x7d
-#define NR50 0x80
-#define NR51 0x81
 #define NR52 0x84
 
 SoundDriver * soundDriver = 0;
 
 extern bool stopState;      // TODO: silence sound when true
 
-int const SOUND_CLOCK_TICKS_ = 167772; // 1/100 second
+static int const SOUND_CLOCK_TICKS_ = 167772; // 1/100 second
 
 static u16   soundFinalWave [1600];
-long  soundSampleRate    = 44100;
-bool  soundInterpolation = true;
-bool  soundPaused        = true;
-float soundFiltering     = 0.5f;
+static long  soundSampleRate    = 44100;
+static bool  soundInterpolation = true;
+static bool  soundPaused        = true;
+static float soundFiltering     = 0.5f;
 int   SOUND_CLOCK_TICKS  = SOUND_CLOCK_TICKS_;
 int   soundTicks         = SOUND_CLOCK_TICKS_;
 
 static float soundVolume     = 1.0f;
-static int soundEnableFlag   = 0x3ff; // emulator channels enabled
 static float soundFiltering_ = -1;
 static float soundVolume_    = -1;
 
@@ -114,7 +93,7 @@ void Gba_Pcm::apply_control( int idx )
 	shift = ~ioMem [SGCNT0_H] >> (2 + idx) & 1;
 
 	int ch = 0;
-	if ( (soundEnableFlag >> idx & 0x100) && (ioMem [NR52] & 0x80) )
+	if (ioMem [NR52] & 0x80)
 		ch = ioMem [SGCNT0_H+1] >> (idx * 4) & 3;
 
 	Blip_Buffer* out = 0;
@@ -417,11 +396,8 @@ static void apply_muting()
 		// APU
 		for ( int i = 0; i < 4; i++ )
 		{
-			if ( soundEnableFlag >> i & 1 )
 				gb_apu->set_output( stereo_buffer->center(),
 						stereo_buffer->left(), stereo_buffer->right(), i );
-			else
-				gb_apu->set_output( 0, 0, 0, i );
 		}
 	}
 }
@@ -502,17 +478,6 @@ float soundGetVolume()
 	return soundVolume;
 }
 
-void soundSetEnable(int channels)
-{
-	soundEnableFlag = channels;
-	apply_muting();
-}
-
-int soundGetEnable()
-{
-	return (soundEnableFlag & 0x30f);
-}
-
 void soundReset()
 {
 	soundDriver->reset();
@@ -563,61 +528,44 @@ void soundSetSampleRate(long sampleRate)
 	}
 }
 
-static int dummy_state [16];
-
-#define SKIP( type, name ) { dummy_state, sizeof (type) }
-
-#define LOAD( type, name ) { &name, sizeof (type) }
-
 static gb_apu_state_t state;
 
 // State format
 static variable_desc gba_state [] =
 {
 	// PCM
-	LOAD( int, pcm [0].readIndex ),
-	LOAD( int, pcm [0].count ),
-	LOAD( int, pcm [0].writeIndex ),
-	LOAD(u8[32],pcm[0].fifo ),
-	LOAD( int, pcm [0].dac ),
+	{ &pcm[0].readIndex,  sizeof(int)    },
+	{ &pcm[0].count,      sizeof(int)    },
+	{ &pcm[0].writeIndex, sizeof(int)    },
+	{ &pcm[0].fifo,       sizeof(u8[32]) },
+	{ &pcm[0].dac,        sizeof(int)    },
 
-	SKIP( int [4], room_for_expansion ),
-
-	LOAD( int, pcm [1].readIndex ),
-	LOAD( int, pcm [1].count ),
-	LOAD( int, pcm [1].writeIndex ),
-	LOAD(u8[32],pcm[1].fifo ),
-	LOAD( int, pcm [1].dac ),
-
-	SKIP( int [4], room_for_expansion ),
+	{ &pcm[1].readIndex,  sizeof(int)    },
+	{ &pcm[1].count,      sizeof(int)    },
+	{ &pcm[1].writeIndex, sizeof(int)    },
+	{ &pcm[1].fifo,       sizeof(u8[32]) },
+	{ &pcm[1].dac,        sizeof(int)    },
 
 	// APU
-	LOAD( u8 [0x40], state.regs ),      // last values written to registers and wave RAM (both banks)
-	LOAD( int, state.frame_time ),      // clocks until next frame sequencer action
-	LOAD( int, state.frame_phase ),     // next step frame sequencer will run
+	{ &state.regs,        sizeof(u8 [0x40]) }, // last values written to registers and wave RAM (both banks)
+	{ &state.frame_time,  sizeof(int)       }, // clocks until next frame sequencer action
+	{ &state.frame_phase, sizeof(int)       }, // next step frame sequencer will run
 
-	LOAD( int, state.sweep_freq ),      // sweep's internal frequency register
-	LOAD( int, state.sweep_delay ),     // clocks until next sweep action
-	LOAD( int, state.sweep_enabled ),
-	LOAD( int, state.sweep_neg ),       // obscure internal flag
-	LOAD( int, state.noise_divider ),
-	LOAD( int, state.wave_buf ),        // last read byte of wave RAM
+	{ &state.sweep_freq,    sizeof(int)     }, // sweep's internal frequency register
+	{ &state.sweep_delay,   sizeof(int)     }, // clocks until next sweep action
+	{ &state.sweep_enabled, sizeof(int)     },
+	{ &state.sweep_neg,     sizeof(int)     }, // obscure internal flag
+	{ &state.noise_divider, sizeof(int)     },
+	{ &state.wave_buf,      sizeof(int)     }, // last read byte of wave RAM
 
-	LOAD( int [4], state.delay ),       // clocks until next channel action
-	LOAD( int [4], state.length_ctr ),
-	LOAD( int [4], state.phase ),       // square/wave phase, noise LFSR
-	LOAD( int [4], state.enabled ),     // internal enabled flag
+	{ &state.delay,         sizeof(int [4]) }, // clocks until next channel action
+	{ &state.length_ctr,    sizeof(int [4]) },
+	{ &state.phase,         sizeof(int [4]) }, // square/wave phase, noise LFSR
+	{ &state.enabled,       sizeof(int [4]) }, // internal enabled flag
 
-	LOAD( int [3], state.env_delay ),   // clocks until next envelope action
-	LOAD( int [3], state.env_volume ),
-	LOAD( int [3], state.env_enabled ),
-
-	SKIP( int [13], room_for_expansion ),
-
-	// Emulator
-	LOAD( int, soundEnableFlag ),
-
-	SKIP( int [15], room_for_expansion ),
+	{ &state.env_delay,     sizeof(int [3]) }, // clocks until next envelope action
+	{ &state.env_volume,    sizeof(int [3]) },
+	{ &state.env_enabled,   sizeof(int [3]) },
 
 	{ NULL, 0 }
 };
@@ -625,9 +573,6 @@ static variable_desc gba_state [] =
 void soundSaveGame( gzFile out )
 {
 	gb_apu->save_state( &state );
-
-	// Be sure areas for expansion get written as zero
-	memset( dummy_state, 0, sizeof dummy_state );
 
 	utilWriteData( out, gba_state );
 }
