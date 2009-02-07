@@ -16,7 +16,6 @@ bool speedup = false;
 bool cpuIsMultiBoot = false;
 int layerEnable = 0xff00;
 int cpuSaveType = 0;
-bool skipSaveGameBattery = false;
 
 u8 *bios = 0;
 u8 *rom = 0;

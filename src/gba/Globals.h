@@ -31,7 +31,6 @@ extern bool speedup;
 extern bool cpuIsMultiBoot;
 extern int layerEnable;
 extern int cpuSaveType;
-extern bool skipSaveGameBattery; // skip battery data when reading save states
 
 extern u8 *bios;
 extern u8 *rom;

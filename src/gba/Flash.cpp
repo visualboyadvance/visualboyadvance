@@ -4,7 +4,6 @@
 #include "Globals.h"
 #include "Flash.h"
 #include "Sram.h"
-#include "../Util.h"
 
 #define FLASH_READ_ARRAY         0
 #define FLASH_CMD_1              1
@@ -18,21 +17,12 @@
 #define FLASH_SETBANK            9
 
 u8 flashSaveMemory[0x20000];
-int flashState = FLASH_READ_ARRAY;
-int flashReadState = FLASH_READ_ARRAY;
+static int flashState = FLASH_READ_ARRAY;
+static int flashReadState = FLASH_READ_ARRAY;
 int flashSize = 0x10000;
-int flashDeviceID = 0x1b;
-int flashManufacturerID = 0x32;
-int flashBank = 0;
-
-static variable_desc flashSaveData3[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
-  { &flashSize, sizeof(int) },
-  { &flashBank, sizeof(int) },
-  { &flashSaveMemory[0], 0x20000 },
-  { NULL, 0 }
-};
+static int flashDeviceID = 0x1b;
+static int flashManufacturerID = 0x32;
+static int flashBank = 0;
 
 void flashInit()
 {
@@ -44,22 +34,6 @@ void flashReset()
   flashState = FLASH_READ_ARRAY;
   flashReadState = FLASH_READ_ARRAY;
   flashBank = 0;
-}
-
-void flashSaveGame(gzFile gzFile)
-{
-  utilWriteData(gzFile, flashSaveData3);
-}
-
-void flashReadGame(gzFile gzFile, int version)
-{
-  utilReadData(gzFile, flashSaveData3);
-}
-
-void flashReadGameSkip(gzFile gzFile, int version)
-{
-  // skip the flash data in a save game
-  utilReadDataSkip(gzFile, flashSaveData3);
 }
 
 void flashSetSize(int size)

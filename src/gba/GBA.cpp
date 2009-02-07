@@ -295,8 +295,6 @@ static bool CPUWriteState(gzFile gzFile)
   Display::saveState(gzFile);
   utilGzWrite(gzFile, ioMem, 0x400);
 
-  eepromSaveGame(gzFile);
-  flashSaveGame(gzFile);
   soundSaveGame(gzFile);
   rtcSaveGame(gzFile);
 
@@ -383,15 +381,6 @@ static bool CPUReadState(gzFile gzFile)
   Display::readState(gzFile);
   utilGzRead(gzFile, ioMem, 0x400);
 
-  if(skipSaveGameBattery) {
-    // skip eeprom data
-    eepromReadGameSkip(gzFile, version);
-    // skip flash data
-    flashReadGameSkip(gzFile, version);
-  } else {
-    eepromReadGame(gzFile, version);
-    flashReadGame(gzFile, version);
-  }
   soundReadGame(gzFile, version);
 
   rtcReadGame(gzFile);

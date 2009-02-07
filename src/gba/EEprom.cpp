@@ -1,29 +1,23 @@
 #include <memory.h>
 #include "GBA.h"
 #include "EEprom.h"
-#include "../Util.h"
+
+#define EEPROM_IDLE           0
+#define EEPROM_READADDRESS    1
+#define EEPROM_READDATA       2
+#define EEPROM_READDATA2      3
+#define EEPROM_WRITEDATA      4
 
 extern int cpuDmaCount;
 
-int eepromMode = EEPROM_IDLE;
-int eepromByte = 0;
-int eepromBits = 0;
-int eepromAddress = 0;
+static int eepromMode = EEPROM_IDLE;
+static int eepromByte = 0;
+static int eepromBits = 0;
+static int eepromAddress = 0;
 u8 eepromData[0x2000];
-u8 eepromBuffer[16];
+static u8 eepromBuffer[16];
 bool eepromInUse = false;
 int eepromSize = 512;
-
-variable_desc eepromSaveData[] = {
-  { &eepromMode, sizeof(int) },
-  { &eepromByte, sizeof(int) },
-  { &eepromBits , sizeof(int) },
-  { &eepromAddress , sizeof(int) },
-  { &eepromInUse, sizeof(bool) },
-  { &eepromData[0], 512 },
-  { &eepromBuffer[0], 16 },
-  { NULL, 0 }
-};
 
 void eepromInit()
 {
@@ -38,28 +32,6 @@ void eepromReset()
   eepromAddress = 0;
   eepromInUse = false;
   eepromSize = 512;
-}
-
-void eepromSaveGame(gzFile gzFile)
-{
-  utilWriteData(gzFile, eepromSaveData);
-  utilWriteInt(gzFile, eepromSize);
-  utilGzWrite(gzFile, eepromData, 0x2000);
-}
-
-void eepromReadGame(gzFile gzFile, int version)
-{
-  utilReadData(gzFile, eepromSaveData);
-  eepromSize = utilReadInt(gzFile);
-  utilGzRead(gzFile, eepromData, 0x2000);
-}
-
-void eepromReadGameSkip(gzFile gzFile, int version)
-{
-  // skip the eeprom data in a save game
-  utilReadDataSkip(gzFile, eepromSaveData);
-  utilGzSeek(gzFile, sizeof(int), SEEK_CUR);
-  utilGzSeek(gzFile, 0x2000, SEEK_CUR);
 }
 
 int eepromRead(u32 /* address */)
