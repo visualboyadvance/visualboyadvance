@@ -1,7 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "System.h"
+#include "common/Types.h"
+#include <zlib.h>
 
 // save game
 typedef struct {
@@ -17,7 +18,6 @@ void utilPutDword(u8 *, u32);
 void utilPutWord(u8 *, u16);
 void utilWriteData(gzFile, variable_desc *);
 void utilReadData(gzFile, variable_desc *);
-void utilReadDataSkip(gzFile, variable_desc *);
 int utilReadInt(gzFile);
 void utilWriteInt(gzFile, int);
 gzFile utilGzOpen(const char *file, const char *mode);

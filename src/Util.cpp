@@ -215,14 +215,6 @@ void utilReadData(gzFile gzFile, variable_desc* data)
   }
 }
 
-void utilReadDataSkip(gzFile gzFile, variable_desc* data)
-{
-  while(data->address) {
-    utilGzSeek(gzFile, data->size, SEEK_CUR);
-    data++;
-  }
-}
-
 void utilWriteData(gzFile gzFile, variable_desc *data)
 {
   while(data->address) {

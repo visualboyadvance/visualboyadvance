@@ -1,6 +1,8 @@
 #ifndef RTC_H
 #define RTC_H
 
+#include "../Util.h"
+
 u16 rtcRead(u32 address);
 bool rtcWrite(u32 address, u16 value);
 void rtcEnable(bool);

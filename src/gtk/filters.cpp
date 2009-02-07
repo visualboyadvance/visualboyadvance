@@ -29,7 +29,7 @@ struct {
 }
 static const astFilters[] =
 {
-  { "None",                1, { NULL,         NULL           } }
+  { "None",                1, { 0,         0           } }
 };
 
 struct {
@@ -38,7 +38,7 @@ struct {
 }
 static const astFiltersIB[] =
 {
-  { "None",                      { NULL,         NULL           } }
+  { "None",                      { 0,         0           } }
 };
 
 Filter pvGetFilter(EFilter _eFilter, EFilterDepth _eDepth)

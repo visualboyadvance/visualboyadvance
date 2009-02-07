@@ -3,8 +3,6 @@
 
 #include "common/Types.h"
 
-#include <zlib.h>
-
 class SoundDriver;
 
 struct EmulatedSystem {
