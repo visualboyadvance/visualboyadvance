@@ -86,7 +86,7 @@ public:
   bool bLoadROM(const std::string & _rsFile);
   void vPopupError(const char * _csFormat, ...);
   void vPopupErrorV(const char * _csFormat, va_list _args);
-  void vDrawScreen();
+  void vDrawScreen(u32 *pix);
   void vComputeFrameskip(int _iRate);
   void vShowSpeed(int _iSpeed);
   void vApplyConfigFilter();

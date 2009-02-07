@@ -38,6 +38,5 @@ int utilGzClose(gzFile file);
 z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence);
 long utilGzMemTell(gzFile file);
 void utilGBAFindSave(const u8 *, const int);
-void utilUpdateSystemColorMaps(int redShift, int greenShift, int blueShift);
 
 #endif // UTIL_H

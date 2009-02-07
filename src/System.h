@@ -37,7 +37,7 @@ struct EmulatedSystem {
 extern void log(const char *,...);
 
 extern bool systemPauseOnFrame();
-extern void systemDrawScreen();
+extern void systemDrawScreen(u32 *pix);
 // updates the joystick data
 extern bool systemReadJoypads();
 // return information about the given joystick, -1 for default joystick
@@ -55,7 +55,6 @@ extern void systemShowSpeed(int);
 extern void system10Frames(int);
 extern void systemFrame();
 
-extern u32 systemColorMap32[0x10000];
 extern int systemVerbose;
 extern int systemFrameSkip;
 extern int systemSpeed;

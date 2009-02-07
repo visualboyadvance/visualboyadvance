@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <stdarg.h>
 #include <string.h>
+#include "Display.h"
 #include "GBA.h"
 #include "GBAcpu.h"
 #include "GBAinline.h"
@@ -291,7 +292,7 @@ static bool CPUWriteState(gzFile gzFile)
   utilGzWrite(gzFile, workRAM, 0x40000);
   utilGzWrite(gzFile, vram, 0x20000);
   utilGzWrite(gzFile, oam, 0x400);
-  utilGzWrite(gzFile, pix, 4*240*160);
+  Display::saveState(gzFile);
   utilGzWrite(gzFile, ioMem, 0x400);
 
   eepromSaveGame(gzFile);
@@ -379,7 +380,7 @@ static bool CPUReadState(gzFile gzFile)
   utilGzRead(gzFile, workRAM, 0x40000);
   utilGzRead(gzFile, vram, 0x20000);
   utilGzRead(gzFile, oam, 0x400);
-  utilGzRead(gzFile, pix, 4*240*160);
+  Display::readState(gzFile);
   utilGzRead(gzFile, ioMem, 0x400);
 
   if(skipSaveGameBattery) {
@@ -603,10 +604,7 @@ static void CPUCleanUp()
     bios = NULL;
   }
 
-  if(pix != NULL) {
-    free(pix);
-    pix = NULL;
-  }
+  Display::uninit();
 
   if(oam != NULL) {
     free(oam);
@@ -673,8 +671,8 @@ bool CPUInitMemory()
     CPUCleanUp();
     return false;
   }
-  pix = (u8 *)calloc(1, 4 * 240 * 160);
-  if(pix == NULL) {
+  
+  if (!Display::init()) {
     systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
                   "PIX");
     CPUCleanUp();
@@ -1986,7 +1984,7 @@ void CPUReset()
   // clean palette
   memset(paletteRAM, 0, 0x400);
   // clean picture
-  memset(pix, 0, 4*160*240);
+  Display::clear();
   // clean vram
   memset(vram, 0, 0x20000);
   // clean io memory
@@ -2416,7 +2414,7 @@ void CPULoop(int ticks)
               }
               CPUCheckDMA(1, 0x0f);
               if(frameCount >= framesToSkip) {
-                systemDrawScreen();
+                Display::drawScreen();
                 frameCount = 0;
               } else
                 frameCount++;
@@ -2431,28 +2429,7 @@ void CPULoop(int ticks)
             if(frameCount >= framesToSkip)
             {
               GFX::renderLine();
-                  u32 *dest = (u32 *)pix + 240 * VCOUNT;
-                  for(int x = 0; x < 240; ) {
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                    *dest++ = systemColorMap32[GFX::lineMix[x++] & 0xFFFF];
-                  }
+              Display::drawLine(VCOUNT, GFX::lineMix);
             }
             // entering H-Blank
             DISPSTAT |= 2;

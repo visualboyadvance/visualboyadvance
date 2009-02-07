@@ -27,7 +27,6 @@
 //
 int  systemVerbose;
 int  systemFrameSkip;
-u32  systemColorMap32[0x10000];
 
 int  emulating;
 
@@ -46,9 +45,9 @@ void systemMessage(int _iId, const char * _csFormat, ...)
   va_end(args);
 }
 
-void systemDrawScreen()
+void systemDrawScreen(u32 *pix)
 {
-  GUI()->vDrawScreen();
+  GUI()->vDrawScreen(pix);
 }
 
 bool systemReadJoypads()

@@ -23,8 +23,6 @@ extern "C" {
 #define _stricmp strcasecmp
 #endif // ! _MSC_VER
 
-extern u32 systemColorMap32[0x10000];
-
 static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
 static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int) = NULL;
 static int (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
@@ -360,25 +358,4 @@ void utilGBAFindSave(const u8 *data, const int size)
   rtcEnable(rtcFound);
   cpuSaveType = saveType;
   flashSetSize(flashSize);
-}
-
-void utilUpdateSystemColorMaps(int redShift, int greenShift, int blueShift)
-{
-      for(int i = 0; i < 0x10000; i++) {
-        systemColorMap32[i] = ((i & 0x1f) << redShift) |
-          (((i & 0x3e0) >> 5) << greenShift) |
-          (((i & 0x7c00) >> 10) << blueShift);
-      }
-}
-
-// Check for existence of file.
-bool utilFileExists( const char *filename )
-{
-	FILE *f = fopen( filename, "r" );
-	if( f == NULL ) {
-		return false;
-	} else {
-		fclose( f );
-		return true;
-	}
 }

@@ -57,6 +57,7 @@ SET(SRC_MAIN
 )
 
 SET(SRC_GBA
+    src/gba/Display.cpp
     src/gba/EEprom.cpp
     src/gba/Flash.cpp
     src/gba/GBA.cpp

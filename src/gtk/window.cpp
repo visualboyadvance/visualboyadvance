@@ -28,6 +28,7 @@
 
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
+#include "../gba/Display.h"
 #include "../Util.h"
 
 #include "tools.h"
@@ -382,16 +383,16 @@ void Window::vInitColors(EColorFormat _eColorFormat)
   {
     case ColorFormatBGR:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      utilUpdateSystemColorMaps(3, 11, 19);
+      Display::initColorMap(3, 11, 19);
 #else
-      utilUpdateSystemColorMaps(27, 19, 11);
+      Display::initColorMap(27, 19, 11);
 #endif
       break;
     default:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      utilUpdateSystemColorMaps(19, 11, 3);
+      Display::initColorMap(19, 11, 3);
 #else
-      utilUpdateSystemColorMaps(11, 19, 27);
+      Display::initColorMap(11, 19, 27);
 #endif
       break;
   }
@@ -710,7 +711,7 @@ void Window::vApplyConfigFilter()
   m_poScreenArea->vSetFilter((EFilter)iFilter);
   if (emulating)
   {
-    vDrawScreen();
+    Display::drawScreen();
   }
 }
 
@@ -720,7 +721,7 @@ void Window::vApplyConfigFilterIB()
   m_poScreenArea->vSetFilterIB((EFilterIB)iFilter);
   if (emulating)
   {
-    vDrawScreen();
+    Display::drawScreen();
   }
 }
 
@@ -822,7 +823,7 @@ void Window::vUpdateScreen()
 
   if (emulating)
   {
-    vDrawScreen();
+    Display::drawScreen();
   }
   else
   {
@@ -929,9 +930,10 @@ void Window::vPopupErrorV(const char * _csFormat, va_list _args)
   g_free(csMsg);
 }
 
-void Window::vDrawScreen()
+void Window::vDrawScreen(u32 *pix)
 {
-  m_poScreenArea->vDrawPixels(pix);
+  // TODO:Remove the cast
+  m_poScreenArea->vDrawPixels((u8 *)pix);
   m_iFrameCount++;
 }
 
