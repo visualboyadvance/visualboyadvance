@@ -5,9 +5,8 @@ if( COMMAND cmake_policy )
 endif( COMMAND cmake_policy )
 
 # The project's name is VBA-M it uses C and C++ code
-PROJECT(VBA-M C CXX)
+PROJECT(VBA-M CXX)
 
-# To use the ASM core, add -DUSE_ASM_CORE=1
 # Set the version number with -DVERSION=X.X.X-uber
 
 # Version number
@@ -47,13 +46,11 @@ ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"')
 #ADD_DEFINITIONS (-DLINK_EMULATION)
 
 # Compiler flags
-SET( CMAKE_C_FLAGS "-O2 -Wall -g")
 SET( CMAKE_CXX_FLAGS "-O2 -Wall -g")
 
 # Source files definition
 SET(SRC_MAIN
     src/Util.cpp
-    src/common/memgzio.c
 )
 
 SET(SRC_GBA

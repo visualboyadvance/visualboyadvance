@@ -7,7 +7,6 @@
 #include "System.h"
 #include "NLS.h"
 #include "Util.h"
-#include "gba/Flash.h"
 #include "gba/GBA.h"
 #include "gba/Globals.h"
 #include "gba/RTC.h"
@@ -15,18 +14,9 @@
 
 #include "common/fex.h"
 
-extern "C" {
-#include "common/memgzio.h"
-}
-
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
 #endif // ! _MSC_VER
-
-static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
-static int (ZEXPORT *utilGzReadFunc)(gzFile, voidp, unsigned int) = NULL;
-static int (ZEXPORT *utilGzCloseFunc)(gzFile) = NULL;
-static z_off_t (ZEXPORT *utilGzSeekFunc)(gzFile, z_off_t, int) = NULL;
 
 void utilPutDword(u8 *p, u32 value)
 {
@@ -270,46 +260,27 @@ void utilWriteData(gzFile gzFile, variable_desc *data)
 
 gzFile utilGzOpen(const char *file, const char *mode)
 {
-  utilGzWriteFunc = (int (ZEXPORT *)(void *,void * const, unsigned int))gzwrite;
-  utilGzReadFunc = gzread;
-  utilGzCloseFunc = gzclose;
-  utilGzSeekFunc = gzseek;
-
   return gzopen(file, mode);
-}
-
-gzFile utilMemGzOpen(char *memory, int available, const char *mode)
-{
-  utilGzWriteFunc = memgzwrite;
-  utilGzReadFunc = memgzread;
-  utilGzCloseFunc = memgzclose;
-
-  return memgzopen(memory, available, mode);
 }
 
 int utilGzWrite(gzFile file, const voidp buffer, unsigned int len)
 {
-  return utilGzWriteFunc(file, buffer, len);
+  return gzwrite(file, buffer, len);
 }
 
 int utilGzRead(gzFile file, voidp buffer, unsigned int len)
 {
-  return utilGzReadFunc(file, buffer, len);
+  return gzread(file, buffer, len);
 }
 
 int utilGzClose(gzFile file)
 {
-  return utilGzCloseFunc(file);
+  return gzclose(file);
 }
 
 z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence)
 {
-	return utilGzSeekFunc(file, offset, whence);
-}
-
-long utilGzMemTell(gzFile file)
-{
-  return memtell(file);
+	return gzseek(file, offset, whence);
 }
 
 void utilGBAFindSave(const u8 *data, const int size)

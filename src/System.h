@@ -22,10 +22,6 @@ struct EmulatedSystem {
   bool (*emuReadState)(const char *);
   // save state
   bool (*emuWriteState)(const char *);
-  // load memory state (rewind)
-  bool (*emuReadMemState)(char *, int);
-  // write memory state (rewind)
-  bool (*emuWriteMemState)(char *, int);
   // emulator update CPSR (ARM only)
   void (*emuUpdateCPSR)();
   // clock ticks to emulate

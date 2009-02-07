@@ -317,26 +317,6 @@ static bool CPUWriteState(const char *file)
   return res;
 }
 
-static bool CPUWriteMemState(char *memory, int available)
-{
-  gzFile gzFile = utilMemGzOpen(memory, available, "w");
-
-  if(gzFile == NULL) {
-    return false;
-  }
-
-  bool res = CPUWriteState(gzFile);
-
-  long pos = utilGzMemTell(gzFile)+8;
-
-  if(pos >= (available))
-    res = false;
-
-  utilGzClose(gzFile);
-
-  return res;
-}
-
 static bool CPUReadState(gzFile gzFile)
 {
   int version = utilReadInt(gzFile);
@@ -427,17 +407,6 @@ static bool CPUReadState(gzFile gzFile)
   CPUUpdateRegister(0x204, CPUReadHalfWordQuick(0x4000204));
 
   return true;
-}
-
-static bool CPUReadMemState(char *memory, int available)
-{
-  gzFile gzFile = utilMemGzOpen(memory, available, "r");
-
-  bool res = CPUReadState(gzFile);
-
-  utilGzClose(gzFile);
-
-  return res;
 }
 
 static bool CPUReadState(const char * file)
@@ -2646,10 +2615,6 @@ struct EmulatedSystem GBASystem = {
   CPUReadState,
   // emuWriteState
   CPUWriteState,
-  // emuReadMemState
-  CPUReadMemState,
-  // emuWriteMemState
-  CPUWriteMemState,
   // emuUpdateCPSR
   CPUUpdateCPSR,
   // emuCount
