@@ -556,17 +556,9 @@ void soundSetSampleRate(long sampleRate)
 {
 	if ( soundSampleRate != sampleRate )
 	{
-		if ( systemCanChangeSoundQuality() )
-		{
-			soundShutdown();
-			soundSampleRate      = sampleRate;
-			soundInit();
-		}
-		else
-		{
-			soundSampleRate      = sampleRate;
-		}
-
+		soundShutdown();
+		soundSampleRate      = sampleRate;
+		soundInit();
 		remake_stereo_buffer();
 	}
 }

@@ -2418,8 +2418,6 @@ void CPULoop(int ticks)
                 frameCount = 0;
               } else
                 frameCount++;
-              if(systemPauseOnFrame())
-                ticks = 0;
             }
 
             UPDATE_REG(0x04, DISPSTAT);

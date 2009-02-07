@@ -99,16 +99,6 @@ void systemScreenMessage(const char * _csMsg)
 {
 }
 
-bool systemCanChangeSoundQuality()
-{
-  return true;
-}
-
-bool systemPauseOnFrame()
-{
-  return false;
-}
-
 SoundDriver * systemSoundInit()
 {
 	soundShutdown();
