@@ -43,9 +43,9 @@ static void clearFeatures(Features &features)
 
 static void processFeatureToken(Features &features, const std::string &token)
 {
-	if (token == "FLASH_V120" || token == "FLASH_V121" || 
-		token == "FLASH_V123" || token == "FLASH_V124" || 
-		token == "FLASH_V125" || token == "FLASH_V126" || 
+	if (token == "FLASH_V120" || token == "FLASH_V121" ||
+		token == "FLASH_V123" || token == "FLASH_V124" ||
+		token == "FLASH_V125" || token == "FLASH_V126" ||
 		token == "FLASH512_V130" || token == "FLASH512_V131")
 	{
 		features.saveType = SaveFlash;
@@ -56,8 +56,8 @@ static void processFeatureToken(Features &features, const std::string &token)
 		features.saveType = SaveFlash;
 		features.flashSize = 0x20000;
 	}
-	else if (token == "EEPROM_V111" || token == "EEPROM_V120" || 
-			 token == "EEPROM_V121" || token == "EEPROM_V122" || 
+	else if (token == "EEPROM_V111" || token == "EEPROM_V120" ||
+			 token == "EEPROM_V121" || token == "EEPROM_V122" ||
 			 token == "EEPROM_V124")
 	{
 		features.saveType = SaveEEPROM;
@@ -109,7 +109,7 @@ static void findFeatures(Features &features, const GameSerial &gs)
 	}
 	else
 	{
-		systemMessage("Error reading game database.");
+		systemMessage("Error reading the game database.");
 	}
 }
 

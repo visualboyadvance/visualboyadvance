@@ -1,11 +1,13 @@
 #ifndef EEPROM_H
 #define EEPROM_H
 
-extern int eepromRead(u32 address);
-extern void eepromWrite(u32 address, u8 value);
-extern void eepromInit();
-extern void eepromReset();
-extern u8 eepromData[0x2000];
-extern int eepromSize;
+#include <iostream>
+
+int eepromRead(u32 address);
+void eepromWrite(u32 address, u8 value);
+void eepromInit();
+void eepromReset();
+bool eepromReadBattery(FILE *file, size_t size);
+bool eepromWriteBattery(FILE *file);
 
 #endif // EEPROM_H

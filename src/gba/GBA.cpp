@@ -413,7 +413,7 @@ static bool CPUWriteBatteryFile(const char *fileName)
 			break;
 
 		case SaveEEPROM:
-			if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize)
+			if (!eepromWriteBattery(file))
 			{
 				fclose(file);
 				return false;
@@ -478,15 +478,7 @@ static bool CPUReadBatteryFile(const char *fileName)
 		break;
 
 	case SaveEEPROM:
-		if(fread(eepromData, 1, size, file) != (size_t)size)
-		{
-			fclose(file);
-			return false;
-		}
-		break;
-
-
-		if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000)
+		if (!eepromReadBattery(file, size))
 		{
 			fclose(file);
 			return false;

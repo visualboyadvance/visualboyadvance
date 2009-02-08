@@ -14,9 +14,9 @@ static int eepromMode = EEPROM_IDLE;
 static int eepromByte = 0;
 static int eepromBits = 0;
 static int eepromAddress = 0;
-u8 eepromData[0x2000];
+static u8 eepromData[0x2000];
 static u8 eepromBuffer[16];
-int eepromSize = 512;
+static int eepromSize = 512;
 
 void eepromInit()
 {
@@ -143,4 +143,14 @@ void eepromWrite(u32 /* address */, u8 value)
     }
     break;
   }
+}
+
+bool eepromReadBattery(FILE *file, size_t size)
+{
+  return fread(eepromData, 1, size, file) == size;
+}
+
+bool eepromWriteBattery(FILE *file)
+{
+  return fwrite(eepromData, 1, eepromSize, file) == (size_t)eepromSize;
 }
