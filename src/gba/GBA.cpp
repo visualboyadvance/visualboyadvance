@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <stdarg.h>
 #include <string.h>
+#include "Cartridge.h"
 #include "Display.h"
 #include "GBA.h"
 #include "GBAcpu.h"
@@ -41,14 +42,9 @@ static int dummyAddress = 0;
 static bool cpuBreakLoop = false;
 int cpuNextEvent = 0;
 
-static int gbaSaveType = 0; // used to remember the save type on reset
 static bool intState = false;
 bool stopState = false;
 bool holdState = false;
-bool cpuSramEnabled = true;
-bool cpuFlashEnabled = true;
-bool cpuEEPROMEnabled = true;
-bool cpuEEPROMSensorEnabled = false;
 
 u32 cpuPrefetch[2];
 u8 cpuBitsSet[256];
@@ -85,7 +81,7 @@ static u32 dma2Source = 0;
 static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
-void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
+void (*cpuSaveGameFunc)(u32,u8) = 0;
 static int frameCount = 0;
 static u32 lastTime = 0;
 static int count = 0;
@@ -235,13 +231,10 @@ static variable_desc saveGameStruct[] = {
   { &armIrqEnable , sizeof(bool) },
   { &armNextPC , sizeof(u32) },
   { &armMode , sizeof(int) },
-  { &saveType , sizeof(int) },
   { &stopState , sizeof(bool) },
   { &IRQTicks , sizeof(int) },
   { NULL, 0 }
 };
-
-static int romSize = 0x2000000;
 
 static inline int CPUUpdateTicks()
 {
@@ -369,30 +362,6 @@ static bool CPUReadState(gzFile gzFile)
   GFX::clearRenderBuffers(true);
   GFX::updateWindow0();
   GFX::updateWindow1();
-  gbaSaveType = 0;
-  switch(saveType) {
-  case 0:
-    cpuSaveGameFunc = flashSaveDecide;
-    break;
-  case 1:
-    cpuSaveGameFunc = sramWrite;
-    gbaSaveType = 1;
-    break;
-  case 2:
-    cpuSaveGameFunc = flashWrite;
-    gbaSaveType = 2;
-    break;
-  case 3:
-     break;
-  case 5:
-    gbaSaveType = 5;
-    break;
-  default:
-    systemMessage("Unsupported save type %d", saveType);
-    break;
-  }
-  if(eepromInUse)
-    gbaSaveType = 3;
 
   if(armState) {
     ARM_PREFETCH;
@@ -421,86 +390,115 @@ static bool CPUReadState(const char * file)
 
 static bool CPUWriteBatteryFile(const char *fileName)
 {
-  if(gbaSaveType == 0) {
-    if(eepromInUse)
-      gbaSaveType = 3;
-    else switch(saveType) {
-    case 1:
-      gbaSaveType = 1;
-      break;
-    case 2:
-      gbaSaveType = 2;
-      break;
-    }
-  }
+	using namespace Cartridge;
 
-  if((gbaSaveType) && (gbaSaveType!=5)) {
-    FILE *file = fopen(fileName, "wb");
+	if (features.saveType != SaveNone)
+	{
+		FILE *file = fopen(fileName, "wb");
 
-    if(!file) {
-      systemMessage("Error creating file %s", fileName);
-      return false;
-    }
+		if(!file)
+		{
+			systemMessage("Error creating file %s", fileName);
+			return false;
+		}
 
-    // only save if Flash/Sram in use or EEprom in use
-    if(gbaSaveType != 3) {
-      if(gbaSaveType == 2) {
-        if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize) {
-          fclose(file);
-          return false;
-        }
-      } else {
-        if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-          fclose(file);
-          return false;
-        }
-      }
-    } else {
-      if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize) {
-        fclose(file);
-        return false;
-      }
-    }
-    fclose(file);
-  }
-  return true;
+		switch (features.saveType)
+		{
+		case SaveFlash:
+			if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize)
+			{
+				fclose(file);
+				return false;
+			}
+			break;
+
+		case SaveEEPROM:
+			if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize)
+			{
+				fclose(file);
+				return false;
+			}
+			break;
+
+		case SaveSRAM:
+			if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000)
+			{
+				fclose(file);
+				return false;
+			}
+			break;
+
+		case SaveNone:
+			break;
+		}
+
+		fclose(file);
+	}
+
+	return true;
 }
 
 static bool CPUReadBatteryFile(const char *fileName)
 {
-  FILE *file = fopen(fileName, "rb");
+	using namespace Cartridge;
 
-  if(!file)
-    return false;
+	FILE *file = fopen(fileName, "rb");
 
-  // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
+	if(!file)
+		return false;
 
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
+	// check file size to know what we should read
+	fseek(file, 0, SEEK_END);
 
-  if(size == 512 || size == 0x2000) {
-    if(fread(eepromData, 1, size, file) != (size_t)size) {
-      fclose(file);
-      return false;
-    }
-  } else {
-    if(size == 0x20000) {
-      if(fread(flashSaveMemory, 1, 0x20000, file) != 0x20000) {
-        fclose(file);
-        return false;
-      }
-      flashSetSize(0x20000);
-    } else {
-      if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-        fclose(file);
-        return false;
-      }
-      flashSetSize(0x10000);
-    }
-  }
-  fclose(file);
-  return true;
+	long size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	switch (features.saveType)
+	{
+	case SaveSRAM:
+	case SaveFlash:
+		if(size == 0x20000)
+		{
+			if(fread(flashSaveMemory, 1, 0x20000, file) != 0x20000)
+			{
+				fclose(file);
+				return false;
+			}
+			flashSetSize(0x20000);
+		}
+		else
+		{
+			if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000)
+			{
+				fclose(file);
+				return false;
+			}
+			flashSetSize(0x10000);
+		}
+		break;
+
+	case SaveEEPROM:
+		if(fread(eepromData, 1, size, file) != (size_t)size)
+		{
+			fclose(file);
+			return false;
+		}
+		break;
+
+
+		if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000)
+		{
+			fclose(file);
+			return false;
+		}
+		break;
+
+	case SaveNone:
+		break;
+	}
+
+	fclose(file);
+	return true;
 }
 
 static bool CPUIsGBABios(const char * file)
@@ -525,7 +523,7 @@ static bool CPUIsGBABios(const char * file)
   return false;
 }
 
-static void CPUCleanUp()
+void CPUCleanUp()
 {
   if(rom != NULL) {
     free(rom);
@@ -636,29 +634,6 @@ bool CPUInitMemory()
   GFX::clearRenderBuffers(true);
   
   return true;
-}
-
-int CPULoadRom(const char *szFile)
-{
-  romSize = 0x2000000;
-  
-  u8 *whereToLoad = cpuIsMultiBoot ? workRAM : rom;
-
-  if(!utilLoad(szFile,
-                      utilIsGBAImage,
-                      whereToLoad,
-                      romSize)) {
-	CPUCleanUp();
-  }
-
-  u16 *temp = (u16 *)(rom+((romSize+1)&~1));
-  int i;
-  for(i = (romSize+1)&~1; i < 0x2000000; i+=2) {
-    WRITE16LE(temp, (i >> 1) & 0xFFFF);
-    temp++;
-  }
-
-  return romSize;
 }
 
 void CPUUpdateCPSR()
@@ -1832,10 +1807,6 @@ static void applyTimer ()
 
 void CPUInit(const char *biosFileName, bool useBiosFile)
 {
-  gbaSaveType = 0;
-  eepromInUse = 0;
-  saveType = 0;
-
     int size = 0x4000;
     if(!utilLoad(biosFileName,
                 CPUIsGBABios,
@@ -1898,28 +1869,10 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
     ioReadable[i] = false;
   for(i = 0x304; i < 0x400; i++)
     ioReadable[i] = false;
-
-  if(romSize < 0x1fe2000) {
-    *((u16 *)&rom[0x1fe209c]) = 0xdffa; // SWI 0xFA
-    *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
-  }
 }
 
 void CPUReset()
 {
-  if(gbaSaveType == 0) {
-    if(eepromInUse)
-      gbaSaveType = 3;
-    else
-      switch(saveType) {
-      case 1:
-        gbaSaveType = 1;
-        break;
-      case 2:
-        gbaSaveType = 2;
-        break;
-      }
-  }
   rtcReset();
   // clean registers
   memset(&reg[0], 0, sizeof(reg));
@@ -2078,10 +2031,8 @@ void CPUReset()
   dma2Dest = 0;
   dma3Source = 0;
   dma3Dest = 0;
-  cpuSaveGameFunc = flashSaveDecide;
   GFX::chooseRenderer();
   frameCount = 0;
-  saveType = 0;
   layerEnable = DISPCNT;
 
   GFX::clearRenderBuffers(true);
@@ -2118,61 +2069,30 @@ void CPUReset()
 
   eepromReset();
   flashReset();
+  flashSetSize(Cartridge::features.flashSize);
 
   soundReset();
 
   GFX::updateWindow0();
   GFX::updateWindow1();
 
-  switch(cpuSaveType) {
-  case 0: // automatic
-    cpuSramEnabled = true;
-    cpuFlashEnabled = true;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 0;
+  switch (Cartridge::features.saveType)
+  {
+  case Cartridge::SaveNone:
+    cpuSaveGameFunc = 0;
     break;
-  case 1: // EEPROM
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 3;
-    // EEPROM usage is automatically detected
+  case Cartridge::SaveEEPROM:
+    cpuSaveGameFunc = eepromWrite;
     break;
-  case 2: // SRAM
-    cpuSramEnabled = true;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    cpuSaveGameFunc = sramDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 1;
+  case Cartridge::SaveSRAM:
+    cpuSaveGameFunc = sramWrite;
     break;
-  case 3: // FLASH
-    cpuSramEnabled = false;
-    cpuFlashEnabled = true;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    cpuSaveGameFunc = flashDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 2;
-    break;
-  case 4: // EEPROM+Sensor
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = true;
-    // EEPROM usage is automatically detected
-    saveType = gbaSaveType = 3;
-    break;
-  case 5: // NONE
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    // no save at all
-    saveType = gbaSaveType = 5;
+  case Cartridge::SaveFlash:
+    cpuSaveGameFunc = flashWrite;
     break;
   }
+
+  rtcEnable(Cartridge::features.hasRTC);
 
   ARM_PREFETCH;
 
@@ -2322,7 +2242,7 @@ void CPULoop(int ticks)
               // update joystick information
               joy = systemReadJoypad();
               P1 = 0x03FF ^ (joy & 0x3FF);
-              if(cpuEEPROMSensorEnabled)
+              if(Cartridge::features.hasMotionSensor)
                 systemUpdateMotionSensor();
               UPDATE_REG(0x130, P1);
               u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));

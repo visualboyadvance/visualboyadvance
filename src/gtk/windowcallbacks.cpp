@@ -37,7 +37,6 @@
 #include "directoriesconfig.h"
 #include "displayconfig.h"
 #include "soundconfig.h"
-#include "gameboyadvanceconfig.h"
 
 extern int emulating;
 
@@ -386,19 +385,6 @@ void Window::vOnSoundConfigure()
   SoundConfigDialog * poDialog = 0;
   poBuilder->get_widget_derived("SoundConfigDialog", poDialog);
   poDialog->vSetConfig(m_poSoundConfig, this);
-  poDialog->set_transient_for(*this);
-  poDialog->run();
-  poDialog->hide();
-}
-
-void Window::vOnGameBoyAdvanceConfigure()
-{
-  std::string sUiFile = sGetUiFilePath("gameboyadvance.ui");
-  Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
-
-  GameBoyAdvanceConfigDialog * poDialog = 0;
-  poBuilder->get_widget_derived("GameBoyAdvanceConfigDialog", poDialog);
-  poDialog->vSetConfig(m_poCoreConfig, this);
   poDialog->set_transient_for(*this);
   poDialog->run();
   poDialog->hide();

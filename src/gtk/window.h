@@ -59,26 +59,6 @@ public:
     OutputOpenGL
   };
   
-  enum EEmulatorType
-  {
-    EmulatorAuto,
-    EmulatorCGB,
-    EmulatorSGB,
-    EmulatorGB,
-    EmulatorGBA,
-    EmulatorSGB2
-  };
-
-  enum ESaveType
-  {
-    SaveAuto,
-    SaveEEPROM,
-    SaveSRAM,
-    SaveFlash,
-    SaveEEPROMSensor,
-    SaveNone
-  };
-
   // GBA screen size
   const int m_iGBAScreenWidth;
   const int m_iGBAScreenHeight;
@@ -94,8 +74,6 @@ public:
   void vApplyConfigScreenArea();
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
-  void vApplyConfigGBASaveType();
-  void vApplyConfigGBAFlashSize();
   void vUpdateScreen();
 
   inline ECartridge eGetCartridge() const { return m_eCartridge; }
@@ -140,7 +118,6 @@ protected:
   virtual void vOnJoypadConfigure();
   virtual void vOnDisplayConfigure();
   virtual void vOnSoundConfigure();
-  virtual void vOnGameBoyAdvanceConfigure();
   virtual void vOnHelpAbout();
   virtual bool bOnEmuIdle();
 
@@ -158,8 +135,6 @@ private:
   const int m_iScaleMax;
   const int m_iShowSpeedMin;
   const int m_iShowSpeedMax;
-  const int m_iSaveTypeMin;
-  const int m_iSaveTypeMax;
   const int m_iSoundSampleRateMin;
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;

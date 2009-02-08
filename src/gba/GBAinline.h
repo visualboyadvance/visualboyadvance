@@ -3,6 +3,7 @@
 
 #include "../System.h"
 #include "../common/Port.h"
+#include "Cartridge.h"
 #include "RTC.h"
 #include "Sound.h"
 
@@ -11,10 +12,6 @@ extern const u32 objTilesAddress[3];
 extern bool stopState;
 extern bool holdState;
 extern int cpuNextEvent;
-extern bool cpuSramEnabled;
-extern bool cpuFlashEnabled;
-extern bool cpuEEPROMEnabled;
-extern bool cpuEEPROMSensorEnabled;
 extern bool cpuDmaHack;
 extern u32 cpuDmaLast;
 extern bool timer0On;
@@ -108,12 +105,12 @@ static inline u32 CPUReadMemory(u32 address)
     value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
     break;
   case 13:
-    if(cpuEEPROMEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
       // no need to swap this
       return eepromRead(address);
     goto unreadable;
   case 14:
-    if(cpuFlashEnabled | cpuSramEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveFlash || Cartridge::features.saveType == Cartridge::SaveSRAM)
       // no need to swap this
       return flashRead(address);
     // default
@@ -228,12 +225,12 @@ static inline u32 CPUReadHalfWord(u32 address)
       value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
     break;
   case 13:
-    if(cpuEEPROMEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
       // no need to swap this
       return  eepromRead(address);
     goto unreadable;
   case 14:
-    if(cpuFlashEnabled | cpuSramEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveFlash || Cartridge::features.saveType == Cartridge::SaveSRAM)
       // no need to swap this
       return flashRead(address);
     // default
@@ -314,13 +311,13 @@ static inline u8 CPUReadByte(u32 address)
   case 12:
     return rom[address & 0x1FFFFFF];
   case 13:
-    if(cpuEEPROMEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
       return eepromRead(address);
     goto unreadable;
   case 14:
-    if(cpuSramEnabled | cpuFlashEnabled)
+    if(Cartridge::features.saveType == Cartridge::SaveSRAM || Cartridge::features.saveType == Cartridge::SaveFlash)
       return flashRead(address);
-    if(cpuEEPROMSensorEnabled) {
+    if(Cartridge::features.hasMotionSensor) {
       switch(address & 0x00008f00) {
   case 0x8200:
     return systemGetSensorX() & 255;
@@ -396,13 +393,15 @@ static inline void CPUWriteMemory(u32 address, u32 value)
       WRITE32LE(((u32 *)&oam[address & 0x3fc]), value);
     break;
   case 0x0D:
-    if(cpuEEPROMEnabled) {
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
       eepromWrite(address, value);
       break;
     }
     goto unwritable;
   case 0x0E:
-    if((!eepromInUse) | cpuSramEnabled | cpuFlashEnabled) {
+    if(Cartridge::features.saveType != Cartridge::SaveEEPROM || 
+       Cartridge::features.saveType == Cartridge::SaveSRAM ||
+       Cartridge::features.saveType == Cartridge::SaveFlash) {
       (*cpuSaveGameFunc)(address, (u8)value);
       break;
     }
@@ -468,13 +467,15 @@ static inline void CPUWriteHalfWord(u32 address, u16 value)
     } else goto unwritable;
     break;
   case 13:
-    if(cpuEEPROMEnabled) {
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
       eepromWrite(address, (u8)value);
       break;
     }
     goto unwritable;
   case 14:
-    if((!eepromInUse) | cpuSramEnabled | cpuFlashEnabled) {
+    if(Cartridge::features.saveType != Cartridge::SaveEEPROM || 
+       Cartridge::features.saveType == Cartridge::SaveSRAM ||
+       Cartridge::features.saveType == Cartridge::SaveFlash) {
       (*cpuSaveGameFunc)(address, (u8)value);
       break;
     }
@@ -588,13 +589,16 @@ static inline void CPUWriteByte(u32 address, u8 b)
     //    *((u16 *)&oam[address & 0x3FE]) = (b << 8) | b;
     break;
   case 13:
-    if(cpuEEPROMEnabled) {
+    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
       eepromWrite(address, b);
       break;
     }
     goto unwritable;
   case 14:
-    if ((saveType != 5) && ((!eepromInUse) | cpuSramEnabled | cpuFlashEnabled)) {
+    if ((Cartridge::features.saveType != Cartridge::SaveNone) && 
+        (Cartridge::features.saveType != Cartridge::SaveEEPROM || 
+         Cartridge::features.saveType == Cartridge::SaveSRAM ||
+         Cartridge::features.saveType == Cartridge::SaveFlash)) {
 
       //if(!cpuEEPROMEnabled && (cpuSramEnabled | cpuFlashEnabled)) {
 

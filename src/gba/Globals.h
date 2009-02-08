@@ -26,11 +26,9 @@ extern bool armState;
 extern bool armIrqEnable;
 extern u32 armNextPC;
 extern int armMode;
-extern int saveType;
 extern bool speedup;
 extern bool cpuIsMultiBoot;
 extern int layerEnable;
-extern int cpuSaveType;
 
 extern u8 *bios;
 extern u8 *rom;

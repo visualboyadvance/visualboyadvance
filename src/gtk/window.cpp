@@ -26,6 +26,7 @@
 
 #include <SDL.h>
 
+#include "../gba/Cartridge.h"
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
 #include "../gba/Display.h"
@@ -75,8 +76,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iScaleMax       (6),
   m_iShowSpeedMin   (ShowNone),
   m_iShowSpeedMax   (ShowDetailed),
-  m_iSaveTypeMin    (SaveAuto),
-  m_iSaveTypeMax    (SaveNone),
   m_iSoundSampleRateMin(11025),
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
@@ -129,8 +128,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigFilter();
   vApplyConfigFilterIB();
   vApplyConfigVolume();
-  vApplyConfigGBASaveType();
-  vApplyConfigGBAFlashSize();
 
   Gtk::MenuItem *      poMI;
   Gtk::CheckMenuItem * poCMI;
@@ -312,10 +309,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                       sigc::mem_fun(*this, &Window::vOnShowSpeedToggled),
                                       poCMI, astShowSpeed[i].m_eShowSpeed));
   }
-
-  // Game Boy Advance menu
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("GameBoyAdvanceConfigure"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnGameBoyAdvanceConfigure));
 
   // Display menu
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("DisplayConfigure"));
@@ -513,8 +506,6 @@ void Window::vInitConfig()
   m_poCoreConfig->vSetKey("load_game_auto",    false        );
   m_poCoreConfig->vSetKey("frameskip",         "auto"       );
   m_poCoreConfig->vSetKey("bios_file",         ""           );
-  m_poCoreConfig->vSetKey("save_type",         SaveAuto     );
-  m_poCoreConfig->vSetKey("flash_size",        64           );
 
   // Display section
   //
@@ -598,22 +589,6 @@ void Window::vCheckConfig()
   if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
   {
     m_poCoreConfig->vSetKey("bios_file", "");
-  }
-
-  iValue = m_poCoreConfig->oGetKey<int>("save_type");
-  if (iValue != 0)
-  {
-    iAdjusted = CLAMP(iValue, m_iSaveTypeMin, m_iSaveTypeMax);
-    if (iValue != iAdjusted)
-    {
-      m_poCoreConfig->vSetKey("save_type", iAdjusted);
-    }
-  }
-
-  iValue = m_poCoreConfig->oGetKey<int>("flash_size");
-  if (iValue != 64 && iValue != 128)
-  {
-    m_poCoreConfig->vSetKey("flash_size", 64);
   }
 
   // Display section
@@ -735,25 +710,6 @@ void Window::vApplyConfigSoundSampleRate()
   soundSetSampleRate(iSoundSampleRate);
 }
 
-void Window::vApplyConfigGBASaveType()
-{
-  int iSaveType = m_poCoreConfig->oGetKey<int>("save_type");
-  cpuSaveType = iSaveType;
-}
-
-void Window::vApplyConfigGBAFlashSize()
-{
-  int iFlashSize = m_poCoreConfig->oGetKey<int>("flash_size");
-  if (iFlashSize == 64)
-  {
-    flashSetSize(0x10000);
-  }
-  else
-  {
-    flashSetSize(0x20000);
-  }
-}
-
 void Window::vHistoryAdd(const std::string & _rsFile)
 {
   std::string sURL = "file://" + _rsFile;
@@ -834,20 +790,18 @@ bool Window::bLoadROM(const std::string & _rsFile)
   if (!CPUInitMemory())
     return false;
 
-  int iSize = CPULoadRom(csFile);
-  bool bLoaded = (iSize > 0);
-  if (bLoaded)
+  if (!Cartridge::loadDump(csFile))
   {
-    m_eCartridge = CartridgeGBA;
-    m_stEmulator = GBASystem;
-
-    CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
-    CPUReset();
-  }
-  else
-  {
+    CPUCleanUp();
     return false;
   }
+
+  m_eCartridge = CartridgeGBA;
+  m_stEmulator = GBASystem;
+
+  CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
+  CPUReset();
+
 
   vLoadBattery();
   vUpdateScreen();
@@ -1221,7 +1175,7 @@ std::string Window::sGetUiFilePath(const std::string &_sFileName)
 {
   // Use the ui file from the source folder if it exists
   // to make gvbam runnable without installation
-  std::string sUiFile = "src/gtk/ui/" + _sFileName;
+  std::string sUiFile = "data/gtk/ui/" + _sFileName;
   if (!Glib::file_test(sUiFile, Glib::FILE_TEST_EXISTS))
   {
     sUiFile = PKGDATADIR "/ui/" + _sFileName;

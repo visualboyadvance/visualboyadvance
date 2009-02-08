@@ -54,6 +54,7 @@ SET(SRC_MAIN
 )
 
 SET(SRC_GBA
+    src/gba/Cartridge.cpp
     src/gba/Display.cpp
     src/gba/EEprom.cpp
     src/gba/Flash.cpp
@@ -94,7 +95,6 @@ SET(SRC_GTK
     src/gtk/system.cpp
     src/gtk/windowcallbacks.cpp
     src/gtk/filters.cpp
-    src/gtk/gameboyadvanceconfig.cpp
     src/gtk/joypadconfig.cpp
     src/gtk/directoriesconfig.cpp
     src/gtk/displayconfig.cpp
@@ -157,6 +157,7 @@ TARGET_LINK_LIBRARIES (
 )
 
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/gvbam.desktop DESTINATION share/applications)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/icons/ DESTINATION share/icons/hicolor PATTERN ".svn" EXCLUDE)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/ui DESTINATION ${DATA_INSTALL_DIR} PATTERN ".svn" EXCLUDE)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/gvbam.desktop DESTINATION share/applications)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/GamesDB.txt DESTINATION ${DATA_INSTALL_DIR})
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/icons/ DESTINATION share/icons/hicolor PATTERN ".svn" EXCLUDE)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/ui DESTINATION ${DATA_INSTALL_DIR} PATTERN ".svn" EXCLUDE)

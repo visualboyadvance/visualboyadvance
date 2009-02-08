@@ -494,13 +494,6 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkMenuItem" id="GameBoyAdvanceConfigure">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Game Boy _Advance ...</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
                       <widget class="GtkMenuItem" id="DisplayConfigure">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Display ...</property>

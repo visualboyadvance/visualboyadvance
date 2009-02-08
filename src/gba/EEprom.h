@@ -6,7 +6,6 @@ extern void eepromWrite(u32 address, u8 value);
 extern void eepromInit();
 extern void eepromReset();
 extern u8 eepromData[0x2000];
-extern bool eepromInUse;
 extern int eepromSize;
 
 #endif // EEPROM_H

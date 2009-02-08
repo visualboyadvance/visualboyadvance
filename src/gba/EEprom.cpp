@@ -16,7 +16,6 @@ static int eepromBits = 0;
 static int eepromAddress = 0;
 u8 eepromData[0x2000];
 static u8 eepromBuffer[16];
-bool eepromInUse = false;
 int eepromSize = 512;
 
 void eepromInit()
@@ -30,7 +29,6 @@ void eepromReset()
   eepromByte = 0;
   eepromBits = 0;
   eepromAddress = 0;
-  eepromInUse = false;
   eepromSize = 512;
 }
 
@@ -91,7 +89,6 @@ void eepromWrite(u32 /* address */, u8 value)
     }
     if(cpuDmaCount == 0x11 || cpuDmaCount == 0x51) {
       if(eepromBits == 0x11) {
-        eepromInUse = true;
         eepromSize = 0x2000;
         eepromAddress = ((eepromBuffer[0] & 0x3F) << 8) |
           ((eepromBuffer[1] & 0xFF));
@@ -108,7 +105,6 @@ void eepromWrite(u32 /* address */, u8 value)
       }
     } else {
       if(eepromBits == 9) {
-        eepromInUse = true;
         eepromAddress = (eepromBuffer[0] & 0x3F);
         if(!(eepromBuffer[0] & 0x40)) {
           eepromBuffer[0] = bit;
@@ -136,7 +132,6 @@ void eepromWrite(u32 /* address */, u8 value)
       eepromByte++;
     }
     if(eepromBits == 0x40) {
-      eepromInUse = true;
       // write data;
       for(int i = 0; i < 8; i++) {
         eepromData[(eepromAddress << 3) + i] = eepromBuffer[i];

@@ -25,6 +25,5 @@ int utilGzWrite(gzFile file, const voidp buffer, unsigned int len);
 int utilGzRead(gzFile file, voidp buffer, unsigned int len);
 int utilGzClose(gzFile file);
 z_off_t utilGzSeek(gzFile file, z_off_t offset, int whence);
-void utilGBAFindSave(const u8 *, const int);
 
 #endif // UTIL_H
