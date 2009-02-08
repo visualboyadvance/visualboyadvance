@@ -5,6 +5,7 @@
 #include "../common/Port.h"
 #include "Cartridge.h"
 #include "RTC.h"
+#include "Sram.h"
 #include "Sound.h"
 
 extern const u32 objTilesAddress[3];
@@ -110,8 +111,9 @@ static inline u32 CPUReadMemory(u32 address)
       return eepromRead(address);
     goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveFlash || Cartridge::features.saveType == Cartridge::SaveSRAM)
-      // no need to swap this
+    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
+      return sramRead(address);
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return flashRead(address);
     // default
   default:
@@ -230,8 +232,9 @@ static inline u32 CPUReadHalfWord(u32 address)
       return  eepromRead(address);
     goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveFlash || Cartridge::features.saveType == Cartridge::SaveSRAM)
-      // no need to swap this
+    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
+      return sramRead(address);
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return flashRead(address);
     // default
   default:
@@ -315,7 +318,9 @@ static inline u8 CPUReadByte(u32 address)
       return eepromRead(address);
     goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveSRAM || Cartridge::features.saveType == Cartridge::SaveFlash)
+    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
+      return sramRead(address);
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return flashRead(address);
     if(Cartridge::features.hasMotionSensor) {
       switch(address & 0x00008f00) {
@@ -399,12 +404,15 @@ static inline void CPUWriteMemory(u32 address, u32 value)
     }
     goto unwritable;
   case 0x0E:
-    if(Cartridge::features.saveType != Cartridge::SaveEEPROM || 
-       Cartridge::features.saveType == Cartridge::SaveSRAM ||
-       Cartridge::features.saveType == Cartridge::SaveFlash) {
-      (*cpuSaveGameFunc)(address, (u8)value);
+    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
+      sramWrite(address, (u8)value);
       break;
     }
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
+      flashWrite(address, (u8)value);
+      break;
+    }
+
     // default
   default:
 unwritable:
@@ -473,10 +481,12 @@ static inline void CPUWriteHalfWord(u32 address, u16 value)
     }
     goto unwritable;
   case 14:
-    if(Cartridge::features.saveType != Cartridge::SaveEEPROM || 
-       Cartridge::features.saveType == Cartridge::SaveSRAM ||
-       Cartridge::features.saveType == Cartridge::SaveFlash) {
-      (*cpuSaveGameFunc)(address, (u8)value);
+    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
+      sramWrite(address, (u8)value);
+      break;
+    }
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
+      flashWrite(address, (u8)value);
       break;
     }
     goto unwritable;
@@ -595,14 +605,12 @@ static inline void CPUWriteByte(u32 address, u8 b)
     }
     goto unwritable;
   case 14:
-    if ((Cartridge::features.saveType != Cartridge::SaveNone) && 
-        (Cartridge::features.saveType != Cartridge::SaveEEPROM || 
-         Cartridge::features.saveType == Cartridge::SaveSRAM ||
-         Cartridge::features.saveType == Cartridge::SaveFlash)) {
-
-      //if(!cpuEEPROMEnabled && (cpuSramEnabled | cpuFlashEnabled)) {
-
-      (*cpuSaveGameFunc)(address, b);
+    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
+      sramWrite(address, b);
+      break;
+    }
+    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
+      flashWrite(address, b);
       break;
     }
     // default

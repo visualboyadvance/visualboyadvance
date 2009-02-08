@@ -81,7 +81,6 @@ static u32 dma2Source = 0;
 static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
-void (*cpuSaveGameFunc)(u32,u8) = 0;
 static int frameCount = 0;
 static u32 lastTime = 0;
 static int count = 0;
@@ -402,37 +401,26 @@ static bool CPUWriteBatteryFile(const char *fileName)
 			return false;
 		}
 
+		bool res = true;
+
 		switch (features.saveType)
 		{
 		case SaveFlash:
-			if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize)
-			{
-				fclose(file);
-				return false;
-			}
+			res = flashWriteBattery(file);
 			break;
-
 		case SaveEEPROM:
-			if (!eepromWriteBattery(file))
-			{
-				fclose(file);
-				return false;
-			}
+			res = eepromWriteBattery(file);
 			break;
-
 		case SaveSRAM:
-			if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000)
-			{
-				fclose(file);
-				return false;
-			}
+			res = sramWriteBattery(file);
 			break;
-
 		case SaveNone:
 			break;
 		}
 
 		fclose(file);
+		
+		return res;
 	}
 
 	return true;
@@ -453,44 +441,25 @@ static bool CPUReadBatteryFile(const char *fileName)
 	long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
+	bool res = true;
+
 	switch (features.saveType)
 	{
 	case SaveSRAM:
+		res = sramReadBattery(file, size);
+		break;
 	case SaveFlash:
-		if(size == 0x20000)
-		{
-			if(fread(flashSaveMemory, 1, 0x20000, file) != 0x20000)
-			{
-				fclose(file);
-				return false;
-			}
-			flashSetSize(0x20000);
-		}
-		else
-		{
-			if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000)
-			{
-				fclose(file);
-				return false;
-			}
-			flashSetSize(0x10000);
-		}
+		res = flashReadBattery(file, size);
 		break;
-
 	case SaveEEPROM:
-		if (!eepromReadBattery(file, size))
-		{
-			fclose(file);
-			return false;
-		}
+		res = eepromReadBattery(file, size);
 		break;
-
 	case SaveNone:
 		break;
 	}
 
 	fclose(file);
-	return true;
+	return res;
 }
 
 static bool CPUIsGBABios(const char * file)
@@ -621,6 +590,7 @@ bool CPUInitMemory()
   }
 
   flashInit();
+  sramInit();
   eepromInit();
 
   GFX::clearRenderBuffers(true);
@@ -2056,35 +2026,18 @@ void CPUReset()
   map[10].mask = 0x1FFFFFF;
   map[12].address = rom;
   map[12].mask = 0x1FFFFFF;
-  map[14].address = flashSaveMemory;
-  map[14].mask = 0xFFFF;
+//map[14].address = flashSaveMemory;
+//map[14].mask = 0xFFFF;
 
   eepromReset();
   flashReset();
   flashSetSize(Cartridge::features.flashSize);
-
+  rtcEnable(Cartridge::features.hasRTC);
+  
   soundReset();
 
   GFX::updateWindow0();
   GFX::updateWindow1();
-
-  switch (Cartridge::features.saveType)
-  {
-  case Cartridge::SaveNone:
-    cpuSaveGameFunc = 0;
-    break;
-  case Cartridge::SaveEEPROM:
-    cpuSaveGameFunc = eepromWrite;
-    break;
-  case Cartridge::SaveSRAM:
-    cpuSaveGameFunc = sramWrite;
-    break;
-  case Cartridge::SaveFlash:
-    cpuSaveGameFunc = flashWrite;
-    break;
-  }
-
-  rtcEnable(Cartridge::features.hasRTC);
 
   ARM_PREFETCH;
 

@@ -16,10 +16,10 @@
 #define FLASH_PROGRAM            8
 #define FLASH_SETBANK            9
 
-u8 flashSaveMemory[0x20000];
+static u8 flashSaveMemory[0x20000];
 static int flashState = FLASH_READ_ARRAY;
 static int flashReadState = FLASH_READ_ARRAY;
-int flashSize = 0x10000;
+static int flashSize = 0x10000;
 static int flashDeviceID = 0x1b;
 static int flashManufacturerID = 0x32;
 static int flashBank = 0;
@@ -172,4 +172,33 @@ void flashWrite(u32 address, u8 byte)
     flashReadState = FLASH_READ_ARRAY;
     break;
   }
+}
+
+bool flashReadBattery(FILE *file, size_t size)
+{
+	bool res;
+
+	if(size == 0x20000)
+	{
+		res = fread(flashSaveMemory, 1, 0x20000, file) == 0x20000;
+		if (res)
+		{
+			flashSetSize(0x20000);
+		}
+	}
+	else
+	{
+		res = fread(flashSaveMemory, 1, 0x10000, file) != 0x10000;
+		if (res)
+		{
+			flashSetSize(0x10000);
+		}
+	}
+
+	return res;
+}
+
+bool flashWriteBattery(FILE *file)
+{
+  return fwrite(flashSaveMemory, 1, flashSize, file) == (size_t)flashSize;
 }

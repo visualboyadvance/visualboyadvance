@@ -55,7 +55,6 @@ extern bool V_FLAG;
 extern bool armIrqEnable;
 extern bool armState;
 extern int armMode;
-extern void (*cpuSaveGameFunc)(u32,u8);
 
 extern void CPUUpdateRender();
 extern int CPULoadRom(const char *);
