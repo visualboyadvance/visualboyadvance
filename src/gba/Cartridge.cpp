@@ -43,16 +43,29 @@ static void clearFeatures(Features &features)
 
 static void processFeatureToken(Features &features, const std::string &token)
 {
-	if (token == "FLASH1M_V103")
+	if (token == "FLASH_V120" || token == "FLASH_V121" || 
+		token == "FLASH_V123" || token == "FLASH_V124" || 
+		token == "FLASH_V125" || token == "FLASH_V126" || 
+		token == "FLASH512_V130" || token == "FLASH512_V131")
+	{
+		features.saveType = SaveFlash;
+		features.flashSize = 0x10000;
+	}
+	else if (token == "FLASH1M_V102" || token == "FLASH1M_V103")
 	{
 		features.saveType = SaveFlash;
 		features.flashSize = 0x20000;
 	}
-	else if (token == "EEPROM_V120")
+	else if (token == "EEPROM_V111" || token == "EEPROM_V120" || 
+			 token == "EEPROM_V121" || token == "EEPROM_V122" || 
+			 token == "EEPROM_V124")
 	{
 		features.saveType = SaveEEPROM;
 	}
-	else if (token == "SRAM_V113" || token == "SRAM_F_V103")
+	else if (token == "SRAM_V110" || token == "SRAM_V111" ||
+			 token == "SRAM_V112" || token == "SRAM_V113" ||
+			 token == "SRAM_F_V100" || token == "SRAM_F_V102" ||
+			 token == "SRAM_F_V103")
 	{
 		features.saveType = SaveSRAM;
 	}
