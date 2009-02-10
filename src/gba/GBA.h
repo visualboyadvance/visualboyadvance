@@ -57,7 +57,6 @@ extern bool armState;
 extern int armMode;
 
 extern void CPUUpdateRender();
-extern int CPULoadRom(const char *);
 extern void CPUUpdateRegister(u32, u16);
 extern void CPUInit(const char *,bool);
 bool CPUInitMemory();
