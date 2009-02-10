@@ -1,9 +1,12 @@
-#include <stdio.h>
-#include <memory.h>
+#include <cstdio>
+#include <algorithm>
+
 #include "GBA.h"
 #include "Globals.h"
 #include "Flash.h"
-#include "Sram.h"
+
+namespace Cartridge
+{
 
 #define FLASH_READ_ARRAY         0
 #define FLASH_CMD_1              1
@@ -26,7 +29,7 @@ static int flashBank = 0;
 
 void flashInit()
 {
-  memset(flashSaveMemory, 0xff, sizeof(flashSaveMemory));
+	std::fill(flashSaveMemory, flashSaveMemory + 0x20000, 0xff);
 }
 
 void flashReset()
@@ -135,13 +138,12 @@ void flashWrite(u32 address, u8 byte)
   case FLASH_CMD_5:
     if(byte == 0x30) {
       // SECTOR ERASE
-      memset(&flashSaveMemory[(flashBank << 16) + (address & 0xF000)],
-             0,
-             0x1000);
+      u8 *offset = flashSaveMemory + (flashBank << 16) + (address & 0xF000);
+      std::fill(offset, offset + 0x1000, 0);
       flashReadState = FLASH_ERASE_COMPLETE;
     } else if(byte == 0x10) {
       // CHIP ERASE
-      memset(flashSaveMemory, 0, flashSize);
+      std::fill(flashSaveMemory, flashSaveMemory + flashSize, 0);
       flashReadState = FLASH_ERASE_COMPLETE;
     } else {
       flashState = FLASH_READ_ARRAY;
@@ -202,3 +204,5 @@ bool flashWriteBattery(FILE *file)
 {
   return fwrite(flashSaveMemory, 1, flashSize, file) == (size_t)flashSize;
 }
+
+} // namespace Cartridge

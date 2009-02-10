@@ -10,10 +10,7 @@
 #include "GBAinline.h"
 #include "Globals.h"
 #include "Gfx.h"
-#include "EEprom.h"
-#include "Flash.h"
 #include "Sound.h"
-#include "Sram.h"
 #include "../Util.h"
 #include "../common/Port.h"
 #include "../System.h"
@@ -387,81 +384,6 @@ static bool CPUReadState(const char * file)
   return res;
 }
 
-static bool CPUWriteBatteryFile(const char *fileName)
-{
-	using namespace Cartridge;
-
-	if (features.saveType != SaveNone)
-	{
-		FILE *file = fopen(fileName, "wb");
-
-		if(!file)
-		{
-			systemMessage("Error creating file %s", fileName);
-			return false;
-		}
-
-		bool res = true;
-
-		switch (features.saveType)
-		{
-		case SaveFlash:
-			res = flashWriteBattery(file);
-			break;
-		case SaveEEPROM:
-			res = eepromWriteBattery(file);
-			break;
-		case SaveSRAM:
-			res = sramWriteBattery(file);
-			break;
-		case SaveNone:
-			break;
-		}
-
-		fclose(file);
-		
-		return res;
-	}
-
-	return true;
-}
-
-static bool CPUReadBatteryFile(const char *fileName)
-{
-	using namespace Cartridge;
-
-	FILE *file = fopen(fileName, "rb");
-
-	if(!file)
-		return false;
-
-	// check file size to know what we should read
-	fseek(file, 0, SEEK_END);
-
-	long size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	bool res = true;
-
-	switch (features.saveType)
-	{
-	case SaveSRAM:
-		res = sramReadBattery(file, size);
-		break;
-	case SaveFlash:
-		res = flashReadBattery(file, size);
-		break;
-	case SaveEEPROM:
-		res = eepromReadBattery(file, size);
-		break;
-	case SaveNone:
-		break;
-	}
-
-	fclose(file);
-	return res;
-}
-
 static bool CPUIsGBABios(const char * file)
 {
   if(strlen(file) > 4) {
@@ -588,13 +510,11 @@ bool CPUInitMemory()
     CPUCleanUp();
     return false;
   }
-
-  flashInit();
-  sramInit();
-  eepromInit();
+  
+  Cartridge::init();
 
   GFX::clearRenderBuffers(true);
-  
+
   return true;
 }
 
@@ -1835,7 +1755,6 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 
 void CPUReset()
 {
-  rtcReset();
   // clean registers
   memset(&reg[0], 0, sizeof(reg));
   // clean OAM
@@ -2029,12 +1948,7 @@ void CPUReset()
 //map[14].address = flashSaveMemory;
 //map[14].mask = 0xFFFF;
 
-  eepromReset();
-  flashReset();
-  flashSetSize(Cartridge::features.flashSize);
-  rtcEnable(Cartridge::features.hasRTC);
-  
-  soundReset();
+  Cartridge::reset();
 
   GFX::updateWindow0();
   GFX::updateWindow1();
@@ -2458,10 +2372,6 @@ struct EmulatedSystem GBASystem = {
   CPUReset,
   // emuCleanUp
   CPUCleanUp,
-  // emuReadBattery
-  CPUReadBatteryFile,
-  // emuWriteBattery
-  CPUWriteBatteryFile,
   // emuReadState
   CPUReadState,
   // emuWriteState

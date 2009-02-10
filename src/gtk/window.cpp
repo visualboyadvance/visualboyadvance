@@ -1024,7 +1024,7 @@ void Window::vLoadBattery()
 
   sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
 
-  if (m_stEmulator.emuReadBattery(sBattery.c_str()))
+  if (Cartridge::readBatteryFromFile(sBattery.c_str()))
   {
     systemScreenMessage(_("Loaded battery"));
   }
@@ -1041,7 +1041,7 @@ void Window::vSaveBattery()
 
   sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
 
-  if (m_stEmulator.emuWriteBattery(sBattery.c_str()))
+  if (Cartridge::writeBatteryToFile(sBattery.c_str()))
   {
     systemScreenMessage(_("Saved battery"));
   }

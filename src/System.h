@@ -12,10 +12,6 @@ struct EmulatedSystem {
   void (*emuReset)();
   // clean up memory
   void (*emuCleanUp)();
-  // load battery file
-  bool (*emuReadBattery)(const char *);
-  // write battery file
-  bool (*emuWriteBattery)(const char *);
   // load state
   bool (*emuReadState)(const char *);
   // save state
@@ -39,6 +35,18 @@ extern int  systemGetSensorY();
 extern void systemShowSpeed(int);
 extern void system10Frames(int);
 extern void systemFrame();
+
+#define VERBOSE_SWI                  1
+#define VERBOSE_UNALIGNED_MEMORY     2
+#define VERBOSE_ILLEGAL_WRITE        4
+#define VERBOSE_ILLEGAL_READ         8
+#define VERBOSE_DMA0                16
+#define VERBOSE_DMA1                32
+#define VERBOSE_DMA2                64
+#define VERBOSE_DMA3               128
+#define VERBOSE_UNDEFINED          256
+#define VERBOSE_AGBPRINT           512
+#define VERBOSE_SOUNDOUTPUT       1024
 
 extern int systemVerbose;
 extern int systemFrameSkip;

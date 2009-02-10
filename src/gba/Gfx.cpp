@@ -1,6 +1,7 @@
 #include "Gfx.h"
 #include "GfxHelpers.h"
 #include "GBA.h"
+#include "Globals.h"
 
 namespace GFX
 {

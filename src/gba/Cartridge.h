@@ -24,7 +24,11 @@ struct Features
 
 extern Features features;
 
+void init();
+void reset();
 bool loadDump(const char *file);
+bool readBatteryFromFile(const char *fileName);
+bool writeBatteryToFile(const char *fileName);
 
 }
 

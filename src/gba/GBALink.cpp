@@ -4,6 +4,7 @@
 #include <cstdio>
 #include "../common/Port.h"
 #include "GBALink.h"
+#include "Globals.h"
 
 #define SIO_START		(1<<7)
 
@@ -11,20 +12,20 @@
 
 bool linkenable = true;
 
-static int linktime = 0;
+//static int linktime = 0;
 static u8 transfer=0;
-static int linkid = 0;
+//static int linkid = 0;
 static int savedlinktime=0;
 static bool linklog = true;
 static FILE *linklogfile = stderr;
 static u16 linkdata[4];
 static bool oncewait = false;
-static bool adapter = false;
-static int rfu_state, rfu_polarity, linktime2;
-static int transferend;
+//static bool adapter = false;
+//static int rfu_state, rfu_polarity, linktime2;
+//static int transferend;
 
 static int GetSioMode(u16, u16);
-static u16 StartRFU(u16);
+//static u16 StartRFU(u16);
 
 void linkUpdateSIOCNT(u16 value){
 	if(linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
@@ -254,7 +255,7 @@ static int GetSioMode(u16 reg1, u16 reg2){
 	return GP;
 }
 
-static u16 StartRFU(u16 value){
+/*static u16 StartRFU(u16 value){
 	switch(GetSioMode(value, READ16LE(&ioMem[0x134]))){
 	case NORMAL8:
 		rfu_polarity = 0;
@@ -276,7 +277,7 @@ static u16 StartRFU(u16 value){
 				UPDATE_REG(0x120, a);
 				break;
 			case RFU_COMM:
-				/*if(a==0x9966){
+				if(a==0x9966){
 					rfu_cmd = ioMem[0x120];
 					if((rfu_qsend=ioMem[0x121])!=0){
 						rfu_state = RFU_SEND;
@@ -391,10 +392,10 @@ static u16 StartRFU(u16 value){
 				} else {
 					UPDATE_REG(0x120, 0);
 					UPDATE_REG(0x122, 0x8000);
-				}*/
+				}
 				break;
 			case RFU_SEND:
-				/*if(--rfu_qsend==0) rfu_state = RFU_COMM;
+				if(--rfu_qsend==0) rfu_state = RFU_COMM;
 				switch(rfu_cmd){
 				case 0x16:
 					linkmem->rfu_bdata[vbaid][counter++] = READ32LE(&ioMem[0x120]);
@@ -411,10 +412,10 @@ static u16 StartRFU(u16 value){
 					break;
 				}
 				UPDATE_REG(0x120, 0);
-				UPDATE_REG(0x122, 0x8000);*/
+				UPDATE_REG(0x122, 0x8000);
 				break;
 			case RFU_RECV:
-				/*if(--rfu_qrecv==0) rfu_state = RFU_COMM;
+				if(--rfu_qrecv==0) rfu_state = RFU_COMM;
 				switch(rfu_cmd){
 				case 0x9d:
 				case 0x9e:
@@ -458,7 +459,7 @@ static u16 StartRFU(u16 value){
 					UPDATE_REG(0x120, 0x0173);
 					UPDATE_REG(0x122, 0x0000);
 					break;
-				}*/
+				}
 				break;
 			}
 			transfer = 1;
@@ -467,7 +468,7 @@ static u16 StartRFU(u16 value){
 	default:
 		return value;
 	}
-}
+}*/
 
 int InitLink(void){
 /*	WSADATA wsadata;

@@ -4,7 +4,10 @@
 #include "../System.h"
 #include "../common/Port.h"
 #include "Cartridge.h"
+#include "Globals.h"
 #include "RTC.h"
+#include "EEprom.h"
+#include "Flash.h"
 #include "Sram.h"
 #include "Sound.h"
 
@@ -114,7 +117,7 @@ static inline u32 CPUReadMemory(u32 address)
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
       return sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return flashRead(address);
+      return Cartridge::flashRead(address);
     // default
   default:
 unreadable:
@@ -235,7 +238,7 @@ static inline u32 CPUReadHalfWord(u32 address)
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
       return sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return flashRead(address);
+      return Cartridge::flashRead(address);
     // default
   default:
 unreadable:
@@ -321,7 +324,7 @@ static inline u8 CPUReadByte(u32 address)
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
       return sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return flashRead(address);
+      return Cartridge::flashRead(address);
     if(Cartridge::features.hasMotionSensor) {
       switch(address & 0x00008f00) {
   case 0x8200:
@@ -409,7 +412,7 @@ static inline void CPUWriteMemory(u32 address, u32 value)
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      flashWrite(address, (u8)value);
+      Cartridge::flashWrite(address, (u8)value);
       break;
     }
 
@@ -486,7 +489,7 @@ static inline void CPUWriteHalfWord(u32 address, u16 value)
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      flashWrite(address, (u8)value);
+      Cartridge::flashWrite(address, (u8)value);
       break;
     }
     goto unwritable;
@@ -610,7 +613,7 @@ static inline void CPUWriteByte(u32 address, u8 b)
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      flashWrite(address, b);
+      Cartridge::flashWrite(address, b);
       break;
     }
     // default

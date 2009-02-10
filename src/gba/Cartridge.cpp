@@ -1,5 +1,9 @@
 #include "Globals.h"
 #include "Cartridge.h"
+#include "EEprom.h"
+#include "Flash.h"
+#include "RTC.h"
+#include "Sram.h"
 #include "../Util.h"
 
 #include <iostream>
@@ -116,18 +120,8 @@ static void findFeatures(Features &features, const GameSerial &gs)
 bool loadDump(const char *file)
 {
 	int romSize = 0x2000000;
-	Features f;
-	GameSerial gs;
 
-	if (!utilLoad(file, utilIsGBAImage, rom, romSize))
-		return false;
-
-	getGameSerial(gs);
-	findFeatures(f, gs);
-
-	features = f;
-
-	return true;
+	return utilLoad(file, utilIsGBAImage, rom, romSize);
 
 	// What does this do ?
 	/*u16 *temp = (u16 *)(rom+((romSize+1)&~1));
@@ -136,6 +130,101 @@ bool loadDump(const char *file)
 		WRITE16LE(temp, (i >> 1) & 0xFFFF);
 		temp++;
 	}*/
+}
+
+void init()
+{
+	flashInit();
+	sramInit();
+	eepromInit();
+}
+
+void reset()
+{
+	Features f;
+	GameSerial gs;
+
+	getGameSerial(gs);
+	findFeatures(f, gs);
+
+	eepromReset();
+	flashReset();
+	flashSetSize(f.flashSize);
+	rtcReset();
+	rtcEnable(f.hasRTC);
+
+	features = f;
+}
+
+bool writeBatteryToFile(const char *fileName)
+{
+	if (features.saveType != SaveNone)
+	{
+		FILE *file = fopen(fileName, "wb");
+
+		if(!file)
+		{
+			systemMessage("Error creating file %s", fileName);
+			return false;
+		}
+
+		bool res = true;
+
+		switch (features.saveType)
+		{
+		case SaveFlash:
+			res = flashWriteBattery(file);
+			break;
+		case SaveEEPROM:
+			res = eepromWriteBattery(file);
+			break;
+		case SaveSRAM:
+			res = sramWriteBattery(file);
+			break;
+		case SaveNone:
+			break;
+		}
+
+		fclose(file);
+		
+		return res;
+	}
+
+	return true;
+}
+
+bool readBatteryFromFile(const char *fileName)
+{
+	FILE *file = fopen(fileName, "rb");
+
+	if(!file)
+		return false;
+
+	// check file size to know what we should read
+	fseek(file, 0, SEEK_END);
+
+	long size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	bool res = true;
+
+	switch (features.saveType)
+	{
+	case SaveSRAM:
+		res = sramReadBattery(file, size);
+		break;
+	case SaveFlash:
+		res = flashReadBattery(file, size);
+		break;
+	case SaveEEPROM:
+		res = eepromReadBattery(file, size);
+		break;
+	case SaveNone:
+		break;
+	}
+
+	fclose(file);
+	return res;
 }
 
 } // namespace Cartridge

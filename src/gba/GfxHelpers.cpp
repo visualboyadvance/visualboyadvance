@@ -1,5 +1,6 @@
 #include "Gfx.h"
 #include "GBA.h"
+#include "Globals.h"
 #include "../common/Port.h"
 
 namespace GFX
