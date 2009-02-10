@@ -45,16 +45,7 @@ typedef union {
 extern memoryMap map[256];
 #endif
 
-extern reg_pair reg[45];
 extern u8 biosProtected[4];
-
-extern bool N_FLAG;
-extern bool Z_FLAG;
-extern bool C_FLAG;
-extern bool V_FLAG;
-extern bool armIrqEnable;
-extern bool armState;
-extern int armMode;
 
 extern void CPUUpdateRender();
 extern void CPUUpdateRegister(u32, u16);
