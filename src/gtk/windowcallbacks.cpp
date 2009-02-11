@@ -28,7 +28,6 @@
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
 
-#include "../Util.h"
 #include "inputSDL.h"
 
 #include "tools.h"

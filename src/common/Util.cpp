@@ -4,14 +4,10 @@
 #include <zlib.h>
 
 
-#include "System.h"
+#include "../System.h"
 #include "Util.h"
-#include "gba/GBA.h"
-#include "gba/Globals.h"
-#include "gba/RTC.h"
-#include "common/Port.h"
-
-#include "common/fex.h"
+#include "Port.h"
+#include "fex.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
@@ -31,11 +27,9 @@ void utilPutWord(u8 *p, u16 value)
   *p = (value >> 8) & 255;
 }
 
-extern bool cpuIsMultiBoot;
-
 bool utilIsGBAImage(const char * file)
 {
-  cpuIsMultiBoot = false;
+  //cpuIsMultiBoot = false;
   if(strlen(file) > 4) {
     const char * p = strrchr(file,'.');
 
@@ -45,10 +39,10 @@ bool utilIsGBAImage(const char * file)
          (_stricmp(p, ".bin") == 0) ||
          (_stricmp(p, ".elf") == 0))
         return true;
-      if(_stricmp(p, ".mb") == 0) {
+      /*if(_stricmp(p, ".mb") == 0) {
         cpuIsMultiBoot = true;
         return true;
-      }
+      }*/
     }
   }
 

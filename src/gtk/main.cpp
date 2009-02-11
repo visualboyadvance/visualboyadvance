@@ -19,11 +19,8 @@
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
 #include <gtkmm/messagedialog.h>
-#include <libglademm.h>
-
-#ifdef USE_OPENGL
 #include <gtkmm/gl/init.h>
-#endif // USE_OPENGL
+#include <libglademm.h>
 
 #include "window.h"
 #include "intl.h"
@@ -46,9 +43,7 @@ int main(int argc, char * argv[])
 
   Gtk::Main oKit(argc, argv);
 
-#ifdef USE_OPENGL
   Gtk::GL::init(argc, argv);
-#endif // USE_OPENGL
 
   Glib::OptionContext oContext;
   Glib::OptionGroup oGroup("main_group", _("Main VBA-M options"));

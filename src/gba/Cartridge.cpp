@@ -4,7 +4,7 @@
 #include "Flash.h"
 #include "RTC.h"
 #include "Sram.h"
-#include "../Util.h"
+#include "../common/Util.h"
 
 #include <iostream>
 #include <fstream>

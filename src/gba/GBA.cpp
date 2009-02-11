@@ -11,7 +11,7 @@
 #include "Globals.h"
 #include "Gfx.h"
 #include "Sound.h"
-#include "../Util.h"
+#include "../common/Util.h"
 #include "../common/Port.h"
 #include "../System.h"
 

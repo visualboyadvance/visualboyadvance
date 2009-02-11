@@ -8,7 +8,6 @@
 #include "GBAcpu.h"
 #include "GBAinline.h"
 #include "Globals.h"
-#include "../Util.h"
 #include "../System.h"
 
 

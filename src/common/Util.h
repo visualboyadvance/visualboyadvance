@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "common/Types.h"
+#include "Types.h"
 #include <zlib.h>
 
 // save game

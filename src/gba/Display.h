@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include "../Util.h"
+#include "../common/Util.h"
 
 namespace Display
 {

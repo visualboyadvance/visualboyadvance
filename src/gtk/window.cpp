@@ -30,7 +30,6 @@
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
 #include "../gba/Display.h"
-#include "../Util.h"
 
 #include "tools.h"
 #include "intl.h"
