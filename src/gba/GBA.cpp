@@ -1952,6 +1952,8 @@ void CPUReset()
 
   GFX::updateWindow0();
   GFX::updateWindow1();
+  
+  soundReset();
 
   ARM_PREFETCH;
 
