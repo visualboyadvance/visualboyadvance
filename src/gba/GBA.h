@@ -41,10 +41,6 @@ typedef union {
 #endif
 } reg_pair;
 
-#ifndef NO_GBA_MAP
-extern memoryMap map[256];
-#endif
-
 extern u8 biosProtected[4];
 
 extern void CPUUpdateRender();

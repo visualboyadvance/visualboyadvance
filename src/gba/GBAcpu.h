@@ -21,21 +21,21 @@ extern int thumbExecute();
 
 #define ARM_PREFETCH \
   {\
-    cpuPrefetch[0] = CPUReadMemoryQuick(armNextPC);\
-    cpuPrefetch[1] = CPUReadMemoryQuick(armNextPC+4);\
+    cpuPrefetch[0] = CPUReadMemory(armNextPC);\
+    cpuPrefetch[1] = CPUReadMemory(armNextPC+4);\
   }
 
 #define THUMB_PREFETCH \
   {\
-    cpuPrefetch[0] = CPUReadHalfWordQuick(armNextPC);\
-    cpuPrefetch[1] = CPUReadHalfWordQuick(armNextPC+2);\
+    cpuPrefetch[0] = CPUReadHalfWord(armNextPC);\
+    cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);\
   }
 
 #define ARM_PREFETCH_NEXT \
-  cpuPrefetch[1] = CPUReadMemoryQuick(armNextPC+4);
+  cpuPrefetch[1] = CPUReadMemory(armNextPC+4);
 
 #define THUMB_PREFETCH_NEXT\
-  cpuPrefetch[1] = CPUReadHalfWordQuick(armNextPC+2);
+  cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);
 
 
 extern int SWITicks;

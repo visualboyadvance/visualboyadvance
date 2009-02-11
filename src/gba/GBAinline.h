@@ -32,15 +32,6 @@ extern int timer3Ticks;
 extern int timer3ClockReload;
 extern int cpuTotalTicks;
 
-#define CPUReadByteQuick(addr) \
-  map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
-
-#define CPUReadHalfWordQuick(addr) \
-  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
-
-#define CPUReadMemoryQuick(addr) \
-  READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
-
 static inline u32 CPUReadMemory(u32 address)
 {
 #ifdef GBA_LOGGING
@@ -131,12 +122,7 @@ unreadable:
     if(cpuDmaHack) {
       value = cpuDmaLast;
     } else {
-      if(armState) {
-        value = CPUReadMemoryQuick(reg[15].I);
-      } else {
-        value = CPUReadHalfWordQuick(reg[15].I) |
-          CPUReadHalfWordQuick(reg[15].I) << 16;
-      }
+      value = 0;
     }
   }
 
@@ -251,11 +237,7 @@ unreadable:
     if(cpuDmaHack) {
       value = cpuDmaLast & 0xFFFF;
     } else {
-      if(armState) {
-        value = CPUReadHalfWordQuick(reg[15].I + (address & 2));
-      } else {
-        value = CPUReadHalfWordQuick(reg[15].I);
-      }
+        value = 0;
     }
     break;
   }
@@ -349,11 +331,7 @@ unreadable:
     if(cpuDmaHack) {
       return cpuDmaLast & 0xFF;
     } else {
-      if(armState) {
-        return CPUReadByteQuick(reg[15].I+(address & 3));
-      } else {
-        return CPUReadByteQuick(reg[15].I+(address & 1));
-      }
+        return 0;
     }
     break;
   }

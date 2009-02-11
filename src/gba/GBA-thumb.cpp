@@ -633,7 +633,7 @@ static INSN_REGPARM void thumb48(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = (reg[15].I & 0xFFFFFFFC) + ((opcode & 0xFF) << 2);
-	reg[regist].I = CPUReadMemoryQuick(address);
+	reg[regist].I = CPUReadMemory(address);
 	busPrefetchCount=0;
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
@@ -796,7 +796,7 @@ static INSN_REGPARM void thumb98(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[13].I + ((opcode&255)<<2);
-	reg[regist].I = CPUReadMemoryQuick(address);
+	reg[regist].I = CPUReadMemory(address);
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
 

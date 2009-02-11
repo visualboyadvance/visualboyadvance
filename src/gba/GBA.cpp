@@ -365,7 +365,7 @@ static bool CPUReadState(gzFile gzFile)
     THUMB_PREFETCH;
   }
 
-  CPUUpdateRegister(0x204, CPUReadHalfWordQuick(0x4000204));
+  CPUUpdateRegister(0x204, ioMem[0x204]);
 
   return true;
 }
@@ -1917,36 +1917,6 @@ void CPUReset()
   layerEnable = DISPCNT;
 
   GFX::clearRenderBuffers(true);
-
-  for(int i = 0; i < 256; i++) {
-    map[i].address = (u8 *)&dummyAddress;
-    map[i].mask = 0;
-  }
-
-  map[0].address = bios;
-  map[0].mask = 0x3FFF;
-  map[2].address = workRAM;
-  map[2].mask = 0x3FFFF;
-  map[3].address = internalRAM;
-  map[3].mask = 0x7FFF;
-  map[4].address = ioMem;
-  map[4].mask = 0x3FF;
-  map[5].address = paletteRAM;
-  map[5].mask = 0x3FF;
-  map[6].address = vram;
-  map[6].mask = 0x1FFFF;
-  map[7].address = oam;
-  map[7].mask = 0x3FF;
-  map[8].address = rom;
-  map[8].mask = 0x1FFFFFF;
-  map[9].address = rom;
-  map[9].mask = 0x1FFFFFF;
-  map[10].address = rom;
-  map[10].mask = 0x1FFFFFF;
-  map[12].address = rom;
-  map[12].mask = 0x1FFFFFF;
-//map[14].address = flashSaveMemory;
-//map[14].mask = 0xFFFF;
 
   Cartridge::reset();
 
