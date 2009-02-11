@@ -210,7 +210,7 @@ static inline u32 CPUReadHalfWord(u32 address)
   case 10:
   case 11:
   case 12:
-    if(address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
+    if(rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
       value = rtcRead(address);
     else
       value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));

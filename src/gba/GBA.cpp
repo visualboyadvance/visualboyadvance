@@ -34,7 +34,6 @@ static int cpuDmaTicksToUpdate = 0;
 int cpuDmaCount = 0;
 bool cpuDmaHack = false;
 u32 cpuDmaLast = 0;
-static int dummyAddress = 0;
 
 static bool cpuBreakLoop = false;
 int cpuNextEvent = 0;
