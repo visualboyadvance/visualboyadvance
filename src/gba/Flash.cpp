@@ -22,24 +22,12 @@ namespace Cartridge
 static u8 flashSaveMemory[0x20000];
 static int flashState = FLASH_READ_ARRAY;
 static int flashReadState = FLASH_READ_ARRAY;
-static int flashSize = 0x10000;
+static size_t flashSize = 0x10000;
 static int flashDeviceID = 0x1b;
 static int flashManufacturerID = 0x32;
 static int flashBank = 0;
 
-void flashInit()
-{
-	std::fill(flashSaveMemory, flashSaveMemory + 0x20000, 0xff);
-}
-
-void flashReset()
-{
-	flashState = FLASH_READ_ARRAY;
-	flashReadState = FLASH_READ_ARRAY;
-	flashBank = 0;
-}
-
-void flashSetSize(int size)
+static void flashSetSize(int size)
 {
 	if(size == 0x10000)
 	{
@@ -53,6 +41,19 @@ void flashSetSize(int size)
 	}
 
 	flashSize = size;
+}
+
+void flashInit()
+{
+	std::fill(flashSaveMemory, flashSaveMemory + 0x20000, 0xff);
+}
+
+void flashReset(int size)
+{
+	flashState = FLASH_READ_ARRAY;
+	flashReadState = FLASH_READ_ARRAY;
+	flashBank = 0;
+	flashSetSize(size);
 }
 
 u8 flashRead(u32 address)
@@ -212,26 +213,10 @@ void flashWrite(u32 address, u8 byte)
 
 bool flashReadBattery(FILE *file, size_t size)
 {
-	bool res;
+	if (size != flashSize)
+		return false;
 
-	if(size == 0x20000)
-	{
-		res = fread(flashSaveMemory, 1, 0x20000, file) == 0x20000;
-		if (res)
-		{
-			flashSetSize(0x20000);
-		}
-	}
-	else
-	{
-		res = fread(flashSaveMemory, 1, 0x10000, file) != 0x10000;
-		if (res)
-		{
-			flashSetSize(0x10000);
-		}
-	}
-
-	return res;
+	return fread(flashSaveMemory, 1, flashSize, file) == flashSize;
 }
 
 bool flashWriteBattery(FILE *file)

@@ -159,8 +159,8 @@ void reset()
 	findFeatures(f, gs);
 
 	eepromReset(f.eepromSize);
-	flashReset();
-	flashSetSize(f.flashSize);
+	flashReset(f.flashSize);
+
 	rtcReset();
 	rtcEnable(f.hasRTC);
 
