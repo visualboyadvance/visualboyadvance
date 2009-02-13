@@ -10,7 +10,7 @@
 #include "MMU.h"
 #include "Globals.h"
 #include "Gfx.h"
-#include "RTC.h"
+#include "CartridgeRTC.h"
 #include "Sound.h"
 #include "../common/Util.h"
 #include "../common/Port.h"

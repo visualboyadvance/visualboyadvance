@@ -3,7 +3,7 @@
 
 #include "GBA.h"
 #include "Globals.h"
-#include "Flash.h"
+#include "CartridgeFlash.h"
 
 namespace Cartridge
 {

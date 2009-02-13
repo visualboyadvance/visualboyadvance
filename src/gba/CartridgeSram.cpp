@@ -1,4 +1,4 @@
-#include "Sram.h"
+#include "CartridgeSram.h"
 #include <algorithm>
 
 namespace Cartridge

@@ -55,9 +55,11 @@ SET(SRC_MAIN
 
 SET(SRC_GBA
     src/gba/Cartridge.cpp
+    src/gba/CartridgeEEprom.cpp
+    src/gba/CartridgeFlash.cpp
+    src/gba/CartridgeRTC.cpp
+    src/gba/CartridgeSram.cpp
     src/gba/Display.cpp
-    src/gba/EEprom.cpp
-    src/gba/Flash.cpp
     src/gba/GBA.cpp
     src/gba/GBALink.cpp
     src/gba/GBA-thumb.cpp
@@ -72,9 +74,7 @@ SET(SRC_GBA
     src/gba/GfxMode5.cpp
     src/gba/Globals.cpp
     src/gba/MMU.cpp
-    src/gba/RTC.cpp
     src/gba/Sound.cpp
-    src/gba/Sram.cpp
 )
 
 SET(SRC_APU

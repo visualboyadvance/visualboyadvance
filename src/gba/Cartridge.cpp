@@ -1,9 +1,9 @@
 #include "Globals.h"
 #include "Cartridge.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "RTC.h"
-#include "Sram.h"
+#include "CartridgeEEprom.h"
+#include "CartridgeFlash.h"
+#include "CartridgeRTC.h"
+#include "CartridgeSram.h"
 #include "../common/Util.h"
 
 #include <iostream>

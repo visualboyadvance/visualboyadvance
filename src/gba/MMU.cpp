@@ -3,10 +3,10 @@
 #include "Cartridge.h"
 #include "GBAcpu.h"
 #include "Globals.h"
-#include "RTC.h"
-#include "EEprom.h"
-#include "Flash.h"
-#include "Sram.h"
+#include "CartridgeRTC.h"
+#include "CartridgeEEprom.h"
+#include "CartridgeFlash.h"
+#include "CartridgeSram.h"
 #include "Sound.h"
 
 extern bool stopState;

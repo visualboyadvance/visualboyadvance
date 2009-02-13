@@ -1,5 +1,5 @@
 #include "GBA.h"
-#include "EEprom.h"
+#include "CartridgeEEprom.h"
 
 namespace Cartridge
 {
