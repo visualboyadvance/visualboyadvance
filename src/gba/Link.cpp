@@ -3,7 +3,7 @@
 #include "GBA.h"
 #include <cstdio>
 #include "../common/Port.h"
-#include "GBALink.h"
+#include "Link.h"
 #include "Globals.h"
 
 #define SIO_START		(1<<7)

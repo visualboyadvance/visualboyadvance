@@ -1,7 +1,7 @@
 #include "../System.h"
 #include "../common/Port.h"
 #include "Cartridge.h"
-#include "GBAcpu.h"
+#include "CPU.h"
 #include "GBA.h"
 #include "Globals.h"
 #include "CartridgeRTC.h"

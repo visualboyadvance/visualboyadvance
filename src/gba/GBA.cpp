@@ -6,7 +6,7 @@
 #include "Cartridge.h"
 #include "Display.h"
 #include "GBA.h"
-#include "GBAcpu.h"
+#include "CPU.h"
 #include "MMU.h"
 #include "Globals.h"
 #include "Gfx.h"
@@ -17,7 +17,7 @@
 #include "../System.h"
 
 #ifdef LINK_EMULATION
-#include "GBALink.h"
+#include "Link.h"
 #endif
 
 #ifdef __GNUC__

@@ -1,5 +1,5 @@
 #include "GBA.h"
-#include "GBAcpu.h"
+#include "CPU.h"
 #include "Globals.h"
 #include "MMU.h"
 //#include "../System.h"
