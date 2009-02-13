@@ -5,6 +5,7 @@
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
 #include "../common/Util.h"
+#include "../System.h"
 
 #include <iostream>
 #include <fstream>

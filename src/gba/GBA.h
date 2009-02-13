@@ -6,41 +6,6 @@
 #define SAVE_GAME_VERSION_11 11
 #define SAVE_GAME_VERSION  SAVE_GAME_VERSION_11
 
-typedef struct {
-  u8 *address;
-  u32 mask;
-} memoryMap;
-
-typedef union {
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u8 B3;
-    u8 B2;
-    u8 B1;
-    u8 B0;
-#else
-    u8 B0;
-    u8 B1;
-    u8 B2;
-    u8 B3;
-#endif
-  } B;
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u16 W1;
-    u16 W0;
-#else
-    u16 W0;
-    u16 W1;
-#endif
-  } W;
-#ifdef WORDS_BIGENDIAN
-  volatile u32 I;
-#else
-	u32 I;
-#endif
-} reg_pair;
-
 extern u8 biosProtected[4];
 
 extern void CPUUpdateRender();

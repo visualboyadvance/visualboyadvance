@@ -1,7 +1,6 @@
-#include "GBA.h"
+#include "Globals.h"
 
 reg_pair reg[45];
-memoryMap map[256];
 bool ioReadable[0x400];
 bool N_FLAG = 0;
 bool C_FLAG = 0;
@@ -11,11 +10,9 @@ bool armState = true;
 bool armIrqEnable = true;
 u32 armNextPC = 0x00000000;
 int armMode = 0x1f;
-int saveType = 0;
 bool speedup = false;
 bool cpuIsMultiBoot = false;
 int layerEnable = 0xff00;
-int cpuSaveType = 0;
 
 u8 *bios = 0;
 u8 *rom = 0;
@@ -23,7 +20,6 @@ u8 *internalRAM = 0;
 u8 *workRAM = 0;
 u8 *paletteRAM = 0;
 u8 *vram = 0;
-u8 *pix = 0;
 u8 *oam = 0;
 u8 *ioMem = 0;
 
