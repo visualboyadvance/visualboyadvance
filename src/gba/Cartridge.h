@@ -17,6 +17,7 @@ enum ESaveType
 struct Features
 {
 	ESaveType saveType;
+	int eepromSize;
 	int flashSize;
 	bool hasRTC;
 	bool hasMotionSensor;

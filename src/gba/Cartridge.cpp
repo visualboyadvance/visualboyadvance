@@ -14,7 +14,7 @@
 namespace Cartridge
 {
 
-Features features = {SaveNone, 0x10000, false, false};
+Features features = {SaveNone, 0x2000, 0x10000, false, false};
 
 static bool areEqual(const GameSerial &x, const GameSerial &y)
 {
@@ -40,6 +40,7 @@ static void getGameSerial(GameSerial &gs)
 static void clearFeatures(Features &features)
 {
 	features.saveType = SaveNone;
+	features.eepromSize = 0x2000;
 	features.flashSize = 0x10000;
 	features.hasRTC = false;
 	features.hasMotionSensor = false;
@@ -50,7 +51,8 @@ static void processFeatureToken(Features &features, const std::string &token)
 	if (token == "FLASH_V120" || token == "FLASH_V121" ||
 		token == "FLASH_V123" || token == "FLASH_V124" ||
 		token == "FLASH_V125" || token == "FLASH_V126" ||
-		token == "FLASH512_V130" || token == "FLASH512_V131")
+		token == "FLASH512_V130" || token == "FLASH512_V131" ||
+		token == "FLASH512_V133")
 	{
 		features.saveType = SaveFlash;
 		features.flashSize = 0x10000;
@@ -62,7 +64,8 @@ static void processFeatureToken(Features &features, const std::string &token)
 	}
 	else if (token == "EEPROM_V111" || token == "EEPROM_V120" ||
 			 token == "EEPROM_V121" || token == "EEPROM_V122" ||
-			 token == "EEPROM_V124")
+			 token == "EEPROM_V124" || token == "EEPROM_V125" ||
+			 token == "EEPROM_V126")
 	{
 		features.saveType = SaveEEPROM;
 	}
@@ -72,6 +75,14 @@ static void processFeatureToken(Features &features, const std::string &token)
 			 token == "SRAM_F_V103")
 	{
 		features.saveType = SaveSRAM;
+	}
+	else if (token == "EEPROM_4K")
+	{
+		features.eepromSize = 0x0200;
+	}
+	else if (token == "EEPROM_64K")
+	{
+		features.eepromSize = 0x2000;
 	}
 	else if (token == "SIIRTC_V001")
 	{
