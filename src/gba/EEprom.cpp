@@ -2,13 +2,16 @@
 #include "GBA.h"
 #include "EEprom.h"
 
+extern int cpuDmaCount; // Used to autodetect the EEprom size
+
+namespace Cartridge
+{
+
 #define EEPROM_IDLE           0
 #define EEPROM_READADDRESS    1
 #define EEPROM_READDATA       2
 #define EEPROM_READDATA2      3
 #define EEPROM_WRITEDATA      4
-
-extern int cpuDmaCount;
 
 static int eepromMode = EEPROM_IDLE;
 static int eepromByte = 0;
@@ -154,3 +157,6 @@ bool eepromWriteBattery(FILE *file)
 {
   return fwrite(eepromData, 1, eepromSize, file) == (size_t)eepromSize;
 }
+
+} // namespace Cartridge
+

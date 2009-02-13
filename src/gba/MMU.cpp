@@ -98,7 +98,7 @@ u32 CPUReadMemory(u32 address)
   case 13:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
       // no need to swap this
-      return eepromRead(address);
+      return Cartridge::eepromRead(address);
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
@@ -214,7 +214,7 @@ u32 CPUReadHalfWord(u32 address)
   case 13:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
       // no need to swap this
-      return  eepromRead(address);
+      return  Cartridge::eepromRead(address);
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
@@ -296,7 +296,7 @@ u8 CPUReadByte(u32 address)
     return rom[address & 0x1FFFFFF];
   case 13:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
-      return eepromRead(address);
+      return Cartridge::eepromRead(address);
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
@@ -376,7 +376,7 @@ void CPUWriteMemory(u32 address, u32 value)
     break;
   case 0x0D:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      eepromWrite(address, value);
+      Cartridge::eepromWrite(address, value);
       break;
     }
     goto unwritable;
@@ -453,7 +453,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
     break;
   case 13:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      eepromWrite(address, (u8)value);
+      Cartridge::eepromWrite(address, (u8)value);
       break;
     }
     goto unwritable;
@@ -577,7 +577,7 @@ void CPUWriteByte(u32 address, u8 b)
     break;
   case 13:
     if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      eepromWrite(address, b);
+      Cartridge::eepromWrite(address, b);
       break;
     }
     goto unwritable;
