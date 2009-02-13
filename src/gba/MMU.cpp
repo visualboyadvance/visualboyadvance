@@ -206,8 +206,8 @@ u32 CPUReadHalfWord(u32 address)
   case 10:
   case 11:
   case 12:
-    if(rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
-      value = rtcRead(address);
+    if(Cartridge::rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
+      value = Cartridge::rtcRead(address);
     else
       value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
     break;
@@ -447,7 +447,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
   case 8:
   case 9:
     if(address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8) {
-      if(!rtcWrite(address, value))
+      if(!Cartridge::rtcWrite(address, value))
         goto unwritable;
     } else goto unwritable;
     break;

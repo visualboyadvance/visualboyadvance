@@ -282,7 +282,7 @@ static bool CPUWriteState(gzFile gzFile)
   utilGzWrite(gzFile, ioMem, 0x400);
 
   soundSaveGame(gzFile);
-  rtcSaveGame(gzFile);
+  Cartridge::rtcSaveGame(gzFile);
 
   return true;
 }
@@ -347,7 +347,7 @@ static bool CPUReadState(gzFile gzFile)
 
   soundReadGame(gzFile, version);
 
-  rtcReadGame(gzFile);
+  Cartridge::rtcReadGame(gzFile);
 
   // set pointers!
   layerEnable = DISPCNT;

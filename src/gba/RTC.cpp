@@ -1,11 +1,10 @@
-#include "../System.h"
-#include "GBA.h"
-#include "Globals.h"
-#include "../common/Port.h"
 #include "RTC.h"
 
 #include <time.h>
 #include <memory.h>
+
+namespace Cartridge
+{
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
@@ -142,7 +141,7 @@ bool rtcWrite(u32 address, u16 value)
               }
               break;
             default:
-              systemMessage("Unknown RTC command %02x", rtcClockData.command);
+              //systemMessage("Unknown RTC command %02x", rtcClockData.command);
               rtcClockData.state = IDLE;
               break;
             }
@@ -206,3 +205,6 @@ void rtcReadGame(gzFile gzFile)
 {
   utilGzRead(gzFile, &rtcClockData, sizeof(rtcClockData));
 }
+
+} // namespace Cartridge
+
