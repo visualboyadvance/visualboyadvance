@@ -102,7 +102,7 @@ u32 CPUReadMemory(u32 address)
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return sramRead(address);
+      return Cartridge::sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return Cartridge::flashRead(address);
     // default
@@ -218,7 +218,7 @@ u32 CPUReadHalfWord(u32 address)
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return sramRead(address);
+      return Cartridge::sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return Cartridge::flashRead(address);
     // default
@@ -300,7 +300,7 @@ u8 CPUReadByte(u32 address)
     goto unreadable;
   case 14:
     if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return sramRead(address);
+      return Cartridge::sramRead(address);
     else if (Cartridge::features.saveType == Cartridge::SaveFlash)
       return Cartridge::flashRead(address);
     if(Cartridge::features.hasMotionSensor) {
@@ -382,7 +382,7 @@ void CPUWriteMemory(u32 address, u32 value)
     goto unwritable;
   case 0x0E:
     if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      sramWrite(address, (u8)value);
+      Cartridge::sramWrite(address, (u8)value);
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
@@ -459,7 +459,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
     goto unwritable;
   case 14:
     if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      sramWrite(address, (u8)value);
+      Cartridge::sramWrite(address, (u8)value);
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
@@ -583,7 +583,7 @@ void CPUWriteByte(u32 address, u8 b)
     goto unwritable;
   case 14:
     if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      sramWrite(address, b);
+      Cartridge::sramWrite(address, b);
       break;
     }
     else if (Cartridge::features.saveType == Cartridge::SaveFlash) {

@@ -1,6 +1,9 @@
 #include "Sram.h"
 #include <algorithm>
 
+namespace Cartridge
+{
+
 static const size_t sramSize = 0x10000;
 static u8 sramData[sramSize];
 
@@ -28,3 +31,5 @@ bool sramWriteBattery(FILE *file)
 {
 	return fwrite(sramData, 1, sramSize, file) == sramSize;
 }
+
+} // namespace Cartridge
