@@ -158,7 +158,7 @@ void reset()
 	getGameSerial(gs);
 	findFeatures(f, gs);
 
-	eepromReset();
+	eepromReset(f.eepromSize);
 	flashReset();
 	flashSetSize(f.flashSize);
 	rtcReset();

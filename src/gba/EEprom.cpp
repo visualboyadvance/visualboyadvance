@@ -2,8 +2,6 @@
 #include "GBA.h"
 #include "EEprom.h"
 
-extern int cpuDmaCount; // Used to autodetect the EEprom size
-
 namespace Cartridge
 {
 
@@ -26,13 +24,13 @@ void eepromInit()
   memset(eepromData, 255, sizeof(eepromData));
 }
 
-void eepromReset()
+void eepromReset(int size)
 {
   eepromMode = EEPROM_IDLE;
   eepromByte = 0;
   eepromBits = 0;
   eepromAddress = 0;
-  eepromSize = 512;
+  eepromSize = size;
 }
 
 int eepromRead(u32 /* address */)
@@ -73,8 +71,8 @@ int eepromRead(u32 /* address */)
 
 void eepromWrite(u32 /* address */, u8 value)
 {
-  if(cpuDmaCount == 0)
-    return;
+/*  if(cpuDmaCount == 0)
+    return;*/
   int bit = value & 1;
   switch(eepromMode) {
   case EEPROM_IDLE:
@@ -90,9 +88,8 @@ void eepromWrite(u32 /* address */, u8 value)
     if((eepromBits & 7) == 0) {
       eepromByte++;
     }
-    if(cpuDmaCount == 0x11 || cpuDmaCount == 0x51) {
+    if(eepromSize == 0x2000) { // 64K
       if(eepromBits == 0x11) {
-        eepromSize = 0x2000;
         eepromAddress = ((eepromBuffer[0] & 0x3F) << 8) |
           ((eepromBuffer[1] & 0xFF));
         if(!(eepromBuffer[0] & 0x40)) {
@@ -106,7 +103,7 @@ void eepromWrite(u32 /* address */, u8 value)
           eepromBits = 0;
         }
       }
-    } else {
+    } else { // 4K
       if(eepromBits == 9) {
         eepromAddress = (eepromBuffer[0] & 0x3F);
         if(!(eepromBuffer[0] & 0x40)) {

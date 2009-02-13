@@ -32,7 +32,6 @@ bool busPrefetch = false;
 bool busPrefetchEnable = false;
 u32 busPrefetchCount = 0;
 static int cpuDmaTicksToUpdate = 0;
-int cpuDmaCount = 0;
 bool cpuDmaHack = false;
 u32 cpuDmaLast = 0;
 
@@ -768,7 +767,6 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
   int dw = 0;
   int sc = c;
 
-  cpuDmaCount = c;
   // This is done to get the correct waitstates.
   if (sm>15)
       sm=15;
@@ -816,8 +814,6 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
       }
     }
   }
-
-  cpuDmaCount = 0;
 
   int totalTicks = 0;
 
