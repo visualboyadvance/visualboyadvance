@@ -1,14 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <stdarg.h>
-#include <string.h>
-
 #include "GBA.h"
 #include "GBAcpu.h"
-#include "GBAinline.h"
 #include "Globals.h"
-#include "../System.h"
+#include "MMU.h"
+//#include "../System.h"
 
 
 ///////////////////////////////////////////////////////////////////////////

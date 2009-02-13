@@ -71,6 +71,7 @@ SET(SRC_GBA
     src/gba/GfxMode4.cpp
     src/gba/GfxMode5.cpp
     src/gba/Globals.cpp
+    src/gba/MMU.cpp
     src/gba/RTC.cpp
     src/gba/Sound.cpp
     src/gba/Sram.cpp

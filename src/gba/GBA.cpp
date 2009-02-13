@@ -7,9 +7,10 @@
 #include "Display.h"
 #include "GBA.h"
 #include "GBAcpu.h"
-#include "GBAinline.h"
+#include "MMU.h"
 #include "Globals.h"
 #include "Gfx.h"
+#include "RTC.h"
 #include "Sound.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
@@ -88,7 +89,6 @@ static const int TIMER_TICKS[4] = {
   10
 };
 
-const u32  objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
 static const u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
 static const u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
 static const u8 gamepakWaitState0[2] = { 2, 1 };

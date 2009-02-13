@@ -1,6 +1,7 @@
 #include "GBA.h"
 #include "GBAcpu.h"
-#include "GBAinline.h"
+#include "Globals.h"
+#include "MMU.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -1006,7 +1007,7 @@ static INSN_REGPARM void thumbC8(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[regist].I & 0xFFFFFFFC;
-	u32 temp = reg[regist].I + 4*cpuBitsSet[opcode & 0xFF];
+	//u32 temp = reg[regist].I + 4*cpuBitsSet[opcode & 0xFF];
 	int count = 0;
 	// load
 	THUMB_LDM_REG(opcode, count, address, 1, 0);
@@ -1019,7 +1020,7 @@ static INSN_REGPARM void thumbC8(u32 opcode)
 	THUMB_LDM_REG(opcode, count, address, 128, 7);
 	clockTicks = 2 + codeTicksAccess16(armNextPC);
 	if(!(opcode & (1<<regist)))
-		reg[regist].I = temp;
+		reg[regist].I = address;
 }
 
 // Conditional branches ///////////////////////////////////////////////////

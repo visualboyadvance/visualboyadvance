@@ -1,9 +1,7 @@
-#ifndef GBAINLINE_H
-#define GBAINLINE_H
-
 #include "../System.h"
 #include "../common/Port.h"
 #include "Cartridge.h"
+#include "GBAcpu.h"
 #include "Globals.h"
 #include "RTC.h"
 #include "EEprom.h"
@@ -11,11 +9,8 @@
 #include "Sram.h"
 #include "Sound.h"
 
-extern const u32 objTilesAddress[3];
-
 extern bool stopState;
 extern bool holdState;
-extern int cpuNextEvent;
 extern bool cpuDmaHack;
 extern u32 cpuDmaLast;
 extern bool timer0On;
@@ -30,9 +25,10 @@ extern int timer2ClockReload;
 extern bool timer3On;
 extern int timer3Ticks;
 extern int timer3ClockReload;
-extern int cpuTotalTicks;
 
-static inline u32 CPUReadMemory(u32 address)
+static const u32 objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
+
+u32 CPUReadMemory(u32 address)
 {
 #ifdef GBA_LOGGING
   if(address & 3) {
@@ -133,7 +129,7 @@ unreadable:
   return value;
 }
 
-static inline u32 CPUReadHalfWord(u32 address)
+u32 CPUReadHalfWord(u32 address)
 {
 #ifdef GBA_LOGGING
   if(address & 1) {
@@ -249,7 +245,7 @@ unreadable:
   return value;
 }
 
-static inline u16 CPUReadHalfWordSigned(u32 address)
+u16 CPUReadHalfWordSigned(u32 address)
 {
   u16 value = CPUReadHalfWord(address);
   if((address & 1))
@@ -257,7 +253,7 @@ static inline u16 CPUReadHalfWordSigned(u32 address)
   return value;
 }
 
-static inline u8 CPUReadByte(u32 address)
+u8 CPUReadByte(u32 address)
 {
   switch(address >> 24) {
   case 0:
@@ -337,7 +333,7 @@ unreadable:
   }
 }
 
-static inline void CPUWriteMemory(u32 address, u32 value)
+void CPUWriteMemory(u32 address, u32 value)
 {
 
 #ifdef GBA_LOGGING
@@ -409,7 +405,7 @@ unwritable:
   }
 }
 
-static inline void CPUWriteHalfWord(u32 address, u16 value)
+void CPUWriteHalfWord(u32 address, u16 value)
 {
 #ifdef GBA_LOGGING
   if(address & 1) {
@@ -485,7 +481,7 @@ unwritable:
   }
 }
 
-static inline void CPUWriteByte(u32 address, u8 b)
+void CPUWriteByte(u32 address, u8 b)
 {
   switch(address >> 24) {
   case 2:
@@ -608,5 +604,3 @@ unwritable:
     break;
   }
 }
-
-#endif // GBAINLINE_H
