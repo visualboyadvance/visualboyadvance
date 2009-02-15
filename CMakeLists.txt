@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 2.4.6 )
 if( COMMAND cmake_policy )
-    cmake_policy( SET CMP0003 NEW )
-    cmake_policy( SET CMP0005 OLD )
+	cmake_policy( SET CMP0003 NEW )
+	cmake_policy( SET CMP0005 OLD )
 endif( COMMAND cmake_policy )
 
 # The project's name is VBA-M it uses C++ code
@@ -11,7 +11,7 @@ PROJECT(VBA-M CXX)
 
 # Version number
 IF( NOT VERSION )
-    SET( VERSION "1.8.0-SVN" )
+	SET( VERSION "1.8.0-SVN" )
 ENDIF( NOT VERSION )
 
 # Look for some dependencies using builtin CMake scripts
@@ -29,14 +29,14 @@ PKG_CHECK_MODULES ( GTKGLMM gtkglextmm-x11-1.2 )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
-    SET( DATA_INSTALL_DIR "share/vbam" )
+	SET( DATA_INSTALL_DIR "share/vbam" )
 ENDIF( NOT DATA_INSTALL_DIR )
 
 SET( PKGDATADIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR} )
 
 # Set the configuration file location
 IF( NOT SYSCONFDIR )
-    SET( SYSCONFDIR "/etc" )
+	SET( SYSCONFDIR "/etc" )
 ENDIF( NOT SYSCONFDIR )
 
 # C defines
@@ -50,63 +50,63 @@ SET( CMAKE_CXX_FLAGS "-O2 -Wall -g")
 
 # Source files definition
 SET(SRC_MAIN
-    src/common/Util.cpp
+	src/common/Util.cpp
 )
 
 SET(SRC_GBA
-    src/gba/Cartridge.cpp
-    src/gba/CartridgeEEprom.cpp
-    src/gba/CartridgeFlash.cpp
-    src/gba/CartridgeRTC.cpp
-    src/gba/CartridgeSram.cpp
-    src/gba/CPUArm.cpp
-    src/gba/CPUThumb.cpp
-    src/gba/Display.cpp
-    src/gba/GBA.cpp
-    src/gba/Gfx.cpp
-    src/gba/GfxHelpers.cpp
-    src/gba/GfxMode0.cpp
-    src/gba/GfxMode1.cpp
-    src/gba/GfxMode2.cpp
-    src/gba/GfxMode3.cpp
-    src/gba/GfxMode4.cpp
-    src/gba/GfxMode5.cpp
-    src/gba/Globals.cpp
-    src/gba/Link.cpp
-    src/gba/MMU.cpp
-    src/gba/Sound.cpp
+	src/gba/Cartridge.cpp
+	src/gba/CartridgeEEprom.cpp
+	src/gba/CartridgeFlash.cpp
+	src/gba/CartridgeRTC.cpp
+	src/gba/CartridgeSram.cpp
+	src/gba/CPUArm.cpp
+	src/gba/CPUThumb.cpp
+	src/gba/Display.cpp
+	src/gba/GBA.cpp
+	src/gba/Gfx.cpp
+	src/gba/GfxHelpers.cpp
+	src/gba/GfxMode0.cpp
+	src/gba/GfxMode1.cpp
+	src/gba/GfxMode2.cpp
+	src/gba/GfxMode3.cpp
+	src/gba/GfxMode4.cpp
+	src/gba/GfxMode5.cpp
+	src/gba/Globals.cpp
+	src/gba/Link.cpp
+	src/gba/MMU.cpp
+	src/gba/Sound.cpp
 )
 
 SET(SRC_APU
-    src/apu/Blip_Buffer.cpp
-    src/apu/Effects_Buffer.cpp
-    src/apu/Gb_Apu.cpp
-    src/apu/Gb_Apu_State.cpp
-    src/apu/Gb_Oscs.cpp
-    src/apu/Multi_Buffer.cpp
+	src/apu/Blip_Buffer.cpp
+	src/apu/Effects_Buffer.cpp
+	src/apu/Gb_Apu.cpp
+	src/apu/Gb_Apu_State.cpp
+	src/apu/Gb_Oscs.cpp
+	src/apu/Multi_Buffer.cpp
 )
 
 SET(SRC_FEX_MINI
-    src/common/fex_mini.cpp
+	src/common/fex_mini.cpp
 )
 
 SET(SRC_GTK
-    src/gtk/configfile.cpp
-    src/gtk/main.cpp
-    src/gtk/system.cpp
-    src/gtk/windowcallbacks.cpp
-    src/gtk/filters.cpp
-    src/gtk/joypadconfig.cpp
-    src/gtk/directoriesconfig.cpp
-    src/gtk/displayconfig.cpp
-    src/gtk/soundconfig.cpp
-    src/gtk/screenarea.cpp
-    src/gtk/screenarea-cairo.cpp
-    src/gtk/screenarea-opengl.cpp
-    src/gtk/tools.cpp
-    src/gtk/window.cpp
-    src/gtk/inputSDL.cpp
-    src/common/SoundSDL.cpp
+	src/gtk/configfile.cpp
+	src/gtk/main.cpp
+	src/gtk/system.cpp
+	src/gtk/windowcallbacks.cpp
+	src/gtk/filters.cpp
+	src/gtk/joypadconfig.cpp
+	src/gtk/directoriesconfig.cpp
+	src/gtk/displayconfig.cpp
+	src/gtk/soundconfig.cpp
+	src/gtk/screenarea.cpp
+	src/gtk/screenarea-cairo.cpp
+	src/gtk/screenarea-opengl.cpp
+	src/gtk/tools.cpp
+	src/gtk/window.cpp
+	src/gtk/inputSDL.cpp
+	src/common/SoundSDL.cpp
 )
 
 INCLUDE_DIRECTORIES(
