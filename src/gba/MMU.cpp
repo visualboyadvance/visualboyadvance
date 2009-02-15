@@ -12,8 +12,6 @@
 
 extern bool stopState;
 extern bool holdState;
-extern bool cpuDmaHack;
-extern u32 cpuDmaLast;
 extern bool timer0On;
 extern int timer0Ticks;
 extern int timer0ClockReload;
@@ -116,11 +114,7 @@ unreadable:
     }
 #endif
 
-    if(cpuDmaHack) {
-      value = cpuDmaLast;
-    } else {
-      value = 0;
-    }
+    value = 0;
   }
 
   if(address & 3) {
@@ -231,11 +225,7 @@ unreadable:
         armNextPC - 4 : armNextPC - 2);
     }
 #endif
-    if(cpuDmaHack) {
-      value = cpuDmaLast & 0xFFFF;
-    } else {
-        value = 0;
-    }
+    value = 0;
     break;
   }
 
@@ -325,11 +315,7 @@ unreadable:
         armNextPC - 4 : armNextPC - 2);
     }
 #endif
-    if(cpuDmaHack) {
-      return cpuDmaLast & 0xFF;
-    } else {
-        return 0;
-    }
+    return 0;
     break;
   }
 }
