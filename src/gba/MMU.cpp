@@ -92,18 +92,10 @@ u32 CPUReadMemory(u32 address)
   case 10:
   case 11:
   case 12:
-    value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
-    break;
   case 13:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
-      // no need to swap this
-      return Cartridge::eepromRead(address);
-    goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return Cartridge::sramRead(address);
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return Cartridge::flashRead(address);
+    value = Cartridge::readMemory32(address);
+    break;
     // default
   default:
 unreadable:
@@ -201,22 +193,10 @@ u32 CPUReadHalfWord(u32 address)
   case 10:
   case 11:
   case 12:
-    if(Cartridge::rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
-      value = Cartridge::rtcRead(address);
-    else
-      value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
-    break;
   case 13:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
-      // no need to swap this
-      return  Cartridge::eepromRead(address);
-    goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return Cartridge::sramRead(address);
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return Cartridge::flashRead(address);
-    // default
+    value = Cartridge::readMemory16(address);
+    break;
   default:
 unreadable:
 #ifdef GBA_LOGGING
@@ -284,28 +264,9 @@ u8 CPUReadByte(u32 address)
   case 10:
   case 11:
   case 12:
-    return rom[address & 0x1FFFFFF];
   case 13:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM)
-      return Cartridge::eepromRead(address);
-    goto unreadable;
   case 14:
-    if(Cartridge::features.saveType == Cartridge::SaveSRAM)
-      return Cartridge::sramRead(address);
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash)
-      return Cartridge::flashRead(address);
-    if(Cartridge::features.hasMotionSensor) {
-      switch(address & 0x00008f00) {
-  case 0x8200:
-    return systemGetSensorX() & 255;
-  case 0x8300:
-    return (systemGetSensorX() >> 8)|0x80;
-  case 0x8400:
-    return systemGetSensorY() & 255;
-  case 0x8500:
-    return systemGetSensorY() >> 8;
-      }
-    }
+    return Cartridge::readMemory8(address);
     // default
   default:
 unreadable:

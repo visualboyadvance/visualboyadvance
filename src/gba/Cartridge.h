@@ -1,6 +1,8 @@
 #ifndef CARTRIDGE_H
 #define CARTRIDGE_H
 
+#include "../common/Types.h"
+
 namespace Cartridge
 {
 
@@ -30,6 +32,10 @@ void reset();
 bool loadDump(const char *file);
 bool readBatteryFromFile(const char *fileName);
 bool writeBatteryToFile(const char *fileName);
+
+u32 readMemory32(const u32 address);
+u16 readMemory16(const u32 address);
+u8 readMemory8(const u32 address);
 
 }
 

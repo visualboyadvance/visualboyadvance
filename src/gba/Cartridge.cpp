@@ -5,6 +5,7 @@
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
 #include "../common/Util.h"
+#include "../common/Port.h"
 #include "../System.h"
 
 #include <iostream>
@@ -237,6 +238,108 @@ bool readBatteryFromFile(const char *fileName)
 
 	fclose(file);
 	return res;
+}
+
+u32 readMemory32(const u32 address)
+{
+	switch(address >> 24)
+	{
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+		return READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
+		break;
+	case 13:
+		if (features.saveType == SaveEEPROM) 
+			return eepromRead(address);
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+			return sramRead(address);
+		else if (features.saveType == SaveFlash)
+			return flashRead(address);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+u16 readMemory16(const u32 address)
+{
+	switch (address >> 24)
+	{
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+		if (rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
+			return rtcRead(address);
+		else
+			return READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
+		break;
+	case 13:
+		if (features.saveType == SaveEEPROM)
+			return eepromRead(address);
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+			return sramRead(address);
+		else if (features.saveType == SaveFlash)
+			return flashRead(address);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+u8 readMemory8(const u32 address)
+{
+	switch (address >> 24)
+	{
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+		return rom[address & 0x1FFFFFF];
+		break;
+	case 13:
+		if (features.saveType == SaveEEPROM)
+			return eepromRead(address);
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+			return sramRead(address);
+		else if (features.saveType == SaveFlash)
+			return flashRead(address);
+
+		if (features.hasMotionSensor)
+		{
+			switch (address & 0x00008f00)
+			{
+			case 0x8200:
+				return systemGetSensorX() & 255;
+			case 0x8300:
+				return (systemGetSensorX() >> 8)|0x80;
+			case 0x8400:
+				return systemGetSensorY() & 255;
+			case 0x8500:
+				return systemGetSensorY() >> 8;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	return 0;
 }
 
 } // namespace Cartridge
