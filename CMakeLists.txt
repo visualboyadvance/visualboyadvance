@@ -5,7 +5,7 @@ if( COMMAND cmake_policy )
 endif( COMMAND cmake_policy )
 
 # The project's name is VBA-M it uses C++ code
-PROJECT(VBA-M CXX)
+PROJECT(VBA-M C CXX)
 
 # Set the version number with -DVERSION=X.X.X-uber
 

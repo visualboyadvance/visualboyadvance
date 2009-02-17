@@ -24,7 +24,6 @@
 #include <gtkmm/liststore.h>
 
 #include "intl.h"
-#include "filters.h"
 
 namespace VBA
 {
@@ -33,50 +32,19 @@ DisplayConfigDialog::DisplayConfigDialog(GtkDialog* _pstDialog, const Glib::RefP
   Gtk::Dialog(_pstDialog),
   m_poConfig(0)
 {
-  refBuilder->get_widget("FiltersComboBox", m_poFiltersComboBox);
-  refBuilder->get_widget("IBFiltersComboBox", m_poIBFiltersComboBox);
   refBuilder->get_widget("DefaultScaleComboBox", m_poDefaultScaleComboBox);
   refBuilder->get_widget("OutputOpenGL", m_poOutputOpenGLRadioButton);
   refBuilder->get_widget("OutputCairo", m_poOutputCairoRadioButton);
 
-  m_poFiltersComboBox->signal_changed().connect(sigc::mem_fun(*this, &DisplayConfigDialog::vOnFilterChanged));
-  m_poIBFiltersComboBox->signal_changed().connect(sigc::mem_fun(*this, &DisplayConfigDialog::vOnFilterIBChanged));
   m_poDefaultScaleComboBox->signal_changed().connect(sigc::mem_fun(*this, &DisplayConfigDialog::vOnScaleChanged));
   m_poOutputOpenGLRadioButton->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &DisplayConfigDialog::vOnOutputChanged), VBA::Window::OutputOpenGL));
   m_poOutputCairoRadioButton->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &DisplayConfigDialog::vOnOutputChanged), VBA::Window::OutputCairo));
-
-
-  // Populate the filters combobox
-  Glib::RefPtr<Gtk::ListStore> poFiltersListStore;
-  poFiltersListStore = Glib::RefPtr<Gtk::ListStore>::cast_static(refBuilder->get_object("FiltersListStore"));
-
-  for (guint i = FirstFilter; i <= LastFilter; i++)
-  {
-    Gtk::TreeModel::Row row = *(poFiltersListStore->append());
-    row->set_value(0, std::string(pcsGetFilterName((EFilter)i)));
-  }
-
-  // Populate the interframe blending filters combobox
-  Glib::RefPtr<Gtk::ListStore> poIBFiltersListStore;
-  poIBFiltersListStore = Glib::RefPtr<Gtk::ListStore>::cast_static(refBuilder->get_object("IBFiltersListStore"));
-
-  for (guint i = FirstFilterIB; i <= LastFilterIB; i++)
-  {
-    Gtk::TreeModel::Row row = *(poIBFiltersListStore->append());
-    row->set_value(0, std::string(pcsGetFilterIBName((EFilterIB)i)));
-  }
 }
 
 void DisplayConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Window * _poWindow)
 {
   m_poConfig = _poConfig;
   m_poWindow = _poWindow;
-
-  int iDefaultFilter = m_poConfig->oGetKey<int>("filter2x");
-  m_poFiltersComboBox->set_active(iDefaultFilter);
-
-  int iDefaultFilterIB = m_poConfig->oGetKey<int>("filterIB");
-  m_poIBFiltersComboBox->set_active(iDefaultFilterIB);
 
   int iDefaultScale = m_poConfig->oGetKey<int>("scale");
   m_poDefaultScaleComboBox->set_active(iDefaultScale - 1);
@@ -91,26 +59,6 @@ void DisplayConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Window * 
     default:
       m_poOutputCairoRadioButton->set_active();
       break;
-  }
-}
-
-void DisplayConfigDialog::vOnFilterChanged()
-{
-  int iFilter = m_poFiltersComboBox->get_active_row_number();
-  if (iFilter >= 0)
-  {
-    m_poConfig->vSetKey("filter2x", iFilter);
-    m_poWindow->vApplyConfigFilter();
-  }
-}
-
-void DisplayConfigDialog::vOnFilterIBChanged()
-{
-  int iFilterIB = m_poIBFiltersComboBox->get_active_row_number();
-  if (iFilterIB >= 0)
-  {
-    m_poConfig->vSetKey("filterIB", iFilterIB);
-    m_poWindow->vApplyConfigFilterIB();
   }
 }
 
