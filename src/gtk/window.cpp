@@ -751,9 +751,19 @@ bool Window::bLoadROM(const std::string & _rsFile)
   m_eCartridge = CartridgeGBA;
   m_stEmulator = GBASystem;
 
-  CPUInit(m_poCoreConfig->sGetKey("bios_file").c_str(), true);
-  CPUReset();
+  if (m_poCoreConfig->sGetKey("bios_file") == "")
+  {
+    vPopupError(_("Please choose a bios file in the preferences dialog."));
+    return false;
+  }
 
+  if (!CPULoadBios(m_poCoreConfig->sGetKey("bios_file").c_str()))
+  {
+    return false;
+  }
+
+  CPUInit();
+  CPUReset();
 
   vLoadBattery();
   vUpdateScreen();

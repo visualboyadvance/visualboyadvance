@@ -10,8 +10,9 @@ extern u8 biosProtected[4];
 
 extern void CPUUpdateRender();
 extern void CPUUpdateRegister(u32, u16);
-extern void CPUInit(const char *,bool);
+extern void CPUInit();
 bool CPUInitMemory();
+bool CPULoadBios(const char *biosFileName);
 void CPUCleanUp();
 extern void CPUReset();
 extern void CPULoop(int);

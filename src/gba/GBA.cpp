@@ -1678,16 +1678,14 @@ static void applyTimer ()
   timerOnOffDelay = 0;
 }
 
-void CPUInit(const char *biosFileName, bool useBiosFile)
+bool CPULoadBios(const char *biosFileName)
 {
     int size = 0x4000;
-    if(!utilLoad(biosFileName,
-                CPUIsGBABios,
-                bios,
-                size)) {
-         systemMessage("Invalid BIOS file size");
-    }
+    return utilLoad(biosFileName, CPUIsGBABios, bios, size);
+}
 
+void CPUInit()
+{
   biosProtected[0] = 0x00;
   biosProtected[1] = 0xf0;
   biosProtected[2] = 0x29;
