@@ -121,6 +121,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigJoypads();
   vApplyConfigScreenArea();
   vApplyConfigVolume();
+  vUpdateScreen();
 
   Gtk::MenuItem *      poMI;
   Gtk::CheckMenuItem * poCMI;
