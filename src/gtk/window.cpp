@@ -492,7 +492,6 @@ void Window::vInitConfig()
   m_poDirConfig->vSetKey("gba_roms",  Glib::get_home_dir());
   m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
   m_poDirConfig->vSetKey("saves",     m_sUserDataDir);
-  m_poDirConfig->vSetKey("captures",  m_sUserDataDir);
 
   // Core section
   //
@@ -558,11 +557,6 @@ void Window::vCheckConfig()
   if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
   {
     m_poDirConfig->vSetKey("saves", m_sUserDataDir);
-  }
-  sValue = m_poDirConfig->sGetKey("captures");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-  {
-    m_poDirConfig->vSetKey("captures", m_sUserDataDir);
   }
 
   // Core section

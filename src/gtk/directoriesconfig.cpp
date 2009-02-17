@@ -29,8 +29,7 @@ const DirectoriesConfigDialog::SDirEntry DirectoriesConfigDialog::m_astDirs[] =
 {
     { "gba_roms",  "GBA roms :",  "GBARomsDirEntry"   },
     { "batteries", "Batteries :", "BatteriesDirEntry" },
-    { "saves",     "Saves :",     "SavesDirEntry"     },
-    { "captures",  "Captures :",  "CapturesDirEntry"  }
+    { "saves",     "Saves :",     "SavesDirEntry"     }
 };
 
 DirectoriesConfigDialog::DirectoriesConfigDialog(Config::Section * _poConfig) :
