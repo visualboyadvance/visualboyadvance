@@ -79,10 +79,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
   m_fSoundVolumeMax (2.00f),
-  m_iFilter2xMin    (FirstFilter),
-  m_iFilter2xMax    (LastFilter),
-  m_iFilterIBMin    (FirstFilterIB),
-  m_iFilterIBMax    (LastFilterIB),
   m_iJoypadMin      (PAD_1),
   m_iJoypadMax      (PAD_4),
   m_iVideoOutputMin (OutputCairo),
@@ -124,8 +120,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vCreateFileOpenDialog();
   vApplyConfigJoypads();
   vApplyConfigScreenArea();
-  vApplyConfigFilter();
-  vApplyConfigFilterIB();
   vApplyConfigVolume();
 
   Gtk::MenuItem *      poMI;
@@ -512,8 +506,6 @@ void Window::vInitConfig()
   m_poDisplayConfig->vSetKey("scale",               1              );
   m_poDisplayConfig->vSetKey("show_speed",          ShowPercentage );
   m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
-  m_poDisplayConfig->vSetKey("filter2x",            FilterNone     );
-  m_poDisplayConfig->vSetKey("filterIB",            FilterIBNone   );
   m_poDisplayConfig->vSetKey("output",              OutputOpenGL   );
 
 
@@ -606,20 +598,6 @@ void Window::vCheckConfig()
     m_poDisplayConfig->vSetKey("show_speed", iAdjusted);
   }
 
-  iValue = m_poDisplayConfig->oGetKey<int>("filter2x");
-  iAdjusted = CLAMP(iValue, m_iFilter2xMin, m_iFilter2xMax);
-  if (iValue != iAdjusted)
-  {
-    m_poDisplayConfig->vSetKey("filter2x", iAdjusted);
-  }
-
-  iValue = m_poDisplayConfig->oGetKey<int>("filterIB");
-  iAdjusted = CLAMP(iValue, m_iFilterIBMin, m_iFilterIBMax);
-  if (iValue != iAdjusted)
-  {
-    m_poDisplayConfig->vSetKey("filterIB", iAdjusted);
-  }
-
   iValue = m_poDisplayConfig->oGetKey<int>("output");
   iAdjusted = CLAMP(iValue, m_iVideoOutputMin, m_iVideoOutputMax);
   if (iValue != iAdjusted)
@@ -674,26 +652,6 @@ void Window::vSaveConfig(const std::string & _rsFile)
   catch (const Glib::Error & e)
   {
     vPopupError(e.what().c_str());
-  }
-}
-
-void Window::vApplyConfigFilter()
-{
-  int iFilter = m_poDisplayConfig->oGetKey<int>("filter2x");
-  m_poScreenArea->vSetFilter((EFilter)iFilter);
-  if (emulating)
-  {
-    Display::drawScreen();
-  }
-}
-
-void Window::vApplyConfigFilterIB()
-{
-  int iFilter = m_poDisplayConfig->oGetKey<int>("filterIB");
-  m_poScreenArea->vSetFilterIB((EFilterIB)iFilter);
-  if (emulating)
-  {
-    Display::drawScreen();
   }
 }
 

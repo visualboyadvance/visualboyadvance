@@ -32,7 +32,6 @@
 
 #include "configfile.h"
 #include "screenarea.h"
-#include "filters.h"
 
 namespace VBA
 {
@@ -69,8 +68,6 @@ public:
   void vDrawScreen(u32 *pix);
   void vComputeFrameskip(int _iRate);
   void vShowSpeed(int _iSpeed);
-  void vApplyConfigFilter();
-  void vApplyConfigFilterIB();
   void vApplyConfigScreenArea();
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
@@ -139,10 +136,6 @@ private:
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;
   const float m_fSoundVolumeMax;
-  const int m_iFilter2xMin;
-  const int m_iFilter2xMax;
-  const int m_iFilterIBMin;
-  const int m_iFilterIBMax;
   const EPad m_iJoypadMin;
   const EPad m_iJoypadMax;
   const int m_iVideoOutputMin;

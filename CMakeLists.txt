@@ -95,7 +95,6 @@ SET(SRC_GTK
 	src/gtk/main.cpp
 	src/gtk/system.cpp
 	src/gtk/windowcallbacks.cpp
-	src/gtk/filters.cpp
 	src/gtk/joypadconfig.cpp
 	src/gtk/directoriesconfig.cpp
 	src/gtk/displayconfig.cpp

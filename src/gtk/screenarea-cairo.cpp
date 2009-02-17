@@ -81,10 +81,9 @@ void ScreenAreaCairo::vDrawBlackScreen()
 void ScreenAreaCairo::vOnWidgetResize()
 {
   m_dScaleFactor = min<double>(get_height() / (double)m_iHeight, get_width() / (double)m_iWidth);
-  m_dScaleFactor /= m_iFilterScale;
 
-  m_iAreaTop = (get_height() / m_dScaleFactor - m_iHeight * m_iFilterScale) / 2;
-  m_iAreaLeft = (get_width() / m_dScaleFactor - m_iWidth * m_iFilterScale) / 2;
+  m_iAreaTop = (get_height() / m_dScaleFactor - m_iHeight) / 2;
+  m_iAreaLeft = (get_width() / m_dScaleFactor - m_iWidth) / 2;
 }
 
 } // namespace VBA

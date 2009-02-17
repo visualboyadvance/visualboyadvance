@@ -23,7 +23,7 @@
 #include <gtkmm/drawingarea.h>
 #include <gdkmm/cursor.h>
 
-#include "filters.h"
+#include "../common/Types.h"
 
 namespace VBA
 {
@@ -36,8 +36,6 @@ public:
 
   void vSetSize(int _iWidth, int _iHeight);
   void vSetScale(int _iScale);
-  void vSetFilter(EFilter _eFilter);
-  void vSetFilterIB(EFilterIB _eFilterIB);
   void vSetEnableRender(bool _bEnable);
   virtual void vDrawPixels(u8 * _puiData);
   virtual void vDrawBlackScreen() = 0;
@@ -52,13 +50,9 @@ protected:
   int      m_iWidth;
   int      m_iHeight;
   int      m_iScale;
-  int      m_iFilterScale;
   int      m_iAreaWidth;
   int      m_iAreaHeight;
-  Filter   m_vFilter2x;
-  FilterIB m_vFilterIB;
   u32 *    m_puiPixels;
-  u8 *     m_puiDelta;
   int      m_iScaledWidth;
   int      m_iScaledHeight;
   bool     m_bEnableRender;

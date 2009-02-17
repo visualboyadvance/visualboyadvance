@@ -24,11 +24,7 @@ namespace VBA
 {
 
 ScreenArea::ScreenArea(int _iWidth, int _iHeight, int _iScale) :
-  m_iFilterScale(1),
-  m_vFilter2x(NULL),
-  m_vFilterIB(NULL),
   m_puiPixels(NULL),
-  m_puiDelta(NULL),
   m_iScaledWidth(_iWidth),
   m_iScaledHeight(_iHeight),
   m_bEnableRender(true),
@@ -64,11 +60,6 @@ ScreenArea::~ScreenArea()
     delete[] m_puiPixels;
   }
 
-  if (m_puiDelta)
-  {
-    delete[] m_puiDelta;
-  }
-
   if (m_poEmptyCursor != NULL)
   {
     delete m_poEmptyCursor;
@@ -91,31 +82,8 @@ void ScreenArea::vSetScale(int _iScale)
 {
   g_return_if_fail(_iScale >= 1);
 
-  if (_iScale == 1)
-  {
-    vSetFilter(FilterNone);
-  }
-
   m_iScale = _iScale;
   vUpdateSize();
-}
-
-void ScreenArea::vSetFilter(EFilter _eFilter)
-{
-  m_vFilter2x = pvGetFilter(_eFilter, FilterDepth32);
-
-  m_iFilterScale = 1;
-  if (m_vFilter2x != NULL)
-  {
-    m_iFilterScale = 2;
-  }
-
-  vUpdateSize();
-}
-
-void ScreenArea::vSetFilterIB(EFilterIB _eFilterIB)
-{
-  m_vFilterIB = pvGetFilterIB(_eFilterIB, FilterDepth32);
 }
 
 void ScreenArea::vStartCursorTimeout()
@@ -178,30 +146,8 @@ bool ScreenArea::bOnCursorTimeout()
 void ScreenArea::vDrawPixels(u8 * _puiData)
 {
   const int iSrcPitch = m_iWidth * sizeof(u32);
-  const int iScaledPitch = m_iScaledWidth * sizeof(u32);
 
-  if (m_vFilterIB != NULL)
-  {
-    m_vFilterIB(_puiData + iSrcPitch,
-                iSrcPitch,
-                m_iWidth,
-                m_iHeight);
-  }
-
-  if (m_vFilter2x != NULL)
-  {
-    m_vFilter2x(_puiData + iSrcPitch,
-                iSrcPitch,
-                m_puiDelta,
-                (u8 *)m_puiPixels,
-                iScaledPitch,
-                m_iWidth,
-                m_iHeight);
-  }
-  else
-  {
-    memcpy(m_puiPixels, _puiData, m_iHeight * iSrcPitch);
-  }
+  memcpy(m_puiPixels, _puiData, m_iHeight * iSrcPitch);
 }
 
 void ScreenArea::vUpdateSize()
@@ -211,18 +157,11 @@ void ScreenArea::vUpdateSize()
     delete[] m_puiPixels;
   }
 
-  if (m_puiDelta)
-  {
-    delete[] m_puiDelta;
-  }
-
-  m_iScaledWidth = m_iFilterScale * m_iWidth;
-  m_iScaledHeight = m_iFilterScale * m_iHeight;
+  m_iScaledWidth = m_iWidth;
+  m_iScaledHeight = m_iHeight;
 
   m_puiPixels = new u32[m_iScaledWidth * m_iScaledHeight];
-  m_puiDelta = new u8[m_iWidth * m_iHeight * sizeof(u32)];
   memset(m_puiPixels, 0, m_iScaledWidth * m_iScaledHeight * sizeof(u32));
-  memset(m_puiDelta, 255, m_iWidth * m_iHeight * sizeof(u32));
 
   set_size_request(m_iScale * m_iWidth, m_iScale * m_iHeight);
 }
