@@ -342,4 +342,85 @@ u8 readMemory8(const u32 address)
 	return 0;
 }
 
+void writeMemory32(const u32 address, const u32 value)
+{
+	switch(address >> 24)
+	{
+	case 13:
+		if (features.saveType == SaveEEPROM)
+		{
+			eepromWrite(address, value);
+		}
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+		{
+			sramWrite(address, (u8)value);
+		}
+		else if (features.saveType == SaveFlash)
+		{
+			flashWrite(address, (u8)value);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void writeMemory16(const u32 address, const u16 value)
+{
+	switch(address >> 24)
+	{
+	case 8:
+		if (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
+		{
+			rtcWrite(address, value);
+		}
+		break;
+	case 13:
+		if (features.saveType == SaveEEPROM)
+		{
+			eepromWrite(address, (u8)value);
+		}
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+		{
+			sramWrite(address, (u8)value);
+		}
+		else if (features.saveType == SaveFlash)
+		{
+			flashWrite(address, (u8)value);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void writeMemory8(const u32 address, const u8 value)
+{
+	switch(address >> 24)
+	{
+	case 13:
+		if (features.saveType == SaveEEPROM)
+		{
+			eepromWrite(address, value);
+		}
+		break;
+	case 14:
+		if (features.saveType == SaveSRAM)
+		{
+			sramWrite(address, value);
+		}
+		else if (features.saveType == SaveFlash)
+		{
+			flashWrite(address, value);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 } // namespace Cartridge

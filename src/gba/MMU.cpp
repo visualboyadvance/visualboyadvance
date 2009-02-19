@@ -4,10 +4,6 @@
 #include "CPU.h"
 #include "GBA.h"
 #include "Globals.h"
-#include "CartridgeRTC.h"
-#include "CartridgeEEprom.h"
-#include "CartridgeFlash.h"
-#include "CartridgeSram.h"
 #include "Sound.h"
 
 extern bool stopState;
@@ -322,21 +318,15 @@ void CPUWriteMemory(u32 address, u32 value)
   case 0x07:
       WRITE32LE(((u32 *)&oam[address & 0x3fc]), value);
     break;
-  case 0x0D:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      Cartridge::eepromWrite(address, value);
-      break;
-    }
-    goto unwritable;
-  case 0x0E:
-    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      Cartridge::sramWrite(address, (u8)value);
-      break;
-    }
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      Cartridge::flashWrite(address, (u8)value);
-      break;
-    }
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
+  case 13:
+  case 14:
+      Cartridge::writeMemory32(address, value);
+    break;
 
     // default
   default:
@@ -394,27 +384,13 @@ void CPUWriteHalfWord(u32 address, u16 value)
     break;
   case 8:
   case 9:
-    if(address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8) {
-      if(!Cartridge::rtcWrite(address, value))
-        goto unwritable;
-    } else goto unwritable;
-    break;
+  case 10:
+  case 11:
+  case 12:
   case 13:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      Cartridge::eepromWrite(address, (u8)value);
-      break;
-    }
-    goto unwritable;
   case 14:
-    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      Cartridge::sramWrite(address, (u8)value);
-      break;
-    }
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      Cartridge::flashWrite(address, (u8)value);
-      break;
-    }
-    goto unwritable;
+      Cartridge::writeMemory16(address, value);
+    break;
   default:
 unwritable:
 #ifdef GBA_LOGGING
@@ -523,21 +499,15 @@ void CPUWriteByte(u32 address, u8 b)
     // byte writes to OAM are ignored
     //    *((u16 *)&oam[address & 0x3FE]) = (b << 8) | b;
     break;
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
   case 13:
-    if(Cartridge::features.saveType == Cartridge::SaveEEPROM) {
-      Cartridge::eepromWrite(address, b);
-      break;
-    }
-    goto unwritable;
   case 14:
-    if (Cartridge::features.saveType == Cartridge::SaveSRAM) {
-      Cartridge::sramWrite(address, b);
-      break;
-    }
-    else if (Cartridge::features.saveType == Cartridge::SaveFlash) {
-      Cartridge::flashWrite(address, b);
-      break;
-    }
+      Cartridge::writeMemory8(address, b);
+    break;
     // default
   default:
 unwritable:
