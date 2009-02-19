@@ -8,8 +8,6 @@
 
 #define SIO_START		(1<<7)
 
-#define UPDATE_REG(address, value) WRITE16LE(((u16 *)&ioMem[address]),value)
-
 bool linkenable = true;
 
 //static int linktime = 0;

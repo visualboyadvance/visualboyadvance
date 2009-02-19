@@ -2,10 +2,6 @@
 
 reg_pair reg[45];
 bool ioReadable[0x400];
-bool N_FLAG = 0;
-bool C_FLAG = 0;
-bool Z_FLAG = 0;
-bool V_FLAG = 0;
 bool armState = true;
 bool armIrqEnable = true;
 u32 armNextPC = 0x00000000;

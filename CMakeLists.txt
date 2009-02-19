@@ -59,6 +59,7 @@ SET(SRC_GBA
 	src/gba/CartridgeFlash.cpp
 	src/gba/CartridgeRTC.cpp
 	src/gba/CartridgeSram.cpp
+	src/gba/CPU.cpp
 	src/gba/CPUArm.cpp
 	src/gba/CPUThumb.cpp
 	src/gba/Display.cpp
