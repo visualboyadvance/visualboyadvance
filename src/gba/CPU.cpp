@@ -3,8 +3,10 @@
 #include "Globals.h"
 #include "MMU.h"
 
-u32 cpuPrefetch[2];
+namespace CPU
+{
 
+u32 cpuPrefetch[2];
 u8 cpuBitsSet[256];
 
 bool N_FLAG = 0;
@@ -434,3 +436,6 @@ void CPUUpdateFlags()
 {
   CPUUpdateFlags(true);
 }
+
+} // namespace CPU
+

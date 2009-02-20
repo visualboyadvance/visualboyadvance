@@ -212,10 +212,10 @@ static variable_desc saveGameStruct[] = {
   { &dma2Dest , sizeof(u32) },
   { &dma3Source , sizeof(u32) },
   { &dma3Dest , sizeof(u32) },
-  { &N_FLAG , sizeof(bool) },
-  { &C_FLAG , sizeof(bool) },
-  { &Z_FLAG , sizeof(bool) },
-  { &V_FLAG , sizeof(bool) },
+  { &CPU::N_FLAG , sizeof(bool) },
+  { &CPU::C_FLAG , sizeof(bool) },
+  { &CPU::Z_FLAG , sizeof(bool) },
+  { &CPU::V_FLAG , sizeof(bool) },
   { &armState , sizeof(bool) },
   { &armIrqEnable , sizeof(bool) },
   { &armNextPC , sizeof(u32) },
@@ -1474,7 +1474,7 @@ void CPUInit()
     for(j = 0; j < 8; j++)
       if(i & (1 << j))
         count++;
-    cpuBitsSet[i] = count;
+    CPU::cpuBitsSet[i] = count;
 
     for(j = 0; j < 8; j++)
       if(i & (1 << j))
@@ -1625,7 +1625,10 @@ void CPUReset()
     armIrqEnable = false;
   }
   armState = true;
-  C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;
+  CPU::C_FLAG = false;
+  CPU::V_FLAG = false;
+  CPU::N_FLAG = false;
+  CPU::Z_FLAG = false;
   UPDATE_REG(0x00, DISPCNT);
   UPDATE_REG(0x06, VCOUNT);
   UPDATE_REG(0x20, BG2PA);
@@ -1638,7 +1641,7 @@ void CPUReset()
   // disable FIQ
   reg[16].I |= 0x40;
 
-  CPUUpdateCPSR();
+  CPU::CPUUpdateCPSR();
 
   armNextPC = reg[15].I;
   reg[15].I += 4;
@@ -1700,7 +1703,7 @@ static void CPUInterrupt()
 {
   u32 PC = reg[15].I;
   bool savedState = armState;
-  CPUSwitchMode(0x12, true, false);
+  CPU::CPUSwitchMode(0x12, true, false);
   reg[14].I = PC;
   if(!savedState)
     reg[14].I += 2;
@@ -1738,10 +1741,10 @@ void CPULoop(int ticks)
   for(;;) {
     if(!holdState && !SWITicks) {
       if(armState) {
-        if (!armExecute())
+        if (!CPU::armExecute())
           return;
       } else {
-        if (!thumbExecute())
+        if (!CPU::thumbExecute())
           return;
       }
       clockTicks = 0;

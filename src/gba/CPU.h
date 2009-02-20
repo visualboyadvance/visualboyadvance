@@ -3,6 +3,9 @@
 
 #include "../common/Types.h"
 
+namespace CPU
+{
+
 #ifdef __GNUC__
 # define INSN_REGPARM __attribute__((regparm(1)))
 # define LIKELY(x) __builtin_expect(!!(x),1)
@@ -15,21 +18,21 @@
 
 #define ARM_PREFETCH \
   {\
-    cpuPrefetch[0] = CPUReadMemory(armNextPC);\
-    cpuPrefetch[1] = CPUReadMemory(armNextPC+4);\
+    CPU::cpuPrefetch[0] = CPUReadMemory(armNextPC);\
+    CPU::cpuPrefetch[1] = CPUReadMemory(armNextPC+4);\
   }
 
 #define THUMB_PREFETCH \
   {\
-    cpuPrefetch[0] = CPUReadHalfWord(armNextPC);\
-    cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);\
+    CPU::cpuPrefetch[0] = CPUReadHalfWord(armNextPC);\
+    CPU::cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);\
   }
 
 #define ARM_PREFETCH_NEXT \
-  cpuPrefetch[1] = CPUReadMemory(armNextPC+4);
+  CPU::cpuPrefetch[1] = CPUReadMemory(armNextPC+4);
 
 #define THUMB_PREFETCH_NEXT\
-  cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);
+  CPU::cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);
 
 extern bool N_FLAG;
 extern bool C_FLAG;
@@ -59,5 +62,7 @@ void CPUUpdateFlags();
 void CPUUndefinedException();
 void CPUSoftwareInterrupt();
 void CPUSoftwareInterrupt(int comment);
+
+} // namespace CPU
 
 #endif // GBACPU_H

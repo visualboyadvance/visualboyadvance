@@ -3,6 +3,9 @@
 #include "Globals.h"
 #include "MMU.h"
 
+namespace CPU
+{
+
 ///////////////////////////////////////////////////////////////////////////
 
 static int clockTicks;
@@ -1447,3 +1450,5 @@ int thumbExecute()
 
 	return 1;
 }
+
+} // namespace CPU
