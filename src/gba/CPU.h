@@ -42,6 +42,9 @@ extern bool V_FLAG;
 extern u32 cpuPrefetch[2];
 extern u8 cpuBitsSet[256];
 
+void init();
+void reset();
+
 int armExecute();
 int thumbExecute();
 

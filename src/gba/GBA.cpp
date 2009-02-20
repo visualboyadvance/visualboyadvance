@@ -1468,18 +1468,7 @@ void CPUInit()
   biosProtected[2] = 0x29;
   biosProtected[3] = 0xe1;
 
-  for(int i = 0; i < 256; i++) {
-    int count = 0;
-    int j;
-    for(j = 0; j < 8; j++)
-      if(i & (1 << j))
-        count++;
-    CPU::cpuBitsSet[i] = count;
-
-    for(j = 0; j < 8; j++)
-      if(i & (1 << j))
-        break;
-  }
+  CPU::init();
 
   for(int i = 0; i < 0x400; i++)
     ioReadable[i] = true;
@@ -1610,25 +1599,6 @@ void CPUReset()
   IF       = 0x0000;
   IME      = 0x0000;
 
-  armMode = 0x1F;
-
-  if(cpuIsMultiBoot) {
-    reg[13].I = 0x03007F00;
-    reg[15].I = 0x02000000;
-    reg[16].I = 0x00000000;
-    reg[R13_IRQ].I = 0x03007FA0;
-    reg[R13_SVC].I = 0x03007FE0;
-    armIrqEnable = true;
-  } else {
-    reg[15].I = 0x00000000;
-    armMode = 0x13;
-    armIrqEnable = false;
-  }
-  armState = true;
-  CPU::C_FLAG = false;
-  CPU::V_FLAG = false;
-  CPU::N_FLAG = false;
-  CPU::Z_FLAG = false;
   UPDATE_REG(0x00, DISPCNT);
   UPDATE_REG(0x06, VCOUNT);
   UPDATE_REG(0x20, BG2PA);
@@ -1637,14 +1607,6 @@ void CPUReset()
   UPDATE_REG(0x36, BG3PD);
   UPDATE_REG(0x130, P1);
   UPDATE_REG(0x88, 0x200);
-
-  // disable FIQ
-  reg[16].I |= 0x40;
-
-  CPU::CPUUpdateCPSR();
-
-  armNextPC = reg[15].I;
-  reg[15].I += 4;
 
   // reset internal state
   holdState = false;
@@ -1692,7 +1654,7 @@ void CPUReset()
   
   soundReset();
 
-  ARM_PREFETCH;
+  CPU::reset();
 
   lastTime = systemGetClock();
 

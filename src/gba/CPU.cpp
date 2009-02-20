@@ -14,6 +14,55 @@ bool C_FLAG = 0;
 bool Z_FLAG = 0;
 bool V_FLAG = 0;
 
+void init()
+{
+  for(int i = 0; i < 256; i++)
+  {
+    int count = 0;
+    for(int j = 0; j < 8; j++)
+      if(i & (1 << j))
+        count++;
+
+    cpuBitsSet[i] = count;
+  }
+}
+
+void reset()
+{
+  armMode = 0x1F;
+
+  /*if(cpuIsMultiBoot)
+  {
+    reg[13].I = 0x03007F00;
+    reg[15].I = 0x02000000;
+    reg[16].I = 0x00000000;
+    reg[R13_IRQ].I = 0x03007FA0;
+    reg[R13_SVC].I = 0x03007FE0;
+    armIrqEnable = true;
+  }
+  else*/
+  {
+    reg[15].I = 0x00000000;
+    armMode = 0x13;
+    armIrqEnable = false;
+  }
+  armState = true;
+  C_FLAG = false;
+  V_FLAG = false;
+  N_FLAG = false;
+  Z_FLAG = false;
+
+  // disable FIQ
+  reg[16].I |= 0x40;
+
+  CPUUpdateCPSR();
+
+  armNextPC = reg[15].I;
+  reg[15].I += 4;
+
+  ARM_PREFETCH;
+}
+
 #ifdef WORDS_BIGENDIAN
 static void CPUSwap(volatile u32 *a, volatile u32 *b)
 {
