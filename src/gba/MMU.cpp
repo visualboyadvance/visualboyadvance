@@ -7,7 +7,6 @@
 #include "Sound.h"
 
 extern bool stopState;
-extern bool holdState;
 extern bool timer0On;
 extern int timer0Ticks;
 extern int timer0ClockReload;
