@@ -524,7 +524,7 @@ static INSN_REGPARM void thumb44_2(u32 opcode)
 		reg[15].I &= 0xFFFFFFFE;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC)*2
 			+ codeTicksAccess16(armNextPC) + 3;
 	}
@@ -538,7 +538,7 @@ static INSN_REGPARM void thumb44_3(u32 opcode)
 		reg[15].I &= 0xFFFFFFFE;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC)*2
 			+ codeTicksAccess16(armNextPC) + 3;
 	}
@@ -582,7 +582,7 @@ static INSN_REGPARM void thumb46_2(u32 opcode)
 		reg[15].I &= 0xFFFFFFFE;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC)*2
 			+ codeTicksAccess16(armNextPC) + 3;
 	}
@@ -596,7 +596,7 @@ static INSN_REGPARM void thumb46_3(u32 opcode)
 		reg[15].I &= 0xFFFFFFFE;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC)*2
 			+ codeTicksAccess16(armNextPC) + 3;
 	}
@@ -614,7 +614,7 @@ static INSN_REGPARM void thumb47(u32 opcode)
 		reg[15].I &= 0xFFFFFFFE;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC)
 			+ codeTicksAccessSeq16(armNextPC) + codeTicksAccess16(armNextPC) + 3;
 	} else {
@@ -622,7 +622,7 @@ static INSN_REGPARM void thumb47(u32 opcode)
 		reg[15].I &= 0xFFFFFFFC;
 		armNextPC = reg[15].I;
 		reg[15].I += 4;
-		ARM_PREFETCH;
+		ARM_PREFETCH();
 		clockTicks = codeTicksAccessSeq32(armNextPC)
 			+ codeTicksAccessSeq32(armNextPC) + codeTicksAccess32(armNextPC) + 3;
 	}
@@ -946,7 +946,7 @@ static INSN_REGPARM void thumbBD(u32 opcode)
 	armNextPC = reg[15].I;
 	reg[15].I += 2;
 	reg[13].I = temp;
-	THUMB_PREFETCH;
+	THUMB_PREFETCH();
 	busPrefetchCount = 0;
 	clockTicks += 3 + codeTicksAccess16(armNextPC) + codeTicksAccess16(armNextPC);
 }
@@ -1035,7 +1035,7 @@ static INSN_REGPARM void thumbD0(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1049,7 +1049,7 @@ static INSN_REGPARM void thumbD1(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1063,7 +1063,7 @@ static INSN_REGPARM void thumbD2(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1077,7 +1077,7 @@ static INSN_REGPARM void thumbD3(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1091,7 +1091,7 @@ static INSN_REGPARM void thumbD4(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1105,7 +1105,7 @@ static INSN_REGPARM void thumbD5(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1119,7 +1119,7 @@ static INSN_REGPARM void thumbD6(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1133,7 +1133,7 @@ static INSN_REGPARM void thumbD7(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1147,7 +1147,7 @@ static INSN_REGPARM void thumbD8(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1161,7 +1161,7 @@ static INSN_REGPARM void thumbD9(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1175,7 +1175,7 @@ static INSN_REGPARM void thumbDA(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1189,7 +1189,7 @@ static INSN_REGPARM void thumbDB(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1203,7 +1203,7 @@ static INSN_REGPARM void thumbDC(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1217,7 +1217,7 @@ static INSN_REGPARM void thumbDD(u32 opcode)
 		reg[15].I += ((s8)(opcode & 0xFF)) << 1;
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH;
+		THUMB_PREFETCH();
 		clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 			codeTicksAccess16(armNextPC)+3;
 		busPrefetchCount=0;
@@ -1245,7 +1245,7 @@ static INSN_REGPARM void thumbE0(u32 opcode)
 	reg[15].I += offset;
 	armNextPC = reg[15].I;
 	reg[15].I += 2;
-	THUMB_PREFETCH;
+	THUMB_PREFETCH();
 	clockTicks = codeTicksAccessSeq16(armNextPC) + codeTicksAccessSeq16(armNextPC) +
 		codeTicksAccess16(armNextPC) + 3;
 	busPrefetchCount=0;
@@ -1276,7 +1276,7 @@ static INSN_REGPARM void thumbF8(u32 opcode)
 	armNextPC = reg[15].I;
 	reg[15].I += 2;
 	reg[14].I = temp|1;
-	THUMB_PREFETCH;
+	THUMB_PREFETCH();
 	clockTicks = codeTicksAccessSeq16(armNextPC) +
 		codeTicksAccess16(armNextPC) + codeTicksAccessSeq16(armNextPC) + 3;
 	busPrefetchCount = 0;
@@ -1434,7 +1434,7 @@ int thumbExecute()
 
 		armNextPC = reg[15].I;
 		reg[15].I += 2;
-		THUMB_PREFETCH_NEXT;
+		THUMB_PREFETCH_NEXT();
 
 		(*thumbInsnTable[opcode>>6])(opcode);
 

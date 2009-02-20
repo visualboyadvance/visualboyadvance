@@ -2,6 +2,8 @@
 #define GBACPU_H
 
 #include "../common/Types.h"
+#include "MMU.h"
+#include "Globals.h" //TODO: Remove
 
 namespace CPU
 {
@@ -15,24 +17,6 @@ namespace CPU
 # define LIKELY(x) (x)
 # define UNLIKELY(x) (x)
 #endif
-
-#define ARM_PREFETCH \
-  {\
-    CPU::cpuPrefetch[0] = CPUReadMemory(armNextPC);\
-    CPU::cpuPrefetch[1] = CPUReadMemory(armNextPC+4);\
-  }
-
-#define THUMB_PREFETCH \
-  {\
-    CPU::cpuPrefetch[0] = CPUReadHalfWord(armNextPC);\
-    CPU::cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);\
-  }
-
-#define ARM_PREFETCH_NEXT \
-  CPU::cpuPrefetch[1] = CPUReadMemory(armNextPC+4);
-
-#define THUMB_PREFETCH_NEXT\
-  CPU::cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);
 
 extern bool N_FLAG;
 extern bool C_FLAG;
@@ -65,6 +49,28 @@ void CPUUpdateFlags();
 void CPUUndefinedException();
 void CPUSoftwareInterrupt();
 void CPUSoftwareInterrupt(int comment);
+
+inline void ARM_PREFETCH()
+{
+	cpuPrefetch[0] = CPUReadMemory(armNextPC);
+	cpuPrefetch[1] = CPUReadMemory(armNextPC + 4);
+}
+
+inline void THUMB_PREFETCH()
+{
+	cpuPrefetch[0] = CPUReadHalfWord(armNextPC);
+	cpuPrefetch[1] = CPUReadHalfWord(armNextPC + 2);
+}
+
+inline void ARM_PREFETCH_NEXT()
+{
+	cpuPrefetch[1] = CPUReadMemory(armNextPC+4);
+}
+
+inline void THUMB_PREFETCH_NEXT()
+{
+	cpuPrefetch[1] = CPUReadHalfWord(armNextPC+2);
+}
 
 } // namespace CPU
 

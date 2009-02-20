@@ -353,9 +353,9 @@ static bool CPUReadState(gzFile gzFile)
   GFX::updateWindow1();
 
   if(armState) {
-    ARM_PREFETCH;
+    CPU::ARM_PREFETCH();
   } else {
-    THUMB_PREFETCH;
+    CPU::THUMB_PREFETCH();
   }
 
   CPUUpdateRegister(0x204, ioMem[0x204]);
@@ -1675,7 +1675,7 @@ static void CPUInterrupt()
 
   armNextPC = reg[15].I;
   reg[15].I += 4;
-  ARM_PREFETCH;
+  CPU::ARM_PREFETCH();
 
   //  if(!holdState)
   biosProtected[0] = 0x02;

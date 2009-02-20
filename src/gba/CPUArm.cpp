@@ -451,12 +451,12 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
             reg[15].I &= 0xFFFFFFFC;                            \
             armNextPC = reg[15].I;                              \
             reg[15].I += 4;                                     \
-            ARM_PREFETCH;                                       \
+            ARM_PREFETCH();                                       \
         } else {                                                \
             reg[15].I &= 0xFFFFFFFE;                            \
             armNextPC = reg[15].I;                              \
             reg[15].I += 2;                                     \
-            THUMB_PREFETCH;                                     \
+            THUMB_PREFETCH();                                     \
         }                                                       \
         clockTicks = 3 + ISREGSHIFT                             \
                        + codeTicksAccess32(armNextPC)           \
@@ -703,7 +703,7 @@ static INSN_REGPARM void arm120(u32 opcode)
         reg[16].I = newValue;
         CPUUpdateFlags();
         if (!armState) {  // this should not be allowed, but it seems to work
-            THUMB_PREFETCH;
+            THUMB_PREFETCH();
             reg[15].I = armNextPC + 2;
         }
     } else {
@@ -759,7 +759,7 @@ static INSN_REGPARM void arm320(u32 opcode)
         reg[16].I = newValue;
         CPUUpdateFlags();
         if (!armState) {  // this should not be allowed, but it seems to work
-            THUMB_PREFETCH;
+            THUMB_PREFETCH();
             reg[15].I = armNextPC + 2;
         }
     } else {
@@ -802,7 +802,7 @@ static INSN_REGPARM void arm121(u32 opcode)
             reg[15].I = reg[base].I & 0xFFFFFFFC;
             armNextPC = reg[15].I;
             reg[15].I += 4;
-            ARM_PREFETCH;
+            ARM_PREFETCH();
             clockTicks = 3 + codeTicksAccessSeq32(armNextPC)
                            + codeTicksAccessSeq32(armNextPC)
                            + codeTicksAccess32(armNextPC);
@@ -810,7 +810,7 @@ static INSN_REGPARM void arm121(u32 opcode)
             reg[15].I = reg[base].I & 0xFFFFFFFE;
             armNextPC = reg[15].I;
             reg[15].I += 2;
-            THUMB_PREFETCH;
+            THUMB_PREFETCH();
             clockTicks = 3 + codeTicksAccessSeq16(armNextPC)
                            + codeTicksAccessSeq16(armNextPC)
                            + codeTicksAccess16(armNextPC);
@@ -896,7 +896,7 @@ static INSN_REGPARM void arm121(u32 opcode)
         reg[15].I &= 0xFFFFFFFC;                        \
         armNextPC = reg[15].I;                          \
         reg[15].I += 4;                                 \
-        ARM_PREFETCH;                                   \
+        ARM_PREFETCH();                                   \
         clockTicks += 2 + dataTicksAccessSeq32(address) \
                         + dataTicksAccessSeq32(address);\
     }                                                   \
@@ -1426,7 +1426,7 @@ static INSN_REGPARM void arm7F6(u32 opcode) { LDR_PREINC_WB(OFFSET_ROR, OP_LDRB,
     if (opcode & (1U<<15)) {                            \
         armNextPC = reg[15].I;                          \
         reg[15].I += 4;                                 \
-        ARM_PREFETCH;                                   \
+        ARM_PREFETCH();                                   \
         clockTicks += 1 + codeTicksAccessSeq32(armNextPC);\
     }
 #define STM_ALL_2 \
@@ -1457,11 +1457,11 @@ static INSN_REGPARM void arm7F6(u32 opcode) { LDR_PREINC_WB(OFFSET_ROR, OP_LDRB,
         if (armState) {                                 \
             armNextPC = reg[15].I & 0xFFFFFFFC;         \
             reg[15].I = armNextPC + 4;                  \
-            ARM_PREFETCH;                               \
+            ARM_PREFETCH();                               \
         } else {                                        \
             armNextPC = reg[15].I & 0xFFFFFFFE;         \
             reg[15].I = armNextPC + 2;                  \
-            THUMB_PREFETCH;                             \
+            THUMB_PREFETCH();                             \
         }                                               \
         clockTicks += 1 + codeTicksAccessSeq32(armNextPC);\
     }
@@ -1934,7 +1934,7 @@ static INSN_REGPARM void armA00(u32 opcode)
     reg[15].I += offset<<2;
     armNextPC = reg[15].I;
     reg[15].I += 4;
-    ARM_PREFETCH;
+    ARM_PREFETCH();
     clockTicks = codeTicksAccessSeq32(armNextPC) + 1;
     clockTicks += 2 + codeTicksAccess32(armNextPC)
                     + codeTicksAccessSeq32(armNextPC);
@@ -1951,7 +1951,7 @@ static INSN_REGPARM void armB00(u32 opcode)
     reg[15].I += offset<<2;
     armNextPC = reg[15].I;
     reg[15].I += 4;
-    ARM_PREFETCH;
+    ARM_PREFETCH();
     clockTicks = codeTicksAccessSeq32(armNextPC) + 1;
     clockTicks += 2 + codeTicksAccess32(armNextPC)
                     + codeTicksAccessSeq32(armNextPC);
@@ -2190,7 +2190,7 @@ int armExecute()
 
         armNextPC = reg[15].I;
         reg[15].I += 4;
-        ARM_PREFETCH_NEXT;
+        ARM_PREFETCH_NEXT();
 
         int cond = opcode >> 28;
         bool cond_res = true;

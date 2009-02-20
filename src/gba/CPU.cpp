@@ -60,7 +60,7 @@ void reset()
   armNextPC = reg[15].I;
   reg[15].I += 4;
 
-  ARM_PREFETCH;
+  ARM_PREFETCH();
 }
 
 #ifdef WORDS_BIGENDIAN
@@ -411,7 +411,7 @@ void CPUUndefinedException()
   armState = true;
   armIrqEnable = false;
   armNextPC = 0x04;
-  ARM_PREFETCH;
+  ARM_PREFETCH();
   reg[15].I += 4;
 }
 
@@ -425,7 +425,7 @@ void CPUSoftwareInterrupt()
   armState = true;
   armIrqEnable = false;
   armNextPC = 0x08;
-  ARM_PREFETCH;
+  ARM_PREFETCH();
   reg[15].I += 4;
 }
 
