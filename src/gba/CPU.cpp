@@ -22,6 +22,10 @@ bool armIrqEnable = true;
 u32 armNextPC = 0x00000000;
 int armMode = 0x1f;
 
+bool busPrefetch = false; //TODO: never read ?
+bool busPrefetchEnable = false;
+u32 busPrefetchCount = 0;
+
 void init()
 {
   for(int i = 0; i < 256; i++)
@@ -519,6 +523,22 @@ void interrupt()
   biosProtected[1] = 0xc0;
   biosProtected[2] = 0x5e;
   biosProtected[3] = 0xe5;
+}
+
+void enableBusPrefetch(bool enable)
+{
+	if(enable)
+	{
+		busPrefetchEnable = true;
+		busPrefetch = false;
+		busPrefetchCount = 0;
+	}
+	else
+	{
+		busPrefetchEnable = false;
+		busPrefetch = false;
+		busPrefetchCount = 0;
+	}
 }
 
 } // namespace CPU

@@ -50,12 +50,17 @@ extern bool armIrqEnable;
 extern u32 armNextPC;
 extern int armMode;
 
+extern bool busPrefetch;
+extern bool busPrefetchEnable;
+extern u32 busPrefetchCount;
+
 extern u32 cpuPrefetch[2];
 extern u8 cpuBitsSet[256];
 
 void init();
 void reset();
 void interrupt();
+void enableBusPrefetch(bool enable);
 
 int armExecute();
 int thumbExecute();

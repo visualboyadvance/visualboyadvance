@@ -28,9 +28,6 @@ int SWITicks = 0;
 static int IRQTicks = 0;
 
 static int layerEnableDelay = 0;
-bool busPrefetch = false; //TODO: Move to CPU.cpp, never read ?
-bool busPrefetchEnable = false; //TODO: Move to CPU.cpp
-u32 busPrefetchCount = 0; //TODO: Move to CPU.cpp
 static int cpuDmaTicksToUpdate = 0;
 
 static bool cpuBreakLoop = false;
@@ -1364,15 +1361,8 @@ void CPUUpdateRegister(u32 address, u16 value)
         memoryWaitSeq32[i] = memoryWaitSeq[i]*2 + 1;
       }
 
-      if((value & 0x4000) == 0x4000) {
-        busPrefetchEnable = true;
-        busPrefetch = false;
-        busPrefetchCount = 0;
-      } else {
-        busPrefetchEnable = false;
-        busPrefetch = false;
-        busPrefetchCount = 0;
-      }
+      CPU::enableBusPrefetch((value & 0x4000) == 0x4000);
+
       UPDATE_REG(0x204, value & 0x7FFF);
 
     }
