@@ -3,12 +3,15 @@
 #include "Globals.h"
 #include "MMU.h"
 
+#include <algorithm>
+
 namespace CPU
 {
 
 u32 cpuPrefetch[2];
 u8 cpuBitsSet[256];
 
+reg_pair reg[45];
 bool N_FLAG = 0;
 bool C_FLAG = 0;
 bool Z_FLAG = 0;
@@ -29,6 +32,10 @@ void init()
 
 void reset()
 {
+  // clean registers
+  for (int i = 0; i < 45; i++)
+    reg[i].I = 0;
+
   armMode = 0x1F;
 
   /*if(cpuIsMultiBoot)
@@ -484,6 +491,29 @@ void CPUUpdateFlags(bool breakLoop)
 void CPUUpdateFlags()
 {
   CPUUpdateFlags(true);
+}
+
+void interrupt()
+{
+  u32 PC = reg[15].I;
+  bool savedState = armState;
+  CPUSwitchMode(0x12, true, false);
+  reg[14].I = PC;
+  if(!savedState)
+    reg[14].I += 2;
+  reg[15].I = 0x18;
+  armState = true;
+  armIrqEnable = false;
+
+  armNextPC = reg[15].I;
+  reg[15].I += 4;
+  ARM_PREFETCH();
+
+  //  if(!holdState)
+  biosProtected[0] = 0x02;
+  biosProtected[1] = 0xc0;
+  biosProtected[2] = 0x5e;
+  biosProtected[3] = 0xe5;
 }
 
 } // namespace CPU

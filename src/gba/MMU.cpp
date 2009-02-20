@@ -37,7 +37,7 @@ u32 CPUReadMemory(u32 address)
   u32 value;
   switch(address >> 24) {
   case 0:
-    if(reg[15].I >> 24) {
+    if (CPU::reg[15].I >> 24) {
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
@@ -127,7 +127,7 @@ u32 CPUReadHalfWord(u32 address)
 
   switch(address >> 24) {
   case 0:
-    if (reg[15].I >> 24) {
+    if (CPU::reg[15].I >> 24) {
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
@@ -224,7 +224,7 @@ u8 CPUReadByte(u32 address)
 {
   switch(address >> 24) {
   case 0:
-    if (reg[15].I >> 24) {
+    if (CPU::reg[15].I >> 24) {
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {

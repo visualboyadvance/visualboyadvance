@@ -3,37 +3,6 @@
 
 #include "../common/Types.h"
 
-typedef union {
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u8 B3;
-    u8 B2;
-    u8 B1;
-    u8 B0;
-#else
-    u8 B0;
-    u8 B1;
-    u8 B2;
-    u8 B3;
-#endif
-  } B;
-  struct {
-#ifdef WORDS_BIGENDIAN
-    u16 W1;
-    u16 W0;
-#else
-    u16 W0;
-    u16 W1;
-#endif
-  } W;
-#ifdef WORDS_BIGENDIAN
-  volatile u32 I;
-#else
-	u32 I;
-#endif
-} reg_pair;
-
-extern reg_pair reg[45];
 extern bool ioReadable[0x400];
 extern bool armState;
 extern bool armIrqEnable;
@@ -129,5 +98,15 @@ extern u16 P1;
 extern u16 IE;
 extern u16 IF;
 extern u16 IME;
+
+#ifdef __GNUC__
+# define INSN_REGPARM __attribute__((regparm(1)))
+# define LIKELY(x) __builtin_expect(!!(x),1)
+# define UNLIKELY(x) __builtin_expect(!!(x),0)
+#else
+# define INSN_REGPARM /*nothing*/
+# define LIKELY(x) (x)
+# define UNLIKELY(x) (x)
+#endif
 
 #endif // GLOBALS_H

@@ -8,15 +8,37 @@
 namespace CPU
 {
 
-#ifdef __GNUC__
-# define INSN_REGPARM __attribute__((regparm(1)))
-# define LIKELY(x) __builtin_expect(!!(x),1)
-# define UNLIKELY(x) __builtin_expect(!!(x),0)
+union reg_pair{
+  struct {
+#ifdef WORDS_BIGENDIAN
+    u8 B3;
+    u8 B2;
+    u8 B1;
+    u8 B0;
 #else
-# define INSN_REGPARM /*nothing*/
-# define LIKELY(x) (x)
-# define UNLIKELY(x) (x)
+    u8 B0;
+    u8 B1;
+    u8 B2;
+    u8 B3;
 #endif
+  } B;
+  struct {
+#ifdef WORDS_BIGENDIAN
+    u16 W1;
+    u16 W0;
+#else
+    u16 W0;
+    u16 W1;
+#endif
+  } W;
+#ifdef WORDS_BIGENDIAN
+  volatile u32 I;
+#else
+	u32 I;
+#endif
+};
+
+extern reg_pair reg[45];
 
 extern bool N_FLAG;
 extern bool C_FLAG;
@@ -28,6 +50,7 @@ extern u8 cpuBitsSet[256];
 
 void init();
 void reset();
+void interrupt();
 
 int armExecute();
 int thumbExecute();

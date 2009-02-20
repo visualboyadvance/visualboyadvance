@@ -264,7 +264,7 @@ static bool CPUWriteState(gzFile gzFile)
 
   utilGzWrite(gzFile, &rom[0xa0], 16);
 
-  utilGzWrite(gzFile, &reg[0], sizeof(reg));
+  utilGzWrite(gzFile, &CPU::reg[0], sizeof(CPU::reg));
 
   utilWriteData(gzFile, saveGameStruct);
 
@@ -320,7 +320,7 @@ static bool CPUReadState(gzFile gzFile)
     return false;
   }
 
-  utilGzRead(gzFile, &reg[0], sizeof(reg));
+  utilGzRead(gzFile, &CPU::reg[0], sizeof(CPU::reg));
 
   utilReadData(gzFile, saveGameStruct);
 
@@ -554,7 +554,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 
   if(transfer32) {
     s &= 0xFFFFFFFC;
-    if(s < 0x02000000 && (reg[15].I >> 24)) {
+    if(s < 0x02000000 && (CPU::reg[15].I >> 24)) {
       while(c != 0) {
         CPUWriteMemory(d, 0);
         d += di;
@@ -573,7 +573,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
     s &= 0xFFFFFFFE;
     si = (int)si >> 1;
     di = (int)di >> 1;
-    if(s < 0x02000000 && (reg[15].I >> 24)) {
+    if(s < 0x02000000 && (CPU::reg[15].I >> 24)) {
       while(c != 0) {
         CPUWriteHalfWord(d, 0);
         d += di;
@@ -1508,8 +1508,6 @@ void CPUInit()
 
 void CPUReset()
 {
-  // clean registers
-  memset(&reg[0], 0, sizeof(reg));
   // clean OAM
   memset(oam, 0, 0x400);
   // clean palette
@@ -1659,29 +1657,6 @@ void CPUReset()
   lastTime = systemGetClock();
 
   SWITicks = 0;
-}
-
-static void CPUInterrupt()
-{
-  u32 PC = reg[15].I;
-  bool savedState = armState;
-  CPU::CPUSwitchMode(0x12, true, false);
-  reg[14].I = PC;
-  if(!savedState)
-    reg[14].I += 2;
-  reg[15].I = 0x18;
-  armState = true;
-  armIrqEnable = false;
-
-  armNextPC = reg[15].I;
-  reg[15].I += 4;
-  CPU::ARM_PREFETCH();
-
-  //  if(!holdState)
-  biosProtected[0] = 0x02;
-  biosProtected[1] = 0xc0;
-  biosProtected[2] = 0x5e;
-  biosProtected[3] = 0xe5;
 }
 
 void CPULoop(int ticks)
@@ -2006,7 +1981,7 @@ void CPULoop(int ticks)
           {
             if (!IRQTicks)
             {
-              CPUInterrupt();
+              CPU::interrupt();
               intState = false;
               holdState = false;
               stopState = false;
@@ -2023,7 +1998,7 @@ void CPULoop(int ticks)
             }
             else
             {
-              CPUInterrupt();
+              CPU::interrupt();
               holdState = false;
               stopState = false;
             }

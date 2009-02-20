@@ -1,6 +1,5 @@
 #include "Globals.h"
 
-reg_pair reg[45];
 bool ioReadable[0x400];
 bool armState = true;
 bool armIrqEnable = true;
