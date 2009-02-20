@@ -4,12 +4,7 @@
 #include "../common/Types.h"
 
 extern bool ioReadable[0x400];
-extern bool armState;
-extern bool armIrqEnable;
-extern u32 armNextPC;
-extern int armMode;
 extern bool speedup;
-extern bool cpuIsMultiBoot;
 extern int layerEnable;
 
 extern u8 *bios;

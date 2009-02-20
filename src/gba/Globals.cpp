@@ -1,12 +1,7 @@
 #include "Globals.h"
 
 bool ioReadable[0x400];
-bool armState = true;
-bool armIrqEnable = true;
-u32 armNextPC = 0x00000000;
-int armMode = 0x1f;
 bool speedup = false;
-bool cpuIsMultiBoot = false;
 int layerEnable = 0xff00;
 
 u8 *bios = 0;

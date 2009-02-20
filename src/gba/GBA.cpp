@@ -216,10 +216,10 @@ static variable_desc saveGameStruct[] = {
   { &CPU::C_FLAG , sizeof(bool) },
   { &CPU::Z_FLAG , sizeof(bool) },
   { &CPU::V_FLAG , sizeof(bool) },
-  { &armState , sizeof(bool) },
-  { &armIrqEnable , sizeof(bool) },
-  { &armNextPC , sizeof(u32) },
-  { &armMode , sizeof(int) },
+  { &CPU::armState , sizeof(bool) },
+  { &CPU::armIrqEnable , sizeof(bool) },
+  { &CPU::armNextPC , sizeof(u32) },
+  { &CPU::armMode , sizeof(int) },
   { &stopState , sizeof(bool) },
   { &IRQTicks , sizeof(int) },
   { NULL, 0 }
@@ -352,7 +352,7 @@ static bool CPUReadState(gzFile gzFile)
   GFX::updateWindow0();
   GFX::updateWindow1();
 
-  if(armState) {
+  if(CPU::armState) {
     CPU::ARM_PREFETCH();
   } else {
     CPU::THUMB_PREFETCH();
@@ -1340,7 +1340,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x200:
     IE = value & 0x3FFF;
     UPDATE_REG(0x200, IE);
-    if ((IME & 1) && (IF & IE) && armIrqEnable)
+    if ((IME & 1) && (IF & IE) && CPU::armIrqEnable)
       cpuNextEvent = cpuTotalTicks;
     break;
   case 0x202:
@@ -1380,7 +1380,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x208:
     IME = value & 1;
     UPDATE_REG(0x208, IME);
-    if ((IME & 1) && (IF & IE) && armIrqEnable)
+    if ((IME & 1) && (IF & IE) && CPU::armIrqEnable)
       cpuNextEvent = cpuTotalTicks;
     break;
   case 0x300:
@@ -1677,7 +1677,7 @@ void CPULoop(int ticks)
 
   for(;;) {
     if(!holdState && !SWITicks) {
-      if(armState) {
+      if(CPU::armState) {
         if (!CPU::armExecute())
           return;
       } else {
@@ -1972,7 +1972,7 @@ void CPULoop(int ticks)
 	  if(linkenable)
   	       cpuNextEvent = 1;
 #endif
-      if(IF && (IME & 1) && armIrqEnable) {
+      if(IF && (IME & 1) && CPU::armIrqEnable) {
         int res = IF & IE;
         if(stopState)
           res &= 0x3080;

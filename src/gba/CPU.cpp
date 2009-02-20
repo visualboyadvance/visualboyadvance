@@ -17,6 +17,11 @@ bool C_FLAG = 0;
 bool Z_FLAG = 0;
 bool V_FLAG = 0;
 
+bool armState = true;
+bool armIrqEnable = true;
+u32 armNextPC = 0x00000000;
+int armMode = 0x1f;
+
 void init()
 {
   for(int i = 0; i < 256; i++)

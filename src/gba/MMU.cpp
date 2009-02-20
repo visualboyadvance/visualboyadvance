@@ -28,8 +28,8 @@ u32 CPUReadMemory(u32 address)
 #ifdef GBA_LOGGING
   if(address & 3) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned word read: %08x at %08x\n", address, armMode ?
-        armNextPC - 4 : armNextPC - 2);
+      log("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
+        CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
   }
 #endif
@@ -41,8 +41,8 @@ u32 CPUReadMemory(u32 address)
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal word read: %08x at %08x\n", address, armMode ?
-            armNextPC - 4 : armNextPC - 2);
+          log("Illegal word read: %08x at %08x\n", address, CPU::armMode ?
+            CPU::armNextPC - 4 : CPU::armNextPC - 2);
         }
 #endif
 
@@ -97,8 +97,8 @@ u32 CPUReadMemory(u32 address)
 unreadable:
 #ifdef GBA_LOGGING
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal word read: %08x at %08x\n", address, armMode ?
-        armNextPC - 4 : armNextPC - 2);
+      log("Illegal word read: %08x at %08x\n", address, CPU::armMode ?
+        CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
 #endif
 
@@ -117,8 +117,8 @@ u32 CPUReadHalfWord(u32 address)
 #ifdef GBA_LOGGING
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned halfword read: %08x at %08x\n", address, armMode ?
-        armNextPC - 4 : armNextPC - 2);
+      log("Unaligned halfword read: %08x at %08x\n", address, CPU::armMode ?
+        CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
   }
 #endif
@@ -131,8 +131,8 @@ u32 CPUReadHalfWord(u32 address)
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal halfword read: %08x at %08x\n", address, armMode ?
-            armNextPC - 4 : armNextPC - 2);
+          log("Illegal halfword read: %08x at %08x\n", address, CPU::armMode ?
+            CPU::armNextPC - 4 : CPU::armNextPC - 2);
         }
 #endif
         value = READ16LE(((u16 *)&biosProtected[address&2]));
@@ -197,8 +197,8 @@ u32 CPUReadHalfWord(u32 address)
 unreadable:
 #ifdef GBA_LOGGING
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal halfword read: %08x at %08x\n", address, armMode ?
-        armNextPC - 4 : armNextPC - 2);
+      log("Illegal halfword read: %08x at %08x\n", address, CPU::armMode ?
+        CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
 #endif
     value = 0;
@@ -228,8 +228,8 @@ u8 CPUReadByte(u32 address)
       if(address < 0x4000) {
 #ifdef GBA_LOGGING
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal byte read: %08x at %08x\n", address, armMode ?
-            armNextPC - 4 : armNextPC - 2);
+          log("Illegal byte read: %08x at %08x\n", address, CPU::armMode ?
+            CPU::armNextPC - 4 : CPU::armNextPC - 2);
         }
 #endif
         return biosProtected[address & 3];
@@ -268,8 +268,8 @@ u8 CPUReadByte(u32 address)
 unreadable:
 #ifdef GBA_LOGGING
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal byte read: %08x at %08x\n", address, armMode ?
-        armNextPC - 4 : armNextPC - 2);
+      log("Illegal byte read: %08x at %08x\n", address, CPU::armMode ?
+        CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
 #endif
     return 0;
@@ -286,7 +286,7 @@ void CPUWriteMemory(u32 address, u32 value)
       log("Unaligned word write: %08x to %08x from %08x\n",
         value,
         address,
-        armMode ? armNextPC - 4 : armNextPC - 2);
+        CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
   }
 #endif
@@ -336,7 +336,7 @@ unwritable:
       log("Illegal word write: %08x to %08x from %08x\n",
         value,
         address,
-        armMode ? armNextPC - 4 : armNextPC - 2);
+        CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
 #endif
     break;
@@ -351,7 +351,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
       log("Unaligned halfword write: %04x to %08x from %08x\n",
         value,
         address,
-        armMode ? armNextPC - 4 : armNextPC - 2);
+        CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
   }
 #endif
@@ -398,7 +398,7 @@ unwritable:
       log("Illegal halfword write: %04x to %08x from %08x\n",
         value,
         address,
-        armMode ? armNextPC - 4 : armNextPC - 2);
+        CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
     }
 #endif
     break;
@@ -516,7 +516,7 @@ unwritable:
       log("Illegal byte write: %02x to %08x from %08x\n",
         b,
         address,
-        armMode ? armNextPC - 4 : armNextPC -2 );
+        CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC -2 );
     }
 #endif
     break;

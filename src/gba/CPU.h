@@ -45,6 +45,11 @@ extern bool C_FLAG;
 extern bool Z_FLAG;
 extern bool V_FLAG;
 
+extern bool armState;
+extern bool armIrqEnable;
+extern u32 armNextPC;
+extern int armMode;
+
 extern u32 cpuPrefetch[2];
 extern u8 cpuBitsSet[256];
 
