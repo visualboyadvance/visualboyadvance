@@ -34,13 +34,8 @@ ENDIF( NOT DATA_INSTALL_DIR )
 
 SET( PKGDATADIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR} )
 
-# Set the configuration file location
-IF( NOT SYSCONFDIR )
-	SET( SYSCONFDIR "/etc" )
-ENDIF( NOT SYSCONFDIR )
-
 # C defines
-ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H -DSYSCONFDIR='"${SYSCONFDIR}"')
+ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H)
 ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"')
 ADD_DEFINITIONS (-DGBA_LOGGING)
 #ADD_DEFINITIONS (-DLINK_EMULATION)
@@ -50,6 +45,7 @@ SET( CMAKE_CXX_FLAGS "-O2 -Wall -g")
 
 # Source files definition
 SET(SRC_MAIN
+	src/common/fex_mini.cpp
 	src/common/Util.cpp
 )
 
@@ -85,10 +81,6 @@ SET(SRC_APU
 	src/apu/Gb_Apu_State.cpp
 	src/apu/Gb_Oscs.cpp
 	src/apu/Multi_Buffer.cpp
-)
-
-SET(SRC_FEX_MINI
-	src/common/fex_mini.cpp
 )
 
 SET(SRC_GTK
@@ -137,7 +129,6 @@ ADD_LIBRARY (
 	${SRC_MAIN}
 	${SRC_GBA}
 	${SRC_APU}
-	${SRC_FEX_MINI}
 )
 
 ADD_EXECUTABLE (
