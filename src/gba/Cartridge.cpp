@@ -12,11 +12,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
 namespace Cartridge
 {
 
 Features features = {SaveNone, 0x2000, 0x10000, false, false};
+static u8 *rom = 0;
 
 static bool areEqual(const GameSerial &x, const GameSerial &y)
 {
@@ -37,6 +39,11 @@ static void getGameSerial(GameSerial &gs)
 	gs[1] = rom[0xad];
 	gs[2] = rom[0xae];
 	gs[3] = rom[0xaf];
+}
+
+void getGameName(u8 *romname)
+{
+	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
 }
 
 static void clearFeatures(Features &features)
@@ -145,11 +152,20 @@ bool loadDump(const char *file)
 	}*/
 }
 
-void init()
+bool init()
 {
+	rom = (u8 *)malloc(0x2000000);
+	if (!rom)
+	{
+		systemMessage("Failed to allocate memory for %s", "ROM");
+		return false;
+	}
+
 	flashInit();
 	sramInit();
 	eepromInit();
+
+	return true;
 }
 
 void reset()
@@ -167,6 +183,15 @@ void reset()
 	rtcEnable(f.hasRTC);
 
 	features = f;
+}
+
+void uninit()
+{
+	if (rom)
+	{
+		free(rom);
+		rom = 0;
+	}
 }
 
 bool writeBatteryToFile(const char *fileName)

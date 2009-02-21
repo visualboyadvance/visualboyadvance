@@ -8,7 +8,6 @@ extern bool speedup;
 extern int layerEnable;
 
 extern u8 *bios;
-extern u8 *rom;
 extern u8 *internalRAM;
 extern u8 *workRAM;
 extern u8 *paletteRAM;

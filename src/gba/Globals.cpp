@@ -5,7 +5,6 @@ bool speedup = false;
 int layerEnable = 0xff00;
 
 u8 *bios = 0;
-u8 *rom = 0;
 u8 *internalRAM = 0;
 u8 *workRAM = 0;
 u8 *paletteRAM = 0;

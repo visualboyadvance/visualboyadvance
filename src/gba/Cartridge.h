@@ -27,9 +27,11 @@ struct Features
 
 extern Features features;
 
-void init();
+bool init();
 void reset();
+void uninit();
 bool loadDump(const char *file);
+void getGameName(u8 *romname);
 bool readBatteryFromFile(const char *fileName);
 bool writeBatteryToFile(const char *fileName);
 

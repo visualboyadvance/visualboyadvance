@@ -259,7 +259,9 @@ static bool CPUWriteState(gzFile gzFile)
 {
   utilWriteInt(gzFile, SAVE_GAME_VERSION);
 
-  utilGzWrite(gzFile, &rom[0xa0], 16);
+  u8 romname[17];
+  Cartridge::getGameName(romname);
+  utilGzWrite(gzFile, romname, 16);
 
   utilGzWrite(gzFile, &CPU::reg[0], sizeof(CPU::reg));
 
@@ -304,16 +306,18 @@ static bool CPUReadState(gzFile gzFile)
     return false;
   }
 
+  u8 savename[17];
   u8 romname[17];
 
-  utilGzRead(gzFile, romname, 16);
+  utilGzRead(gzFile, savename, 16);
+  Cartridge::getGameName(romname);
 
-  if(memcmp(&rom[0xa0], romname, 16) != 0) {
-    romname[16]=0;
+  if(memcmp(romname, savename, 16) != 0) {
+    savename[16]=0;
     for(int i = 0; i < 16; i++)
-      if(romname[i] < 32)
-        romname[i] = 32;
-    systemMessage("Cannot load save game for %s", romname);
+      if(savename[i] < 32)
+        savename[i] = 32;
+    systemMessage("Cannot load save game for %s", savename);
     return false;
   }
 
@@ -398,10 +402,7 @@ static bool CPUIsGBABios(const char * file)
 
 void CPUCleanUp()
 {
-  if(rom != NULL) {
-    free(rom);
-    rom = NULL;
-  }
+  Cartridge::uninit();
 
   if(vram != NULL) {
     free(vram);
@@ -443,15 +444,10 @@ void CPUCleanUp()
 
 bool CPUInitMemory()
 {
-  if(rom != NULL) {
+  if(vram != NULL) {
     CPUCleanUp();
   }
 
-  rom = (u8 *)malloc(0x2000000);
-  if(rom == NULL) {
-    systemMessage("Failed to allocate memory for %s", "ROM");
-    return false;
-  }
   workRAM = (u8 *)calloc(1, 0x40000);
   if(workRAM == NULL) {
     systemMessage("Failed to allocate memory for %s", "WRAM");
@@ -501,7 +497,11 @@ bool CPUInitMemory()
     return false;
   }
   
-  Cartridge::init();
+  if (!Cartridge::init())
+  {
+    CPUCleanUp();
+    return false;
+  }
 
   GFX::clearRenderBuffers(true);
 
