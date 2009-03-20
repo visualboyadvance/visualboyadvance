@@ -60,8 +60,6 @@ void ScreenAreaGl::on_realize()
     if (glIsTexture(m_uiScreenTexture))
       glDeleteTextures(1, &m_uiScreenTexture);
 
-
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 

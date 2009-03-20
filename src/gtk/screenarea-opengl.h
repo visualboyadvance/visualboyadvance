@@ -42,9 +42,6 @@ protected:
 private:
   GLuint m_uiScreenTexture;
   int m_iTextureSize;
-/*  double   m_dAreaTop;
-  double   m_dAreaLeft;
-  double   m_dScaleFactor;*/
 };
 
 } // namespace VBA
