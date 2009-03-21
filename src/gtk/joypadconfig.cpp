@@ -44,23 +44,10 @@ const JoypadConfigDialog::SJoypadKey JoypadConfigDialog::m_astKeys[] =
 
 JoypadConfigDialog::JoypadConfigDialog(Config::Section * _poConfig) :
   Gtk::Dialog("Joypad config", true, true),
-  m_oTitleHBox(false, 5),
-  m_oTitleLabel("Joypad :", Gtk::ALIGN_RIGHT),
-  m_oDefaultJoypad("Default joypad"),
   m_oTable(G_N_ELEMENTS(m_astKeys), 2, false),
   m_bUpdating(false),
-  m_ePad(PAD_MAIN),
   m_poConfig(_poConfig)
 {
-  // Joypad selection
-  m_oTitleCombo.append_text("1");
-  m_oTitleCombo.append_text("2");
-  m_oTitleCombo.append_text("3");
-  m_oTitleCombo.append_text("4");
-
-  m_oTitleHBox.pack_start(m_oTitleLabel, Gtk::PACK_SHRINK);
-  m_oTitleHBox.pack_start(m_oTitleCombo);
-
   // Joypad buttons
   for (guint i = 0; i < G_N_ELEMENTS(m_astKeys); i++)
   {
@@ -79,24 +66,16 @@ JoypadConfigDialog::JoypadConfigDialog(Config::Section * _poConfig) :
   m_poOkButton = add_button(Gtk::Stock::CLOSE, Gtk::RESPONSE_CLOSE);
 
   // Layout
-  m_oTitleHBox.set_border_width(5);
   m_oTable.set_border_width(5);
   m_oTable.set_spacings(5);
   get_vbox()->set_spacing(5);
-  get_vbox()->pack_start(m_oTitleHBox);
-  get_vbox()->pack_start(m_oSeparator);
-  get_vbox()->pack_start(m_oDefaultJoypad);
   get_vbox()->pack_start(m_oTable);
 
   // Signals and default values
   m_oConfigSig = Glib::signal_idle().connect(sigc::mem_fun(*this, &JoypadConfigDialog::bOnConfigIdle),
           Glib::PRIORITY_DEFAULT_IDLE);
-  m_oDefaultJoypad.signal_toggled().connect(sigc::mem_fun(*this,
-              &JoypadConfigDialog::vOnDefaultJoypadSelect) );
-  m_oTitleCombo.signal_changed().connect(sigc::mem_fun(*this,
-              &JoypadConfigDialog::vOnJoypadSelect) );
 
-  m_oTitleCombo.set_active_text("1");
+  vUpdateEntries();
 
   show_all_children();
 }
@@ -109,13 +88,12 @@ JoypadConfigDialog::~JoypadConfigDialog()
 void JoypadConfigDialog::vUpdateEntries()
 {
   m_bUpdating = true;
-  m_oDefaultJoypad.set_active(inputGetDefaultJoypad() == m_ePad);
 
   for (guint i = 0; i < m_oEntries.size(); i++)
   {
     const char * csName = 0;
 
-    guint uiKeyval = inputGetKeymap(m_ePad, m_astKeys[i].m_eKeyFlag);
+    guint uiKeyval = inputGetKeymap(PAD_MAIN, m_astKeys[i].m_eKeyFlag);
     int dev = uiKeyval >> 16;
     if (dev == 0)
     {
@@ -195,11 +173,6 @@ bool JoypadConfigDialog::on_key_press_event(GdkEventKey * _pstEvent)
   return true;
 }
 
-void JoypadConfigDialog::on_response(int response_id)
-{
-  m_poConfig->vSetKey("active_joypad", inputGetDefaultJoypad());
-}
-
 void JoypadConfigDialog::vOnInputEvent(const SDL_Event &event)
 {
   if (m_iCurrentEntry < 0)
@@ -208,7 +181,7 @@ void JoypadConfigDialog::vOnInputEvent(const SDL_Event &event)
   }
 
   int code = inputGetEventCode(event);
-  inputSetKeymap(m_ePad, m_astKeys[m_iCurrentEntry].m_eKeyFlag, code);
+  inputSetKeymap(PAD_MAIN, m_astKeys[m_iCurrentEntry].m_eKeyFlag, code);
   vUpdateEntries();
 
   if (m_iCurrentEntry + 1 < (gint)m_oEntries.size())
@@ -256,47 +229,6 @@ void JoypadConfigDialog::vEmptyEventQueue()
   // Empty the SDL event queue
   SDL_Event event;
   while(SDL_PollEvent(&event));
-}
-
-void JoypadConfigDialog::vOnJoypadSelect()
-{
-  std::string oText = m_oTitleCombo.get_active_text();
-
-  if (oText == "1")
-  {
-    m_ePad = PAD_1;
-  }
-  else if (oText == "2")
-  {
-    m_ePad = PAD_2;
-  }
-  else if (oText == "3")
-  {
-    m_ePad = PAD_3;
-  }
-  else if (oText == "4")
-  {
-    m_ePad = PAD_4;
-  }
-
-  vEmptyEventQueue();
-  memset(&m_oPreviousEvent, 0, sizeof(m_oPreviousEvent));
-
-  vUpdateEntries();
-}
-
-void JoypadConfigDialog::vOnDefaultJoypadSelect()
-{
-  if (m_bUpdating) return;
-
-  if (m_oDefaultJoypad.get_active())
-  {
-    inputSetDefaultJoypad(m_ePad);
-  }
-  else
-  {
-    inputSetDefaultJoypad(PAD_MAIN);
-  }
 }
 
 } // namespace VBA

@@ -48,7 +48,6 @@ protected:
 
   void vOnInputEvent(const SDL_Event &event);
   bool on_key_press_event(GdkEventKey * _pstEvent);
-  void on_response(int response_id);
 
 private:
   struct SJoypadKey
@@ -57,11 +56,6 @@ private:
 	const char * m_csKeyName;
   };
 
-  Gtk::HBox                 m_oTitleHBox;
-  Gtk::Label                m_oTitleLabel;
-  Gtk::ComboBoxText         m_oTitleCombo;
-  Gtk::HSeparator           m_oSeparator;
-  Gtk::CheckButton          m_oDefaultJoypad;
   Gtk::Table                m_oTable;
   Gtk::Button *             m_poOkButton;
   std::vector<Gtk::Entry *> m_oEntries;
@@ -70,12 +64,9 @@ private:
   static const SJoypadKey   m_astKeys[];
   sigc::connection          m_oConfigSig;
   SDL_Event                 m_oPreviousEvent;
-  EPad                      m_ePad;
   Config::Section *         m_poConfig;
 
   bool bOnConfigIdle();
-  void vOnJoypadSelect();
-  void vOnDefaultJoypadSelect();
   void vUpdateEntries();
   void vEmptyEventQueue();
 };
