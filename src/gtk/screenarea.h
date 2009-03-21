@@ -50,11 +50,7 @@ protected:
   int      m_iWidth;
   int      m_iHeight;
   int      m_iScale;
-  int      m_iAreaWidth;
-  int      m_iAreaHeight;
   u32 *    m_puiPixels;
-  int      m_iScaledWidth;
-  int      m_iScaledHeight;
   bool     m_bEnableRender;
 
   bool             m_bShowCursor;

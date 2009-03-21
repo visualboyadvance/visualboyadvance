@@ -46,7 +46,7 @@ bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
   Cairo::RefPtr< Cairo::SurfacePattern > poPattern;
   Cairo::RefPtr< Cairo::Context >        poContext;
   Cairo::Matrix oMatrix;
-  const int iScaledPitch = m_iScaledWidth * sizeof(u32);
+  const int iScaledPitch = m_iWidth * sizeof(u32);
 
   poContext = get_window()->create_cairo_context();
 
@@ -54,7 +54,7 @@ bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
   poContext->scale(m_dScaleFactor, m_dScaleFactor);
 
   poImage = Cairo::ImageSurface::create((u8 *)m_puiPixels, Cairo::FORMAT_RGB24,
-                                    m_iScaledWidth, m_iScaledHeight, iScaledPitch);
+                                    m_iWidth, m_iHeight, iScaledPitch);
 
   cairo_matrix_init_translate(&oMatrix, -m_iAreaLeft, -m_iAreaTop);
   poPattern = Cairo::SurfacePattern::create(poImage);

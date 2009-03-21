@@ -75,8 +75,8 @@ void ScreenAreaGl::on_realize()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     // Calculate texture size as a the smallest working power of two
-    float n1 = log10((float)m_iScaledWidth ) / log10( 2.0f);
-    float n2 = log10((float)m_iScaledHeight ) / log10( 2.0f);
+    float n1 = log10((float)m_iWidth ) / log10( 2.0f);
+    float n2 = log10((float)m_iHeight ) / log10( 2.0f);
     float n = (n1 > n2)? n1 : n2;
 
       // round up
@@ -116,8 +116,8 @@ void ScreenAreaGl::vOnWidgetResize()
 
   int iWidth = get_width();
   int iHeight = get_height();
-  
-  float fScreenAspect = (float) m_iScaledWidth / m_iScaledHeight,
+
+  float fScreenAspect = (float) m_iWidth / m_iHeight,
         fWindowAspect = (float) iWidth / iHeight;
 
   if (!glwindow->gl_begin(get_gl_context()))
@@ -146,19 +146,19 @@ bool ScreenAreaGl::on_expose_event(GdkEventExpose * _pstEvent)
     return false;
 
     glClear( GL_COLOR_BUFFER_BIT );
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, m_iScaledWidth);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iScaledWidth, m_iScaledHeight,
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, m_iWidth);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iWidth, m_iHeight,
                       GL_RGBA, GL_UNSIGNED_BYTE, m_puiPixels);
 
     glBegin(GL_TRIANGLE_STRIP);
       glTexCoord2f(0.0f, 0.0f);
       glVertex3i(0, 0, 0);
-      glTexCoord2f(m_iScaledWidth / (GLfloat) m_iTextureSize, 0.0f);
+      glTexCoord2f(m_iWidth / (GLfloat) m_iTextureSize, 0.0f);
       glVertex3i(1, 0, 0);
-      glTexCoord2f(0.0f, m_iScaledHeight / (GLfloat) m_iTextureSize);
+      glTexCoord2f(0.0f, m_iHeight / (GLfloat) m_iTextureSize);
       glVertex3i(0, 1, 0);
-      glTexCoord2f(m_iScaledWidth / (GLfloat) m_iTextureSize,
-                  m_iScaledHeight / (GLfloat) m_iTextureSize);
+      glTexCoord2f(m_iWidth / (GLfloat) m_iTextureSize,
+                  m_iHeight / (GLfloat) m_iTextureSize);
       glVertex3i(1, 1, 0);
     glEnd();
 

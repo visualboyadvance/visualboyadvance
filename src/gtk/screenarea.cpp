@@ -24,17 +24,14 @@ namespace VBA
 {
 
 ScreenArea::ScreenArea(int _iWidth, int _iHeight, int _iScale) :
+  m_iWidth(_iWidth),
+  m_iHeight(_iHeight),
+  m_iScale(_iScale),
   m_puiPixels(NULL),
-  m_iScaledWidth(_iWidth),
-  m_iScaledHeight(_iHeight),
   m_bEnableRender(true),
   m_bShowCursor(true)
 {
   g_assert(_iWidth >= 1 && _iHeight >= 1 && _iScale >= 1);
-
-  m_iWidth  = _iWidth;
-  m_iHeight = _iHeight;
-  m_iScale  = _iScale;
 
   set_events(Gdk::EXPOSURE_MASK
              | Gdk::POINTER_MOTION_MASK
@@ -157,11 +154,8 @@ void ScreenArea::vUpdateSize()
     delete[] m_puiPixels;
   }
 
-  m_iScaledWidth = m_iWidth;
-  m_iScaledHeight = m_iHeight;
-
-  m_puiPixels = new u32[m_iScaledWidth * m_iScaledHeight];
-  memset(m_puiPixels, 0, m_iScaledWidth * m_iScaledHeight * sizeof(u32));
+  m_puiPixels = new u32[m_iWidth * m_iHeight];
+  memset(m_puiPixels, 0, m_iWidth * m_iHeight * sizeof(u32));
 
   set_size_request(m_iScale * m_iWidth, m_iScale * m_iHeight);
 }
