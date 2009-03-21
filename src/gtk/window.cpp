@@ -58,9 +58,6 @@ const Window::SJoypadKey Window::m_astJoypad[] =
 	{ "L",       KEY_BUTTON_L       },
 	{ "R",       KEY_BUTTON_R       },
 	{ "speed",   KEY_BUTTON_SPEED   },
-	{ "capture", KEY_BUTTON_CAPTURE },
-	{ "speed",   KEY_BUTTON_SPEED   },
-	{ "capture", KEY_BUTTON_CAPTURE },
         { "autoA",   KEY_BUTTON_AUTO_A  },
         { "autoB",   KEY_BUTTON_AUTO_B  }
 };

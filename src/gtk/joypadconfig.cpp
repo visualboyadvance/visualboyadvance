@@ -38,7 +38,6 @@ const JoypadConfigDialog::SJoypadKey JoypadConfigDialog::m_astKeys[] =
     { KEY_BUTTON_SELECT,  "Select :"     },
     { KEY_BUTTON_START,   "Start :"      },
     { KEY_BUTTON_SPEED,   "Speed :"      },
-    { KEY_BUTTON_CAPTURE, "Capture :"    },
     { KEY_BUTTON_AUTO_A,  "Autofire A :" },
     { KEY_BUTTON_AUTO_B,  "Autofire B :" }
 };
