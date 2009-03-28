@@ -66,8 +66,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   Gtk::Window       (_pstWindow),
   m_iGBAScreenWidth (240),
   m_iGBAScreenHeight(160),
-  m_iFrameskipMin   (0),
-  m_iFrameskipMax   (9),
   m_iScaleMin       (1),
   m_iScaleMax       (6),
   m_iShowSpeedMin   (ShowNone),
@@ -76,8 +74,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
   m_fSoundVolumeMax (2.00f),
-  m_iJoypadMin      (PAD_1),
-  m_iJoypadMax      (PAD_4),
   m_iVideoOutputMin (OutputCairo),
   m_iVideoOutputMax (OutputOpenGL),
   m_bFullscreen     (false)
@@ -119,6 +115,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigScreenArea();
   vApplyConfigVolume();
   vUpdateScreen();
+  inputSetDefaultJoypad(PAD_MAIN);
 
   Gtk::MenuItem *      poMI;
   Gtk::CheckMenuItem * poCMI;
@@ -221,46 +218,12 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
 
   // Frameskip menu
   //
-  struct
-  {
-    const char * m_csName;
-    const int    m_iFrameskip;
-  }
-  astFrameskip[] =
-  {
-    { "FrameskipAutomatic", -1 },
-    { "Frameskip0",          0 },
-    { "Frameskip1",          1 },
-    { "Frameskip2",          2 },
-    { "Frameskip3",          3 },
-    { "Frameskip4",          4 },
-    { "Frameskip5",          5 },
-    { "Frameskip6",          6 },
-    { "Frameskip7",          7 },
-    { "Frameskip8",          8 },
-    { "Frameskip9",          9 }
-  };
-  int iDefaultFrameskip;
-  if (m_poCoreConfig->sGetKey("frameskip") == "auto")
-  {
-    iDefaultFrameskip = -1;
-  }
-  else
-  {
-    iDefaultFrameskip = m_poCoreConfig->oGetKey<int>("frameskip");
-  }
-  for (guint i = 0; i < G_N_ELEMENTS(astFrameskip); i++)
-  {
-    poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget(astFrameskip[i].m_csName));
-    if (astFrameskip[i].m_iFrameskip == iDefaultFrameskip)
-    {
-      poCMI->set_active();
-      vOnFrameskipToggled(poCMI, iDefaultFrameskip);
-    }
-    poCMI->signal_toggled().connect(sigc::bind(
+  bool bFrameskip = m_poCoreConfig->oGetKey<bool>("frameskip");
+  poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget("FrameskipMenu"));
+  poCMI->set_active(bFrameskip);
+  poCMI->signal_toggled().connect(sigc::bind(
                                       sigc::mem_fun(*this, &Window::vOnFrameskipToggled),
-                                      poCMI, astFrameskip[i].m_iFrameskip));
-  }
+                                      poCMI));
 
   // Emulator menu
   //
@@ -313,9 +276,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   //
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("JoypadConfigure"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnJoypadConfigure));
-
-  EPad eDefaultJoypad = (EPad)m_poInputConfig->oGetKey<int>("active_joypad");
-  inputSetDefaultJoypad(eDefaultJoypad);
 
   // Fullscreen menu
   //
@@ -425,7 +385,7 @@ void Window::vInitSystem()
   		//	| VERBOSE_DMA0 | VERBOSE_DMA1 | VERBOSE_DMA2 | VERBOSE_DMA3
   			| VERBOSE_UNDEFINED | VERBOSE_AGBPRINT | VERBOSE_SOUNDOUTPUT;
 
-  systemFrameSkip = 2;
+  systemFrameSkip = 0;
 
   emulating = 0;
 
@@ -494,7 +454,7 @@ void Window::vInitConfig()
   //
   m_poCoreConfig = m_oConfig.poAddSection("Core");
   m_poCoreConfig->vSetKey("load_game_auto",    false        );
-  m_poCoreConfig->vSetKey("frameskip",         "auto"       );
+  m_poCoreConfig->vSetKey("frameskip",         false        );
   m_poCoreConfig->vSetKey("bios_file",         ""           );
 
   // Display section
@@ -515,18 +475,10 @@ void Window::vInitConfig()
   // Input section
   //
   m_poInputConfig = m_oConfig.poAddSection("Input");
-  m_poInputConfig->vSetKey("active_joypad", m_iJoypadMin );
-  for (int i = m_iJoypadMin; i <= m_iJoypadMax; i++)
+  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
   {
-    char csPrefix[20];
-    snprintf(csPrefix, sizeof(csPrefix), "joypadSDL%d_", i);
-    std::string sPrefix(csPrefix);
-
-    for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-    {
-    	m_poInputConfig->vSetKey(sPrefix + m_astJoypad[j].m_csKey,
+    m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
     			inputGetKeymap(PAD_DEFAULT, m_astJoypad[j].m_eKeyFlag));
-    }
   }
 }
 
@@ -558,16 +510,6 @@ void Window::vCheckConfig()
 
   // Core section
   //
-  if (m_poCoreConfig->sGetKey("frameskip") != "auto")
-  {
-    iValue = m_poCoreConfig->oGetKey<int>("frameskip");
-    iAdjusted = CLAMP(iValue, m_iFrameskipMin, m_iFrameskipMax);
-    if (iValue != iAdjusted)
-    {
-      m_poCoreConfig->vSetKey("frameskip", iAdjusted);
-    }
-  }
-
   sValue = m_poCoreConfig->sGetKey("bios_file");
   if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
   {
@@ -611,15 +553,6 @@ void Window::vCheckConfig()
   if (fValue != fAdjusted)
   {
     m_poSoundConfig->vSetKey("volume", fAdjusted);
-  }
-
-  // Input section
-  //
-  iValue = m_poInputConfig->oGetKey<int>("active_joypad");
-  iAdjusted = CLAMP(iValue, m_iJoypadMin, m_iJoypadMax);
-  if (iValue != iAdjusted)
-  {
-    m_poInputConfig->vSetKey("active_joypad", iAdjusted);
   }
 }
 
@@ -668,33 +601,19 @@ void Window::vHistoryAdd(const std::string & _rsFile)
 
 void Window::vApplyConfigJoypads()
 {
-  for (int i = m_iJoypadMin; i <= m_iJoypadMax; i++)
+  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
   {
-    char csPrefix[20];
-    snprintf(csPrefix, sizeof(csPrefix), "joypadSDL%d_", i);
-    std::string sPrefix(csPrefix);
-
-    for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-    {
-    	inputSetKeymap((EPad)i, m_astJoypad[j].m_eKeyFlag,
-    			m_poInputConfig->oGetKey<guint>(sPrefix + m_astJoypad[j].m_csKey));
-    }
+    inputSetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag,
+		    m_poInputConfig->oGetKey<guint>(std::string("joypadSDL_") + m_astJoypad[j].m_csKey));
   }
 }
 
 void Window::vSaveJoypadsToConfig()
 {
-  for (int i = m_iJoypadMin; i <= m_iJoypadMax; i++)
+  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
   {
-	char csPrefix[20];
-	snprintf(csPrefix, sizeof(csPrefix), "joypadSDL%d_", i);
-	std::string sPrefix(csPrefix);
-
-	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-	{
-		m_poInputConfig->vSetKey(sPrefix + m_astJoypad[j].m_csKey,
-				inputGetKeymap((EPad)i, m_astJoypad[j].m_eKeyFlag));
-	}
+    m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
+		    inputGetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag));
   }
 }
 

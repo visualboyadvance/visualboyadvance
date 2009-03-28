@@ -107,7 +107,7 @@ protected:
   virtual void vOnRecentFile();
   virtual void vOnFileClose();
   virtual void vOnFileExit();
-  virtual void vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI, int _iValue);
+  virtual void vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnVideoFullscreen();
   virtual void vOnDirectories();
   virtual void vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI);
@@ -126,8 +126,6 @@ protected:
 
 private:
   // Config limits
-  const int m_iFrameskipMin;
-  const int m_iFrameskipMax;
   const int m_iScaleMin;
   const int m_iScaleMax;
   const int m_iShowSpeedMin;
@@ -136,8 +134,6 @@ private:
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;
   const float m_fSoundVolumeMax;
-  const EPad m_iJoypadMin;
-  const EPad m_iJoypadMax;
   const int m_iVideoOutputMin;
   const int m_iVideoOutputMax;
 

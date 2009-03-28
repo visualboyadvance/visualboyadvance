@@ -298,25 +298,14 @@ void Window::vOnFileExit()
   hide();
 }
 
-void Window::vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI, int _iValue)
+void Window::vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI)
 {
-  if (! _poCMI->get_active())
-  {
-    return;
-  }
+  bool bFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
+  m_poCoreConfig->vSetKey("frameskip", bFrameskip);
+  _poCMI->set_active(bFrameskip);
 
-  if (_iValue >= 0 && _iValue <= 9)
-  {
-    m_poCoreConfig->vSetKey("frameskip", _iValue);
-    systemFrameSkip  = _iValue;
-    m_bAutoFrameskip = false;
-  }
-  else
-  {
-    m_poCoreConfig->vSetKey("frameskip", "auto");
-    systemFrameSkip  = 0;
-    m_bAutoFrameskip = true;
-  }
+  systemFrameSkip  = 0;
+  m_bAutoFrameskip = bFrameskip;
 }
 
 void Window::vOnVideoFullscreen()
