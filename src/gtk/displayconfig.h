@@ -37,15 +37,14 @@ public:
   void vSetConfig(Config::Section * _poConfig, VBA::Window * _poWindow);
 
 private:
-  void vOnOutputChanged(VBA::Window::EVideoOutput _eOutput);
+  void vOnOutputChanged();
   void vOnScaleChanged();
 
   VBA::Window *             m_poWindow;
 
   Config::Section *         m_poConfig;
   Gtk::ComboBox *           m_poDefaultScaleComboBox;
-  Gtk::RadioButton *        m_poOutputOpenGLRadioButton;
-  Gtk::RadioButton *        m_poOutputCairoRadioButton;
+  Gtk::CheckButton *        m_poUseOpenGLCheckButton;
 };
 
 } // namespace VBA

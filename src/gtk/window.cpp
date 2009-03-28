@@ -74,8 +74,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
   m_fSoundVolumeMax (2.00f),
-  m_iVideoOutputMin (OutputCairo),
-  m_iVideoOutputMax (OutputOpenGL),
   m_bFullscreen     (false)
 {
   m_poXml            = _poXml;
@@ -343,7 +341,7 @@ void Window::vInitColors(EColorFormat _eColorFormat)
 
 void Window::vApplyConfigScreenArea()
 {
-  EVideoOutput eVideoOutput = (EVideoOutput)m_poDisplayConfig->oGetKey<int>("output");
+  bool bUseOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
 
   Gtk::Alignment * poC;
 
@@ -353,17 +351,15 @@ void Window::vApplyConfigScreenArea()
 
   try
   {
-    switch (eVideoOutput)
+    if (bUseOpenGL)
     {
-      case OutputOpenGL:
-        vInitColors(ColorFormatBGR);
-        m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
-        break;
-      case OutputCairo:
-      default:
-        vInitColors(ColorFormatRGB);
-        m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
-        break;
+      vInitColors(ColorFormatBGR);
+      m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
+    }
+    else
+    {
+      vInitColors(ColorFormatRGB);
+      m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
     }
   }
   catch (std::exception e)
@@ -463,7 +459,7 @@ void Window::vInitConfig()
   m_poDisplayConfig->vSetKey("scale",               1              );
   m_poDisplayConfig->vSetKey("show_speed",          ShowPercentage );
   m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
-  m_poDisplayConfig->vSetKey("output",              OutputOpenGL   );
+  m_poDisplayConfig->vSetKey("use_opengl",          true           );
 
 
   // Sound section
@@ -530,13 +526,6 @@ void Window::vCheckConfig()
   if (iValue != iAdjusted)
   {
     m_poDisplayConfig->vSetKey("show_speed", iAdjusted);
-  }
-
-  iValue = m_poDisplayConfig->oGetKey<int>("output");
-  iAdjusted = CLAMP(iValue, m_iVideoOutputMin, m_iVideoOutputMax);
-  if (iValue != iAdjusted)
-  {
-    m_poDisplayConfig->vSetKey("output", iAdjusted);
   }
 
   // Sound section

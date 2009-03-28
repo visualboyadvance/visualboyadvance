@@ -33,12 +33,10 @@ DisplayConfigDialog::DisplayConfigDialog(GtkDialog* _pstDialog, const Glib::RefP
   m_poConfig(0)
 {
   refBuilder->get_widget("DefaultScaleComboBox", m_poDefaultScaleComboBox);
-  refBuilder->get_widget("OutputOpenGL", m_poOutputOpenGLRadioButton);
-  refBuilder->get_widget("OutputCairo", m_poOutputCairoRadioButton);
+  refBuilder->get_widget("OpenGLCheckButton", m_poUseOpenGLCheckButton);
 
   m_poDefaultScaleComboBox->signal_changed().connect(sigc::mem_fun(*this, &DisplayConfigDialog::vOnScaleChanged));
-  m_poOutputOpenGLRadioButton->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &DisplayConfigDialog::vOnOutputChanged), VBA::Window::OutputOpenGL));
-  m_poOutputCairoRadioButton->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &DisplayConfigDialog::vOnOutputChanged), VBA::Window::OutputCairo));
+  m_poUseOpenGLCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &DisplayConfigDialog::vOnOutputChanged));
 }
 
 void DisplayConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Window * _poWindow)
@@ -49,32 +47,21 @@ void DisplayConfigDialog::vSetConfig(Config::Section * _poConfig, VBA::Window * 
   int iDefaultScale = m_poConfig->oGetKey<int>("scale");
   m_poDefaultScaleComboBox->set_active(iDefaultScale - 1);
 
-  // Set the default output module
-  VBA::Window::EVideoOutput _eOutput = (VBA::Window::EVideoOutput)m_poConfig->oGetKey<int>("output");
-  switch (_eOutput)
-  {
-    case VBA::Window::OutputOpenGL:
-      m_poOutputOpenGLRadioButton->set_active();
-      break;
-    default:
-      m_poOutputCairoRadioButton->set_active();
-      break;
-  }
+  bool bOpenGL = m_poConfig->oGetKey<bool>("use_opengl");
+  m_poUseOpenGLCheckButton->set_active(bOpenGL);
 }
 
-void DisplayConfigDialog::vOnOutputChanged(VBA::Window::EVideoOutput _eOutput)
+void DisplayConfigDialog::vOnOutputChanged()
 {
-  VBA::Window::EVideoOutput eOldOutput = (VBA::Window::EVideoOutput)m_poConfig->oGetKey<int>("output");
+  bool bOldOpenGL = m_poConfig->oGetKey<bool>("use_opengl");
+  bool bNewOpenGL = m_poUseOpenGLCheckButton->get_active();
 
-  if (_eOutput == eOldOutput)
-    return;
-  
-  if (_eOutput == VBA::Window::OutputOpenGL && m_poOutputOpenGLRadioButton->get_active())
-    m_poConfig->vSetKey("output", VBA::Window::OutputOpenGL);
-  else
-    m_poConfig->vSetKey("output", VBA::Window::OutputCairo);
+  m_poConfig->vSetKey("use_opengl", bNewOpenGL);
 
-  m_poWindow->vApplyConfigScreenArea();
+  if (bNewOpenGL != bOldOpenGL)
+  {
+    m_poWindow->vApplyConfigScreenArea();
+  }
 }
 
 void DisplayConfigDialog::vOnScaleChanged()

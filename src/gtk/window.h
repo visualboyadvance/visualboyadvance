@@ -52,12 +52,6 @@ public:
     CartridgeGBA
   };
 
-  enum EVideoOutput
-  {
-    OutputCairo,
-    OutputOpenGL
-  };
-  
   // GBA screen size
   const int m_iGBAScreenWidth;
   const int m_iGBAScreenHeight;
@@ -134,8 +128,6 @@ private:
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;
   const float m_fSoundVolumeMax;
-  const int m_iVideoOutputMin;
-  const int m_iVideoOutputMax;
 
   static Window * m_poInstance;
 
