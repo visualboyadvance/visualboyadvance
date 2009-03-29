@@ -16,7 +16,7 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "window.h"
+#include "Window.h"
 
 #include <gtkmm/stock.h>
 #include <gtkmm/messagedialog.h>
@@ -28,12 +28,12 @@
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
 
-#include "inputSDL.h"
+#include "InputSDL.h"
 
-#include "tools.h"
-#include "intl.h"
-#include "joypadconfig.h"
-#include "settings.h"
+#include "Tools.h"
+#include "Intl.h"
+#include "JoypadConfigDialog.h"
+#include "SettingsDialog.h"
 
 extern int emulating;
 

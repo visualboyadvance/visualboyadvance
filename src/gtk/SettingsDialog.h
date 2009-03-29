@@ -22,8 +22,8 @@
 #include <gtkmm/dialog.h>
 #include <gtkmm.h>
 
-#include "configfile.h"
-#include "window.h"
+#include "ConfigFile.h"
+#include "Window.h"
 
 namespace VBA
 {

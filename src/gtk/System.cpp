@@ -16,12 +16,12 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "inputSDL.h"
+#include "InputSDL.h"
 #include "../gba/Sound.h"
 #include "../common/SoundSDL.h"
 
-#include "window.h"
-#include "intl.h"
+#include "Window.h"
+#include "Intl.h"
 
 // Required vars, used by the emulator core
 //

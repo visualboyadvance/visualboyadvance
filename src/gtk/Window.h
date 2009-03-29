@@ -28,10 +28,10 @@
 #include <libglademm.h>
 
 #include "../System.h"
-#include "inputSDL.h"
+#include "InputSDL.h"
 
-#include "configfile.h"
-#include "screenarea.h"
+#include "ConfigFile.h"
+#include "ScreenArea.h"
 
 namespace VBA
 {

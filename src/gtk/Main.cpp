@@ -22,8 +22,8 @@
 #include <gtkmm/gl/init.h>
 #include <libglademm.h>
 
-#include "window.h"
-#include "intl.h"
+#include "Window.h"
+#include "Intl.h"
 
 using Gnome::Glade::Xml;
 

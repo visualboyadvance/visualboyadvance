@@ -20,7 +20,7 @@
 #ifndef __VBA_SCREENAREA_CAIRO_H__
 #define __VBA_SCREENAREA_CAIRO_H__
 
-#include "screenarea.h"
+#include "ScreenArea.h"
 
 namespace VBA
 {

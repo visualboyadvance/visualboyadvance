@@ -84,18 +84,18 @@ SET(SRC_APU
 )
 
 SET(SRC_GTK
-	src/gtk/configfile.cpp
-	src/gtk/main.cpp
-	src/gtk/system.cpp
-	src/gtk/windowcallbacks.cpp
-	src/gtk/joypadconfig.cpp
-	src/gtk/settings.cpp
-	src/gtk/screenarea.cpp
-	src/gtk/screenarea-cairo.cpp
-	src/gtk/screenarea-opengl.cpp
-	src/gtk/tools.cpp
-	src/gtk/window.cpp
-	src/gtk/inputSDL.cpp
+	src/gtk/ConfigFile.cpp
+	src/gtk/Main.cpp
+	src/gtk/System.cpp
+	src/gtk/WindowCallbacks.cpp
+	src/gtk/JoypadConfigDialog.cpp
+	src/gtk/SettingsDialog.cpp
+	src/gtk/ScreenArea.cpp
+	src/gtk/ScreenAreaCairo.cpp
+	src/gtk/ScreenAreaOpenGL.cpp
+	src/gtk/Tools.cpp
+	src/gtk/Window.cpp
+	src/gtk/InputSDL.cpp
 	src/common/SoundSDL.cpp
 )
 

@@ -16,7 +16,7 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "window.h"
+#include "Window.h"
 
 #include <gtkmm/stock.h>
 #include <gtkmm/alignment.h>
@@ -31,10 +31,10 @@
 #include "../gba/Sound.h"
 #include "../gba/Display.h"
 
-#include "tools.h"
-#include "intl.h"
-#include "screenarea-cairo.h"
-#include "screenarea-opengl.h"
+#include "Tools.h"
+#include "Intl.h"
+#include "ScreenAreaCairo.h"
+#include "ScreenAreaOpenGL.h"
 
 extern int emulating;
 

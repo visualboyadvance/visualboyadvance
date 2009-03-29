@@ -1,4 +1,3 @@
-// -*- C++ -*-
 // VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
 // Copyright (C) 1999-2003 Forgotten
 // Copyright (C) 2004 Forgotten and the VBA development team
@@ -17,34 +16,50 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef __VBA_SCREENAREA_OPENGL_H__
-#define __VBA_SCREENAREA_OPENGL_H__
-
-#include "screenarea.h"
-#include <gtkmm/gl/widget.h>
+#include "Tools.h"
 
 namespace VBA
 {
 
-class ScreenAreaGl : public ScreenArea,
-                     public Gtk::GL::Widget<ScreenAreaGl>
+std::string sCutSuffix(const std::string & _rsString,
+                       const std::string & _rsSep)
 {
-public:
-  ScreenAreaGl(int _iWidth, int _iHeight, int _iScale = 1);
-  void vDrawPixels(u8 * _puiData);
-  void vDrawBlackScreen();
+  return _rsString.substr(0, _rsString.find_last_of(_rsSep));
+}
 
-protected:
-  void on_realize();
-  bool on_expose_event(GdkEventExpose * _pstEvent);
-  void vOnWidgetResize();
+Glib::ustring sCutSuffix(const Glib::ustring & _rsString,
+                         const Glib::ustring & _rsSep)
+{
+  return _rsString.substr(0, _rsString.find_last_of(_rsSep));
+}
 
-private:
-  GLuint m_uiScreenTexture;
-  int m_iTextureSize;
-};
+bool bHasSuffix(const Glib::ustring & _rsString,
+                const Glib::ustring & _rsSuffix,
+                bool _bCaseSensitive)
+{
+  if (_rsSuffix.size() > _rsString.size())
+  {
+    return false;
+  }
+
+  Glib::ustring sEnd = _rsString.substr(_rsString.size() - _rsSuffix.size());
+
+  if (_bCaseSensitive)
+  {
+    if (_rsSuffix == sEnd)
+    {
+      return true;
+    }
+  }
+  else
+  {
+    if (_rsSuffix.lowercase() == sEnd.lowercase())
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 } // namespace VBA
-
-
-#endif // __VBA_SCREENAREA_OPENGL_H__
