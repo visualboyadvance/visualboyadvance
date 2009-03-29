@@ -90,8 +90,7 @@ SET(SRC_GTK
 	src/gtk/windowcallbacks.cpp
 	src/gtk/joypadconfig.cpp
 	src/gtk/directoriesconfig.cpp
-	src/gtk/displayconfig.cpp
-	src/gtk/soundconfig.cpp
+	src/gtk/settings.cpp
 	src/gtk/screenarea.cpp
 	src/gtk/screenarea-cairo.cpp
 	src/gtk/screenarea-opengl.cpp

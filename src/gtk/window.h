@@ -65,6 +65,7 @@ public:
   void vApplyConfigScreenArea();
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
+  void vApplyConfigShowSpeed();
   void vUpdateScreen();
 
   inline ECartridge eGetCartridge() const { return m_eCartridge; }
@@ -72,13 +73,6 @@ public:
 protected:
   Window(GtkWindow * _pstWindow,
          const Glib::RefPtr<Gnome::Glade::Xml> & _poXml);
-
-  enum EShowSpeed
-  {
-    ShowNone,
-    ShowPercentage,
-    ShowDetailed
-  };
 
   enum EColorFormat
   {
@@ -105,10 +99,8 @@ protected:
   virtual void vOnVideoFullscreen();
   virtual void vOnDirectories();
   virtual void vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI);
-  virtual void vOnShowSpeedToggled(Gtk::CheckMenuItem * _poCMI, int _iShowSpeed);
   virtual void vOnJoypadConfigure();
-  virtual void vOnDisplayConfigure();
-  virtual void vOnSoundConfigure();
+  virtual void vOnSettings();
   virtual void vOnHelpAbout();
   virtual bool bOnEmuIdle();
 
@@ -122,8 +114,6 @@ private:
   // Config limits
   const int m_iScaleMin;
   const int m_iScaleMax;
-  const int m_iShowSpeedMin;
-  const int m_iShowSpeedMax;
   const int m_iSoundSampleRateMin;
   const int m_iSoundSampleRateMax;
   const float m_fSoundVolumeMin;
@@ -187,7 +177,7 @@ private:
   bool           m_bPaused;
   bool           m_bWasEmulating;
   bool           m_bAutoFrameskip;
-  EShowSpeed     m_eShowSpeed;
+  bool           m_bShowSpeed;
 
   void vInitSystem();
   void vUnInitSystem();

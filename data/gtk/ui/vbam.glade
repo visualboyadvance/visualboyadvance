@@ -330,6 +330,19 @@
                         </child>
                       </widget>
                     </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separator26">
+                        <property name="visible">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="Preferences">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">gtk-preferences</property>
+                        <property name="use_underline">True</property>
+                	<property name="use_stock">True</property>
+                      </widget>
+                    </child>
                   </widget>
                 </child>
               </widget>
@@ -349,71 +362,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkMenuItem" id="EmulatorMenu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Emulator</property>
-                        <property name="use_underline">True</property>
-                        <child>
-                          <widget class="GtkMenu" id="EmulatorMenu_menu">
-                            <child>
                               <widget class="GtkCheckMenuItem" id="EmulatorPauseWhenInactive">
                                 <property name="visible">True</property>
                                 <property name="label" translatable="yes">Pause when inactive window</property>
                                 <property name="use_underline">True</property>
                               </widget>
-                            </child>
-                            <child>
-                              <widget class="GtkMenuItem" id="ShowSpeedMenu">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Show speed</property>
-                                <property name="use_underline">True</property>
-                                <child>
-                                  <widget class="GtkMenu" id="ShowSpeedMenu_menu">
-                                    <child>
-                                      <widget class="GtkRadioMenuItem" id="ShowSpeedNone">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">None</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="active">True</property>
-                                      </widget>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkRadioMenuItem" id="ShowSpeedPercentage">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Percentage</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="group">ShowSpeedNone</property>
-                                      </widget>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkRadioMenuItem" id="ShowSpeedDetailed">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Detailed</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="group">ShowSpeedNone</property>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                </child>
-                              </widget>
-                            </child>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkMenuItem" id="DisplayConfigure">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Display ...</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkMenuItem" id="SoundConfigure">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Sound ...</property>
-                        <property name="use_underline">True</property>
-                      </widget>
                     </child>
                     <child>
                       <widget class="GtkMenuItem" id="DirectoriesConfigure">

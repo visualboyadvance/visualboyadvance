@@ -68,8 +68,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_iGBAScreenHeight(160),
   m_iScaleMin       (1),
   m_iScaleMax       (6),
-  m_iShowSpeedMin   (ShowNone),
-  m_iShowSpeedMax   (ShowDetailed),
   m_iSoundSampleRateMin(11025),
   m_iSoundSampleRateMax(48000),
   m_fSoundVolumeMin (0.50f),
@@ -112,6 +110,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigJoypads();
   vApplyConfigScreenArea();
   vApplyConfigVolume();
+  vApplyConfigShowSpeed();
   vUpdateScreen();
   inputSetDefaultJoypad(PAD_MAIN);
 
@@ -235,40 +234,8 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                     sigc::mem_fun(*this, &Window::vOnPauseWhenInactiveToggled),
                                     poCMI));
 
-  // Show speed menu
-  //
-  struct
-  {
-    const char *     m_csName;
-    const EShowSpeed m_eShowSpeed;
-  }
-  astShowSpeed[] =
-  {
-    { "ShowSpeedNone",       ShowNone       },
-    { "ShowSpeedPercentage", ShowPercentage },
-    { "ShowSpeedDetailed",   ShowDetailed   }
-  };
-  EShowSpeed eDefaultShowSpeed = (EShowSpeed)m_poDisplayConfig->oGetKey<int>("show_speed");
-  for (guint i = 0; i < G_N_ELEMENTS(astShowSpeed); i++)
-  {
-    poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget(astShowSpeed[i].m_csName));
-    if (astShowSpeed[i].m_eShowSpeed == eDefaultShowSpeed)
-    {
-      poCMI->set_active();
-      vOnShowSpeedToggled(poCMI, eDefaultShowSpeed);
-    }
-    poCMI->signal_toggled().connect(sigc::bind(
-                                      sigc::mem_fun(*this, &Window::vOnShowSpeedToggled),
-                                      poCMI, astShowSpeed[i].m_eShowSpeed));
-  }
-
-  // Display menu
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("DisplayConfigure"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnDisplayConfigure));
-
-  // Sound menu
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("SoundConfigure"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSoundConfigure));
+  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("Preferences"));
+  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSettings));
 
   // Joypad menu
   //
@@ -457,7 +424,7 @@ void Window::vInitConfig()
   //
   m_poDisplayConfig = m_oConfig.poAddSection("Display");
   m_poDisplayConfig->vSetKey("scale",               1              );
-  m_poDisplayConfig->vSetKey("show_speed",          ShowPercentage );
+  m_poDisplayConfig->vSetKey("show_speed",          true           );
   m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
   m_poDisplayConfig->vSetKey("use_opengl",          true           );
 
@@ -521,13 +488,6 @@ void Window::vCheckConfig()
     m_poDisplayConfig->vSetKey("scale", iAdjusted);
   }
 
-  iValue = m_poDisplayConfig->oGetKey<int>("show_speed");
-  iAdjusted = CLAMP(iValue, m_iShowSpeedMin, m_iShowSpeedMax);
-  if (iValue != iAdjusted)
-  {
-    m_poDisplayConfig->vSetKey("show_speed", iAdjusted);
-  }
-
   // Sound section
   //
   iValue = m_poSoundConfig->oGetKey<int>("sample_rate");
@@ -579,6 +539,16 @@ void Window::vApplyConfigSoundSampleRate()
 {
   long iSoundSampleRate = m_poSoundConfig->oGetKey<int>("sample_rate");
   soundSetSampleRate(iSoundSampleRate);
+}
+
+void Window::vApplyConfigShowSpeed()
+{
+  m_bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
+
+  if (!m_bShowSpeed)
+  {
+    vSetDefaultTitle();
+  }
 }
 
 void Window::vHistoryAdd(const std::string & _rsFile)
@@ -748,12 +718,7 @@ void Window::vShowSpeed(int _iSpeed)
 {
   char csTitle[50];
 
-  if (m_eShowSpeed == ShowPercentage)
-  {
-    snprintf(csTitle, 50, "VBA-M - %d%%", _iSpeed);
-    set_title(csTitle);
-  }
-  else if (m_eShowSpeed == ShowDetailed)
+  if (m_bShowSpeed)
   {
     snprintf(csTitle, 50, "VBA-M - %d%% (%d, %d fps)",
              _iSpeed, systemFrameSkip, m_iFrameCount);

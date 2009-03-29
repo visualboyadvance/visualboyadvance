@@ -16,8 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef __VBA_DISPLAYCONFIG_H__
-#define __VBA_DISPLAYCONFIG_H__
+#ifndef __VBA_SETTINGS_H__
+#define __VBA_SETTINGS_H__
 
 #include <gtkmm/dialog.h>
 #include <gtkmm/builder.h>
@@ -29,25 +29,36 @@
 namespace VBA
 {
 
-class DisplayConfigDialog : public Gtk::Dialog
+class SettingsDialog : public Gtk::Dialog
 {
 public:
-  DisplayConfigDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
+  SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
 
-  void vSetConfig(Config::Section * _poConfig, VBA::Window * _poWindow);
+  void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, VBA::Window * _poWindow);
 
 private:
-  void vOnOutputChanged();
-  void vOnScaleChanged();
-
   VBA::Window *             m_poWindow;
 
-  Config::Section *         m_poConfig;
+  // Sound
+  void vOnVolumeChanged();
+  void vOnRateChanged();
+  
+  Config::Section *         m_poSoundConfig;
+  Gtk::ComboBox *           m_poVolumeComboBox;
+  Gtk::ComboBox *           m_poRateComboBox;
+  
+  // Display
+  void vOnOutputChanged();
+  void vOnScaleChanged();
+  void vOnShowSpeedChanged();
+
+  Config::Section *         m_poDisplayConfig;
   Gtk::ComboBox *           m_poDefaultScaleComboBox;
   Gtk::CheckButton *        m_poUseOpenGLCheckButton;
+  Gtk::CheckButton *        m_poShowSpeedCheckButton;
 };
 
 } // namespace VBA
 
 
-#endif // __VBA_DISPLAYCONFIG_H__
+#endif // __VBA_SETTINGS_H__

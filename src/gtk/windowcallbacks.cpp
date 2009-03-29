@@ -34,8 +34,7 @@
 #include "intl.h"
 #include "joypadconfig.h"
 #include "directoriesconfig.h"
-#include "displayconfig.h"
-#include "soundconfig.h"
+#include "settings.h"
 
 extern int emulating;
 
@@ -328,21 +327,6 @@ void Window::vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI)
   m_poDisplayConfig->vSetKey("pause_when_inactive", _poCMI->get_active());
 }
 
-void Window::vOnShowSpeedToggled(Gtk::CheckMenuItem * _poCMI, int _iShowSpeed)
-{
-  if (! _poCMI->get_active())
-  {
-    return;
-  }
-
-  m_eShowSpeed = (EShowSpeed)_iShowSpeed;
-  if (m_eShowSpeed == ShowNone)
-  {
-    vSetDefaultTitle();
-  }
-  m_poDisplayConfig->vSetKey("show_speed", _iShowSpeed);
-}
-
 void Window::vOnJoypadConfigure()
 {
   JoypadConfigDialog oDialog(m_poInputConfig);
@@ -350,31 +334,18 @@ void Window::vOnJoypadConfigure()
   oDialog.run();
 }
 
-void Window::vOnDisplayConfigure()
+void Window::vOnSettings()
 {
-  std::string sUiFile = sGetUiFilePath("display.ui");
+  std::string sUiFile = sGetUiFilePath("settings.glade");
   Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
 
-  DisplayConfigDialog * poDialog = 0;
-  poBuilder->get_widget_derived("DisplayConfigDialog", poDialog);
-  poDialog->vSetConfig(m_poDisplayConfig, this);
+  SettingsDialog * poDialog = 0;
+  poBuilder->get_widget_derived("SettingsDialog", poDialog);
+  poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, this);
   poDialog->set_transient_for(*this);
   m_poScreenArea->vSetEnableRender(false);
   poDialog->run();
   m_poScreenArea->vSetEnableRender(true);
-  poDialog->hide();
-}
-
-void Window::vOnSoundConfigure()
-{
-  std::string sUiFile = sGetUiFilePath("sound.ui");
-  Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
-
-  SoundConfigDialog * poDialog = 0;
-  poBuilder->get_widget_derived("SoundConfigDialog", poDialog);
-  poDialog->vSetConfig(m_poSoundConfig, this);
-  poDialog->set_transient_for(*this);
-  poDialog->run();
   poDialog->hide();
 }
 
