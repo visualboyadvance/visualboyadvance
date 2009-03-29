@@ -24,8 +24,10 @@ namespace VBA
 
 SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder) :
   Gtk::Dialog(_pstDialog),
+  m_poCoreConfig(0),
   m_poSoundConfig(0),
-  m_poDisplayConfig(0)
+  m_poDisplayConfig(0),
+  m_poDirConfig(0)
 {
   refBuilder->get_widget("VolumeComboBox", m_poVolumeComboBox);
   refBuilder->get_widget("RateComboBox", m_poRateComboBox);
@@ -33,6 +35,10 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
   refBuilder->get_widget("OpenGLCheckButton", m_poUseOpenGLCheckButton);
   refBuilder->get_widget("ShowSpeedCheckButton", m_poShowSpeedCheckButton);
   refBuilder->get_widget("BiosFileChooserButton", m_poBiosFileChooserButton);
+  refBuilder->get_widget("RomsFileChooserButton", m_poRomsFileChooserButton);
+  refBuilder->get_widget("BatteriesFileChooserButton", m_poBatteriesFileChooserButton);
+  refBuilder->get_widget("SavesFileChooserButton", m_poSavesFileChooserButton);
+
 
   m_poVolumeComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnVolumeChanged));
   m_poRateComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRateChanged));
@@ -40,7 +46,10 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
   m_poUseOpenGLCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnOutputChanged));
   m_poShowSpeedCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnShowSpeedChanged));
   m_poBiosFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBiosChanged));
-  
+  m_poRomsFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRomsChanged));
+  m_poBatteriesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBatteriesChanged));
+  m_poSavesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnSavesChanged));  
+
   // Bios FileChooserButton
   const char * acsPattern[] =
   {
@@ -65,11 +74,12 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 }
 
 void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, 
-    Config::Section * _poCoreConfig, VBA::Window * _poWindow)
+    Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow)
 {
   m_poSoundConfig = _poSoundConfig;
   m_poDisplayConfig = _poDisplayConfig;
   m_poCoreConfig = _poCoreConfig;
+  m_poDirConfig = _poDirConfig;
   m_poWindow = _poWindow;
 
   float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
@@ -112,6 +122,15 @@ void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Sectio
   
   std::string sBios = m_poCoreConfig->sGetKey("bios_file");
   m_poBiosFileChooserButton->set_filename(sBios);
+
+  std::string sRoms = m_poDirConfig->sGetKey("gba_roms");
+  m_poRomsFileChooserButton->set_current_folder(sRoms);
+
+  std::string sBatteries = m_poDirConfig->sGetKey("batteries");
+  m_poBatteriesFileChooserButton->set_current_folder(sBatteries);
+
+  std::string sSaves = m_poDirConfig->sGetKey("saves");
+  m_poSavesFileChooserButton->set_current_folder(sSaves);
 }
 
 void SettingsDialog::vOnVolumeChanged()
@@ -195,6 +214,27 @@ void SettingsDialog::vOnBiosChanged()
 {
   std::string sBios = m_poBiosFileChooserButton->get_filename();
   m_poCoreConfig->vSetKey("bios_file", sBios);
+}
+
+void SettingsDialog::vOnRomsChanged()
+{
+  std::string sRoms = m_poRomsFileChooserButton->get_current_folder();
+  m_poDirConfig->vSetKey("gba_roms", sRoms);
+}
+
+void SettingsDialog::vOnBatteriesChanged()
+{
+  std::string sBatteries = m_poBatteriesFileChooserButton->get_current_folder();
+  m_poDirConfig->vSetKey("batteries", sBatteries);
+}
+
+void SettingsDialog::vOnSavesChanged()
+{
+  std::string sSaves = m_poSavesFileChooserButton->get_current_folder();
+  m_poDirConfig->vSetKey("saves", sSaves);
+  
+  // Needed if saves dir changed
+  m_poWindow->vUpdateGameSlots();
 }
 
 } // namespace VBA

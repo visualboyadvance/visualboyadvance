@@ -33,7 +33,6 @@
 #include "tools.h"
 #include "intl.h"
 #include "joypadconfig.h"
-#include "directoriesconfig.h"
 #include "settings.h"
 
 extern int emulating;
@@ -312,16 +311,6 @@ void Window::vOnVideoFullscreen()
   vToggleFullscreen();
 }
 
-void Window::vOnDirectories()
-{
-  DirectoriesConfigDialog oDialog(m_poDirConfig);
-  oDialog.set_transient_for(*this);
-  oDialog.run();
-
-  // Needed if saves dir changed
-  vUpdateGameSlots();
-}
-
 void Window::vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI)
 {
   m_poDisplayConfig->vSetKey("pause_when_inactive", _poCMI->get_active());
@@ -341,7 +330,7 @@ void Window::vOnSettings()
 
   SettingsDialog * poDialog = 0;
   poBuilder->get_widget_derived("SettingsDialog", poDialog);
-  poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, m_poCoreConfig, this);
+  poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, m_poCoreConfig, m_poDirConfig, this);
   poDialog->set_transient_for(*this);
   m_poScreenArea->vSetEnableRender(false);
   poDialog->run();

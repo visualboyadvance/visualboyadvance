@@ -34,7 +34,7 @@ public:
   SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
 
   void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, 
-    Config::Section * _poCoreConfig, VBA::Window * _poWindow);
+    Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow);
 
 private:
   VBA::Window *             m_poWindow;
@@ -61,8 +61,16 @@ private:
   Gtk::CheckButton *        m_poShowSpeedCheckButton;
   
   // Paths
-  Gtk::FileChooserButton *  m_poBiosFileChooserButton;
   void vOnBiosChanged();
+  void vOnRomsChanged();
+  void vOnBatteriesChanged();
+  void vOnSavesChanged();
+
+  Config::Section *         m_poDirConfig;
+  Gtk::FileChooserButton *  m_poBiosFileChooserButton;
+  Gtk::FileChooserButton *  m_poRomsFileChooserButton;
+  Gtk::FileChooserButton *  m_poBatteriesFileChooserButton;
+  Gtk::FileChooserButton *  m_poSavesFileChooserButton;
 };
 
 } // namespace VBA

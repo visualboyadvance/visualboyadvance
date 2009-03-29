@@ -369,13 +369,6 @@
                               </widget>
                     </child>
                     <child>
-                      <widget class="GtkMenuItem" id="DirectoriesConfigure">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">D_irectories ...</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
                       <widget class="GtkMenuItem" id="JoypadConfigure">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Joypad ...</property>

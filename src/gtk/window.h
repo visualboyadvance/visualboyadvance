@@ -67,6 +67,7 @@ public:
   void vApplyConfigSoundSampleRate();
   void vApplyConfigShowSpeed();
   void vUpdateScreen();
+  void vUpdateGameSlots();
 
   inline ECartridge eGetCartridge() const { return m_eCartridge; }
 
@@ -97,7 +98,6 @@ protected:
   virtual void vOnFileExit();
   virtual void vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnVideoFullscreen();
-  virtual void vOnDirectories();
   virtual void vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnJoypadConfigure();
   virtual void vOnSettings();
@@ -197,7 +197,6 @@ private:
   void vSaveBattery();
   void vStartEmu();
   void vStopEmu();
-  void vUpdateGameSlots();
   void vToggleFullscreen();
   void vSDLPollEvents();
 };
