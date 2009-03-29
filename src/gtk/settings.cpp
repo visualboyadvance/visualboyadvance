@@ -17,11 +17,6 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "settings.h"
-
-#include <gtkmm/stock.h>
-#include <gtkmm/frame.h>
-#include <gtkmm/liststore.h>
-
 #include "intl.h"
 
 namespace VBA
@@ -37,18 +32,44 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
   refBuilder->get_widget("DefaultScaleComboBox", m_poDefaultScaleComboBox);
   refBuilder->get_widget("OpenGLCheckButton", m_poUseOpenGLCheckButton);
   refBuilder->get_widget("ShowSpeedCheckButton", m_poShowSpeedCheckButton);
+  refBuilder->get_widget("BiosFileChooserButton", m_poBiosFileChooserButton);
 
   m_poVolumeComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnVolumeChanged));
   m_poRateComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRateChanged));
   m_poDefaultScaleComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnScaleChanged));
   m_poUseOpenGLCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnOutputChanged));
   m_poShowSpeedCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnShowSpeedChanged));
+  m_poBiosFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBiosChanged));
+  
+  // Bios FileChooserButton
+  const char * acsPattern[] =
+  {
+    "*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
+    "*.[bB][iI][oO][sS]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
+  };
+
+  Gtk::FileFilter oAllFilter;
+  oAllFilter.set_name(_("All files"));
+  oAllFilter.add_pattern("*");
+
+  Gtk::FileFilter oBiosFilter;
+  oBiosFilter.set_name(_("Gameboy Advance BIOS"));
+  for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
+  {
+    oBiosFilter.add_pattern(acsPattern[i]);
+  }
+
+  m_poBiosFileChooserButton->add_filter(oAllFilter);
+  m_poBiosFileChooserButton->add_filter(oBiosFilter);
+  m_poBiosFileChooserButton->set_filter(oBiosFilter);
 }
 
-void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, VBA::Window * _poWindow)
+void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, 
+    Config::Section * _poCoreConfig, VBA::Window * _poWindow)
 {
   m_poSoundConfig = _poSoundConfig;
   m_poDisplayConfig = _poDisplayConfig;
+  m_poCoreConfig = _poCoreConfig;
   m_poWindow = _poWindow;
 
   float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
@@ -88,6 +109,9 @@ void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Sectio
   
   bool bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
   m_poShowSpeedCheckButton->set_active(bShowSpeed);
+  
+  std::string sBios = m_poCoreConfig->sGetKey("bios_file");
+  m_poBiosFileChooserButton->set_filename(sBios);
 }
 
 void SettingsDialog::vOnVolumeChanged()
@@ -165,6 +189,12 @@ void SettingsDialog::vOnShowSpeedChanged()
 
   m_poDisplayConfig->vSetKey("show_speed", bShowSpeed);
   m_poWindow->vApplyConfigShowSpeed();
+}
+
+void SettingsDialog::vOnBiosChanged()
+{
+  std::string sBios = m_poBiosFileChooserButton->get_filename();
+  m_poCoreConfig->vSetKey("bios_file", sBios);
 }
 
 } // namespace VBA

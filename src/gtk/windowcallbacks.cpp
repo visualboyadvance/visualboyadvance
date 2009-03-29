@@ -341,7 +341,7 @@ void Window::vOnSettings()
 
   SettingsDialog * poDialog = 0;
   poBuilder->get_widget_derived("SettingsDialog", poDialog);
-  poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, this);
+  poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, m_poCoreConfig, this);
   poDialog->set_transient_for(*this);
   m_poScreenArea->vSetEnableRender(false);
   poDialog->run();

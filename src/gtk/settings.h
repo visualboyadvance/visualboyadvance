@@ -20,8 +20,7 @@
 #define __VBA_SETTINGS_H__
 
 #include <gtkmm/dialog.h>
-#include <gtkmm/builder.h>
-#include <gtkmm/combobox.h>
+#include <gtkmm.h>
 
 #include "configfile.h"
 #include "window.h"
@@ -34,10 +33,14 @@ class SettingsDialog : public Gtk::Dialog
 public:
   SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
 
-  void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, VBA::Window * _poWindow);
+  void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, 
+    Config::Section * _poCoreConfig, VBA::Window * _poWindow);
 
 private:
   VBA::Window *             m_poWindow;
+
+  // General
+  Config::Section *         m_poCoreConfig;
 
   // Sound
   void vOnVolumeChanged();
@@ -56,6 +59,10 @@ private:
   Gtk::ComboBox *           m_poDefaultScaleComboBox;
   Gtk::CheckButton *        m_poUseOpenGLCheckButton;
   Gtk::CheckButton *        m_poShowSpeedCheckButton;
+  
+  // Paths
+  Gtk::FileChooserButton *  m_poBiosFileChooserButton;
+  void vOnBiosChanged();
 };
 
 } // namespace VBA

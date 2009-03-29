@@ -479,5 +479,4 @@
       <action-widget response="0">button1</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkAction" id="action1"/>
 </interface>
