@@ -66,6 +66,7 @@ public:
   void vApplyConfigVolume();
   void vApplyConfigSoundSampleRate();
   void vApplyConfigShowSpeed();
+  void vApplyConfigFrameskip();
   void vUpdateScreen();
   void vUpdateGameSlots();
 
@@ -96,9 +97,7 @@ protected:
   virtual void vOnRecentFile();
   virtual void vOnFileClose();
   virtual void vOnFileExit();
-  virtual void vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnVideoFullscreen();
-  virtual void vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI);
   virtual void vOnJoypadConfigure();
   virtual void vOnSettings();
   virtual void vOnHelpAbout();

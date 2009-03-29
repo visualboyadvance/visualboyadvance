@@ -40,7 +40,12 @@ private:
   VBA::Window *             m_poWindow;
 
   // General
+  void vOnPauseChanged();
+  void vOnFrameskipChanged();
+
   Config::Section *         m_poCoreConfig;
+  Gtk::CheckButton *        m_poPauseOnInactiveCheckButton;
+  Gtk::CheckButton *        m_poEnableFrameskipCheckButton;
 
   // Sound
   void vOnVolumeChanged();

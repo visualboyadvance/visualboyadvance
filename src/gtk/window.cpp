@@ -111,6 +111,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   vApplyConfigScreenArea();
   vApplyConfigVolume();
   vApplyConfigShowSpeed();
+  vApplyConfigFrameskip();
   vUpdateScreen();
   inputSetDefaultJoypad(PAD_MAIN);
 
@@ -124,8 +125,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileMenu"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("EmulationMenu"));
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("OptionsMenu"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("HelpMenu"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
@@ -213,24 +212,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_poRecentMenu = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("RecentMenu"));
   m_poRecentMenu->set_submenu(static_cast<Gtk::Menu &>(*m_poRecentChooserMenu));
 
-  // Frameskip menu
-  //
-  bool bFrameskip = m_poCoreConfig->oGetKey<bool>("frameskip");
-  poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget("FrameskipMenu"));
-  poCMI->set_active(bFrameskip);
-  poCMI->signal_toggled().connect(sigc::bind(
-                                      sigc::mem_fun(*this, &Window::vOnFrameskipToggled),
-                                      poCMI));
-
-  // Emulator menu
-  //
-  poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget("EmulatorPauseWhenInactive"));
-  poCMI->set_active(m_poDisplayConfig->oGetKey<bool>("pause_when_inactive"));
-  vOnPauseWhenInactiveToggled(poCMI);
-  poCMI->signal_toggled().connect(sigc::bind(
-                                    sigc::mem_fun(*this, &Window::vOnPauseWhenInactiveToggled),
-                                    poCMI));
-
+  // Preferences menu
   poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("Preferences"));
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSettings));
 
@@ -546,6 +528,12 @@ void Window::vApplyConfigShowSpeed()
   {
     vSetDefaultTitle();
   }
+}
+
+void Window::vApplyConfigFrameskip()
+{
+  m_bAutoFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
+  systemFrameSkip  = 0;
 }
 
 void Window::vHistoryAdd(const std::string & _rsFile)

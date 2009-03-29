@@ -296,24 +296,9 @@ void Window::vOnFileExit()
   hide();
 }
 
-void Window::vOnFrameskipToggled(Gtk::CheckMenuItem * _poCMI)
-{
-  bool bFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
-  m_poCoreConfig->vSetKey("frameskip", bFrameskip);
-  _poCMI->set_active(bFrameskip);
-
-  systemFrameSkip  = 0;
-  m_bAutoFrameskip = bFrameskip;
-}
-
 void Window::vOnVideoFullscreen()
 {
   vToggleFullscreen();
-}
-
-void Window::vOnPauseWhenInactiveToggled(Gtk::CheckMenuItem * _poCMI)
-{
-  m_poDisplayConfig->vSetKey("pause_when_inactive", _poCMI->get_active());
 }
 
 void Window::vOnJoypadConfigure()

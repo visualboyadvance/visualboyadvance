@@ -343,35 +343,10 @@
                 	<property name="use_stock">True</property>
                       </widget>
                     </child>
-                  </widget>
-                </child>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkMenuItem" id="OptionsMenu">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Options</property>
-                <property name="use_underline">True</property>
-                <child>
-                  <widget class="GtkMenu" id="OptionsMenu_menu">
-                    <child>
-                      <widget class="GtkCheckMenuItem" id="FrameskipMenu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Frameskip</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                              <widget class="GtkCheckMenuItem" id="EmulatorPauseWhenInactive">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Pause when inactive window</property>
-                                <property name="use_underline">True</property>
-                              </widget>
-                    </child>
                     <child>
                       <widget class="GtkMenuItem" id="JoypadConfigure">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Joypad ...</property>
+                        <property name="label" translatable="yes">_Joypad preferences...</property>
                         <property name="use_underline">True</property>
                       </widget>
                     </child>
