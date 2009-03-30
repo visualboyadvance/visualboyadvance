@@ -41,8 +41,6 @@ extern int emulating;
 namespace VBA
 {
 
-using Gnome::Glade::Xml;
-
 Window * Window::m_poInstance = NULL;
 
 const Window::SJoypadKey Window::m_astJoypad[] =
@@ -62,7 +60,7 @@ const Window::SJoypadKey Window::m_astJoypad[] =
         { "autoB",   KEY_BUTTON_AUTO_B  }
 };
 
-Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
+Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBuilder) :
   Gtk::Window       (_pstWindow),
   m_iGBAScreenWidth (240),
   m_iGBAScreenHeight(160),
@@ -74,7 +72,7 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   m_fSoundVolumeMax (2.00f),
   m_bFullscreen     (false)
 {
-  m_poXml            = _poXml;
+  m_poBuilder        = _poBuilder;
   m_poFileOpenDialog = NULL;
   m_iScreenWidth     = m_iGBAScreenWidth;
   m_iScreenHeight    = m_iGBAScreenHeight;
@@ -119,26 +117,26 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   Gtk::CheckMenuItem * poCMI;
 
   // Menu bar
-  m_poMenuBar = dynamic_cast<Gtk::MenuBar *>(_poXml->get_widget("MenuBar"));
+  _poBuilder->get_widget("MenuBar", m_poMenuBar);
   m_poMenuBar->signal_deactivate().connect(sigc::mem_fun(*this, &Window::vOnMenuExit));
   
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileMenu"));
+  _poBuilder->get_widget("FileMenu", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("EmulationMenu"));
+  _poBuilder->get_widget("EmulationMenu", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("HelpMenu"));
+  _poBuilder->get_widget("HelpMenu", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
 
   // File menu
   //
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileOpen"));
+  _poBuilder->get_widget("FileOpen", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileOpen));
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileLoad"));
+  _poBuilder->get_widget("FileLoad", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileLoad));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileSave"));
+  _poBuilder->get_widget("FileSave", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileSave));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
@@ -146,9 +144,9 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   {
     char csName[20];
     snprintf(csName, 20, "LoadGameSlot%d", i + 1);
-    m_apoLoadGameItem[i] = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget(csName));
+    _poBuilder->get_widget(csName, m_apoLoadGameItem[i]);
     snprintf(csName, 20, "SaveGameSlot%d", i + 1);
-    m_apoSaveGameItem[i] = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget(csName));
+    _poBuilder->get_widget(csName, m_apoSaveGameItem[i]);
 
     m_apoLoadGameItem[i]->signal_activate().connect(sigc::bind(
                                                       sigc::mem_fun(*this, &Window::vOnLoadGame),
@@ -159,22 +157,22 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
   }
   vUpdateGameSlots();
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("LoadGameMostRecent"));
+  _poBuilder->get_widget("LoadGameMostRecent", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnLoadGameMostRecent));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  poCMI = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget("LoadGameAuto"));
+  _poBuilder->get_widget("LoadGameAuto", poCMI);
   poCMI->set_active(m_poCoreConfig->oGetKey<bool>("load_game_auto"));
   vOnLoadGameAutoToggled(poCMI);
   poCMI->signal_toggled().connect(sigc::bind(
                                     sigc::mem_fun(*this, &Window::vOnLoadGameAutoToggled),
                                     poCMI));
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("SaveGameOldest"));
+  _poBuilder->get_widget("SaveGameOldest", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSaveGameOldest));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  m_poFilePauseItem = dynamic_cast<Gtk::CheckMenuItem *>(_poXml->get_widget("FilePause"));
+  _poBuilder->get_widget("FilePause", m_poFilePauseItem);
   m_poFilePauseItem->set_active(false);
   vOnFilePauseToggled(m_poFilePauseItem);
   m_poFilePauseItem->signal_toggled().connect(sigc::bind(
@@ -182,15 +180,15 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                                 m_poFilePauseItem));
   m_listSensitiveWhenPlaying.push_back(m_poFilePauseItem);
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileReset"));
+  _poBuilder->get_widget("FileReset", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileReset));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileClose"));
+  _poBuilder->get_widget("FileClose", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileClose));
   m_listSensitiveWhenPlaying.push_back(poMI);
 
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("FileExit"));
+  _poBuilder->get_widget("FileExit", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileExit));
 
   // Recent menu
@@ -209,26 +207,26 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Xml> & _poXml) :
                                                    sigc::mem_fun(*this, &Window::vOnRecentFile));
 
 
-  m_poRecentMenu = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("RecentMenu"));
+  _poBuilder->get_widget("RecentMenu", m_poRecentMenu);
   m_poRecentMenu->set_submenu(static_cast<Gtk::Menu &>(*m_poRecentChooserMenu));
 
   // Preferences menu
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("Preferences"));
+  _poBuilder->get_widget("Preferences", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSettings));
 
   // Joypad menu
   //
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("JoypadConfigure"));
+  _poBuilder->get_widget("JoypadConfigure", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnJoypadConfigure));
 
   // Fullscreen menu
   //
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("VideoFullscreen"));
+  _poBuilder->get_widget("VideoFullscreen", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnVideoFullscreen));
 
   // Help menu
   //
-  poMI = dynamic_cast<Gtk::MenuItem *>(_poXml->get_widget("HelpAbout"));
+  _poBuilder->get_widget("HelpAbout", poMI);
   poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnHelpAbout));
 
   // Init widgets sensitivity
@@ -291,7 +289,7 @@ void Window::vApplyConfigScreenArea()
 
   Gtk::Alignment * poC;
 
-  poC = dynamic_cast<Gtk::Alignment *>(m_poXml->get_widget("ScreenContainer"));
+  m_poBuilder->get_widget("ScreenContainer", poC);
   poC->remove();
   poC->set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 1.0, 1.0);
 

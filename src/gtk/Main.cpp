@@ -20,12 +20,10 @@
 #include <gtkmm/window.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/gl/init.h>
-#include <libglademm.h>
+#include <gtkmm/builder.h>
 
 #include "Window.h"
 #include "Intl.h"
-
-using Gnome::Glade::Xml;
 
 int main(int argc, char * argv[])
 {
@@ -85,12 +83,12 @@ int main(int argc, char * argv[])
 
   std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.glade");
 
-  Glib::RefPtr<Xml> poXml;
+  Glib::RefPtr<Gtk::Builder> poBuilder;
   try
   {
-    poXml = Xml::create(sGladeFile, "MainWindow");
+    poBuilder = Gtk::Builder::create_from_file(sGladeFile);
   }
-  catch (const Xml::Error & e)
+  catch (const Glib::FileError & e)
   {
     Gtk::MessageDialog oDialog(e.what(),
                                false,
@@ -100,8 +98,8 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  VBA::Window * poWindow = NULL;
-  poXml->get_widget_derived<VBA::Window>("MainWindow", poWindow);
+  VBA::Window * poWindow = 0;
+  poBuilder->get_widget_derived("MainWindow", poWindow);
 
   if (listRemaining.size() == 1)
   {

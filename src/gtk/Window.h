@@ -25,7 +25,7 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/menubar.h>
 #include <gtkmm/recentchoosermenu.h>
-#include <libglademm.h>
+#include <gtkmm/builder.h>
 
 #include "../System.h"
 #include "InputSDL.h"
@@ -38,7 +38,7 @@ namespace VBA
 
 class Window : public Gtk::Window
 {
-  friend class Gnome::Glade::Xml;
+  friend class Gtk::Builder;
 
 public:
   virtual ~Window();
@@ -74,7 +74,7 @@ public:
 
 protected:
   Window(GtkWindow * _pstWindow,
-         const Glib::RefPtr<Gnome::Glade::Xml> & _poXml);
+         const Glib::RefPtr<Gtk::Builder> & _poBuilder);
 
   enum EColorFormat
   {
@@ -120,7 +120,7 @@ private:
 
   static Window * m_poInstance;
 
-  Glib::RefPtr<Gnome::Glade::Xml> m_poXml;
+  Glib::RefPtr<Gtk::Builder> m_poBuilder;
 
   std::string       m_sUserDataDir;
   std::string       m_sConfigFile;
