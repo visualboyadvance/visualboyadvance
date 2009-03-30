@@ -18,11 +18,6 @@
 
 #include "Window.h"
 
-#include <gtkmm/stock.h>
-#include <gtkmm/messagedialog.h>
-#include <gtkmm/aboutdialog.h>
-#include <gtkmm/builder.h>
-
 #include <SDL.h>
 
 #include "../gba/GBA.h"

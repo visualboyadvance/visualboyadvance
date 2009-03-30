@@ -18,8 +18,6 @@
 
 #include "JoypadConfigDialog.h"
 
-#include <gtkmm/stock.h>
-
 #include "Intl.h"
 
 namespace VBA

@@ -19,7 +19,6 @@
 #ifndef __VBA_SETTINGS_H__
 #define __VBA_SETTINGS_H__
 
-#include <gtkmm/dialog.h>
 #include <gtkmm.h>
 
 #include "ConfigFile.h"

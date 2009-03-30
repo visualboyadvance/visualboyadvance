@@ -20,8 +20,8 @@
 #ifndef __VBA_SCREENAREA_H__
 #define __VBA_SCREENAREA_H__
 
-#include <gtkmm/drawingarea.h>
-#include <gdkmm/cursor.h>
+#include <gtkmm.h>
+#include <gdkmm.h>
 
 #include "../common/Types.h"
 

@@ -22,13 +22,7 @@
 
 #include <vector>
 
-#include <gtkmm/dialog.h>
-#include <gtkmm/label.h>
-#include <gtkmm/table.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/comboboxtext.h>
-#include <gtkmm/separator.h>
-#include <gtkmm/checkbutton.h>
+#include <gtkmm.h>
 
 #include "InputSDL.h"
 #include "ConfigFile.h"
