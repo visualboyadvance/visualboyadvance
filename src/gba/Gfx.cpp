@@ -27,7 +27,6 @@ int gfxBG2X = 0;
 int gfxBG2Y = 0;
 int gfxBG3X = 0;
 int gfxBG3Y = 0;
-int gfxLastVCOUNT = 0;
 
 void updateBG2X()
 {
