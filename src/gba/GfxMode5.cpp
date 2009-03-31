@@ -19,8 +19,7 @@ void mode5RenderLine()
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
-                             BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+    gfxDrawRotScreen16Bit160(BG2CNT, BG2PA, BG2PB,
                              BG2PC, BG2PD,
                              gfxBG2X, gfxBG2Y,
                              line2);
@@ -88,8 +87,7 @@ void mode5RenderLineNoWindow()
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
-                             BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+    gfxDrawRotScreen16Bit160(BG2CNT, BG2PA, BG2PB,
                              BG2PC, BG2PD,
                              gfxBG2X, gfxBG2Y,
                              line2);
@@ -198,8 +196,7 @@ void mode5RenderLineAll()
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
-                             BG2Y_L, BG2Y_H, BG2PA, BG2PB,
+    gfxDrawRotScreen16Bit160(BG2CNT, BG2PA, BG2PB,
                              BG2PC, BG2PD,
                              gfxBG2X, gfxBG2Y,
                              line2);

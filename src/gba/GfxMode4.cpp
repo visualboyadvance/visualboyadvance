@@ -19,7 +19,7 @@ void mode4RenderLine()
   }
 
   if(layerEnable & 0x400) {
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen256(BG2CNT,
                         BG2PA, BG2PB, BG2PC, BG2PD,
                         gfxBG2X, gfxBG2Y,
                         line2);
@@ -87,7 +87,7 @@ void mode4RenderLineNoWindow()
   }
 
   if(layerEnable & 0x400) {
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen256(BG2CNT,
                         BG2PA, BG2PB, BG2PC, BG2PD,
                         gfxBG2X, gfxBG2Y,
                         line2);
@@ -218,7 +218,7 @@ void mode4RenderLineAll()
   }
 
   if(layerEnable & 0x400) {
-    gfxDrawRotScreen256(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen256(BG2CNT,
                         BG2PA, BG2PB, BG2PC, BG2PD,
                         gfxBG2X, gfxBG2Y,
                         line2);

@@ -19,13 +19,13 @@ void mode2RenderLine()
   }
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen(BG2CNT,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
                      line2);
   }
 
   if(layerEnable & 0x0800) {
-    gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
+    gfxDrawRotScreen(BG3CNT,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
                      line3);
   }
@@ -103,13 +103,13 @@ void mode2RenderLineNoWindow()
   }
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen(BG2CNT,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
                      line2);
   }
 
   if(layerEnable & 0x0800) {
-    gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
+    gfxDrawRotScreen(BG3CNT,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
                      line3);
   }
@@ -256,13 +256,13 @@ void mode2RenderLineAll()
   }
 
   if(layerEnable & 0x0400) {
-    gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
+    gfxDrawRotScreen(BG2CNT,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
                      line2);
   }
 
   if(layerEnable & 0x0800) {
-    gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
+    gfxDrawRotScreen(BG3CNT,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
                      line3);
   }

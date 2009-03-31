@@ -157,8 +157,6 @@ void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 }
 
 void gfxDrawRotScreen(u16 control,
-				    u16 x_l, u16 x_h,
-				    u16 y_l, u16 y_h,
 				    u16 pa,  u16 pb,
 				    u16 pc,  u16 pd,
 				    int& currentX, int& currentY,
@@ -275,8 +273,6 @@ void gfxDrawRotScreen(u16 control,
 }
 
 void gfxDrawRotScreen16Bit(u16 control,
-					 u16 x_l, u16 x_h,
-					 u16 y_l, u16 y_h,
 					 u16 pa,  u16 pb,
 					 u16 pc,  u16 pd,
 					 int& currentX, int& currentY,
@@ -286,13 +282,6 @@ void gfxDrawRotScreen16Bit(u16 control,
   int prio = ((control & 3) << 25) + 0x1000000;
   int sizeX = 240;
   int sizeY = 160;
-
-  int startX = (x_l) | ((x_h & 0x07FF)<<16);
-  if(x_h & 0x0800)
-    startX |= 0xF8000000;
-  int startY = (y_l) | ((y_h & 0x07FF)<<16);
-  if(y_h & 0x0800)
-    startY |= 0xF8000000;
 
   int dx = pa & 0x7FFF;
   if(pa & 0x8000)
@@ -356,8 +345,6 @@ void gfxDrawRotScreen16Bit(u16 control,
 }
 
 void gfxDrawRotScreen256(u16 control,
-				       u16 x_l, u16 x_h,
-				       u16 y_l, u16 y_h,
 				       u16 pa,  u16 pb,
 				       u16 pc,  u16 pd,
 				       int &currentX, int& currentY,
@@ -368,13 +355,6 @@ void gfxDrawRotScreen256(u16 control,
   int prio = ((control & 3) << 25) + 0x1000000;
   int sizeX = 240;
   int sizeY = 160;
-
-  int startX = (x_l) | ((x_h & 0x07FF)<<16);
-  if(x_h & 0x0800)
-    startX |= 0xF8000000;
-  int startY = (y_l) | ((y_h & 0x07FF)<<16);
-  if(y_h & 0x0800)
-    startY |= 0xF8000000;
 
   int dx = pa & 0x7FFF;
   if(pa & 0x8000)
@@ -395,8 +375,8 @@ void gfxDrawRotScreen256(u16 control,
   if(control & 0x40) {
     int mosaicY = ((MOSAIC & 0xF0)>>4) + 1;
     int y = VCOUNT - (VCOUNT % mosaicY);
-    realX = startX + y*dmx;
-    realY = startY + y*dmy;
+    realX -= y*dmx;
+    realY -= y*dmy;
   }
 
   int xxx = (realX >> 8);
@@ -440,8 +420,6 @@ void gfxDrawRotScreen256(u16 control,
 }
 
 void gfxDrawRotScreen16Bit160(u16 control,
-					    u16 x_l, u16 x_h,
-					    u16 y_l, u16 y_h,
 					    u16 pa,  u16 pb,
 					    u16 pc,  u16 pd,
 					    int& currentX, int& currentY,
@@ -452,13 +430,6 @@ void gfxDrawRotScreen16Bit160(u16 control,
   int prio = ((control & 3) << 25) + 0x1000000;
   int sizeX = 160;
   int sizeY = 128;
-
-  int startX = (x_l) | ((x_h & 0x07FF)<<16);
-  if(x_h & 0x0800)
-    startX |= 0xF8000000;
-  int startY = (y_l) | ((y_h & 0x07FF)<<16);
-  if(y_h & 0x0800)
-    startY |= 0xF8000000;
 
   int dx = pa & 0x7FFF;
   if(pa & 0x8000)
@@ -479,8 +450,8 @@ void gfxDrawRotScreen16Bit160(u16 control,
   if(control & 0x40) {
     int mosaicY = ((MOSAIC & 0xF0)>>4) + 1;
     int y = VCOUNT - (VCOUNT % mosaicY);
-    realX = startX + y*dmx;
-    realY = startY + y*dmy;
+    realX -= y*dmx;
+    realY -= y*dmy;
   }
 
   int xxx = (realX >> 8);
