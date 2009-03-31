@@ -32,37 +32,37 @@ int  emulating;
 
 inline VBA::Window * GUI()
 {
-  return VBA::Window::poGetInstance();
+	return VBA::Window::poGetInstance();
 }
 
 void systemMessage(const char * _csFormat, ...)
 {
-  va_list args;
-  va_start(args, _csFormat);
+	va_list args;
+	va_start(args, _csFormat);
 
-  GUI()->vPopupErrorV(_(_csFormat), args);
+	GUI()->vPopupErrorV(_(_csFormat), args);
 
-  va_end(args);
+	va_end(args);
 }
 
 void systemDrawScreen(u32 *pix)
 {
-  GUI()->vDrawScreen(pix);
+	GUI()->vDrawScreen(pix);
 }
 
 u32 systemReadJoypad()
 {
-  return inputReadJoypad(-1);
+	return inputReadJoypad(-1);
 }
 
 void systemShowSpeed(int _iSpeed)
 {
-  GUI()->vShowSpeed(_iSpeed);
+	GUI()->vShowSpeed(_iSpeed);
 }
 
 void system10Frames(int _iRate)
 {
-  GUI()->vComputeFrameskip(_iRate);
+	GUI()->vComputeFrameskip(_iRate);
 }
 
 void systemFrame()
@@ -71,9 +71,9 @@ void systemFrame()
 
 u32 systemGetClock()
 {
-    Glib::TimeVal time;
-    time.assign_current_time();
-    return time.as_double() * 1000;
+	Glib::TimeVal time;
+	time.assign_current_time();
+	return time.as_double() * 1000;
 }
 
 void systemUpdateMotionSensor()
@@ -82,12 +82,12 @@ void systemUpdateMotionSensor()
 
 int systemGetSensorX()
 {
-  return 0;
+	return 0;
 }
 
 int systemGetSensorY()
 {
-  return 0;
+	return 0;
 }
 
 void systemScreenMessage(const char * _csMsg)
@@ -103,10 +103,10 @@ SoundDriver * systemSoundInit()
 
 void log(const char *defaultMsg, ...)
 {
-  va_list valist;
+	va_list valist;
 
-  va_start(valist, defaultMsg);
-  fprintf(stderr, defaultMsg, valist);
+	va_start(valist, defaultMsg);
+	fprintf(stderr, defaultMsg, valist);
 
-  va_end(valist);
+	va_end(valist);
 }

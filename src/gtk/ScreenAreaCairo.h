@@ -28,18 +28,18 @@ namespace VBA
 class ScreenAreaCairo : public ScreenArea
 {
 public:
-  ScreenAreaCairo(int _iWidth, int _iHeight, int _iScale = 1);
-  void vDrawPixels(u8 * _puiData);
-  void vDrawBlackScreen();
+	ScreenAreaCairo(int _iWidth, int _iHeight, int _iScale = 1);
+	void vDrawPixels(u8 * _puiData);
+	void vDrawBlackScreen();
 
 protected:
-  bool on_expose_event(GdkEventExpose * _pstEvent);
-  void vOnWidgetResize();
+	bool on_expose_event(GdkEventExpose * _pstEvent);
+	void vOnWidgetResize();
 
 private:
-  double   m_dScaleFactor;
-  int      m_iAreaTop;
-  int      m_iAreaLeft;
+	double   m_dScaleFactor;
+	int      m_iAreaTop;
+	int      m_iAreaLeft;
 };
 
 } // namespace VBA

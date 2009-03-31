@@ -23,94 +23,94 @@
 
 int main(int argc, char * argv[])
 {
-  bool bShowVersion = false;
-  Glib::OptionGroup::vecustrings listRemaining;
+	bool bShowVersion = false;
+	Glib::OptionGroup::vecustrings listRemaining;
 
 #ifdef ENABLE_NLS
-  setlocale(LC_ALL, "");
-  bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
-  textdomain(GETTEXT_PACKAGE);
-  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	setlocale(LC_ALL, "");
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+	textdomain(GETTEXT_PACKAGE);
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 #endif // ENABLE_NLS
 
-  Glib::set_application_name(_("VBA-M"));
+	Glib::set_application_name(_("VBA-M"));
 
-  Gtk::Main oKit(argc, argv);
+	Gtk::Main oKit(argc, argv);
 
-  Gtk::GL::init(argc, argv);
+	Gtk::GL::init(argc, argv);
 
-  Glib::OptionContext oContext;
-  Glib::OptionGroup oGroup("main_group", _("Main VBA-M options"));
+	Glib::OptionContext oContext;
+	Glib::OptionGroup oGroup("main_group", _("Main VBA-M options"));
 
-  Glib::OptionEntry oVersion;
-  oVersion.set_long_name("version");
-  oVersion.set_short_name('v');
-  oVersion.set_description(_("Output version information."));
-  oGroup.add_entry(oVersion, bShowVersion);
+	Glib::OptionEntry oVersion;
+	oVersion.set_long_name("version");
+	oVersion.set_short_name('v');
+	oVersion.set_description(_("Output version information."));
+	oGroup.add_entry(oVersion, bShowVersion);
 
-  Glib::OptionEntry oFileName;
-  oFileName.set_long_name(G_OPTION_REMAINING);
-  oFileName.set_description(G_OPTION_REMAINING);
-  oGroup.add_entry(oFileName, listRemaining);
+	Glib::OptionEntry oFileName;
+	oFileName.set_long_name(G_OPTION_REMAINING);
+	oFileName.set_description(G_OPTION_REMAINING);
+	oGroup.add_entry(oFileName, listRemaining);
 
-  oContext.set_main_group(oGroup);
+	oContext.set_main_group(oGroup);
 
-  try
-  {
-    oContext.parse(argc, argv);
-  }
-  catch (const Glib::Error& e)
-  {
-    Gtk::MessageDialog oDialog(e.what(),
-                               false,
-                               Gtk::MESSAGE_ERROR,
-                               Gtk::BUTTONS_OK);
-    oDialog.run();
-    return 1;
-  }
+	try
+	{
+		oContext.parse(argc, argv);
+	}
+	catch (const Glib::Error& e)
+	{
+		Gtk::MessageDialog oDialog(e.what(),
+		                           false,
+		                           Gtk::MESSAGE_ERROR,
+		                           Gtk::BUTTONS_OK);
+		oDialog.run();
+		return 1;
+	}
 
-  if (bShowVersion)
-  {
-    g_print(_("VisualBoyAdvance version %s [GTK+]\n"), VERSION);
-    exit(0);
-  }
+	if (bShowVersion)
+	{
+		g_print(_("VisualBoyAdvance version %s [GTK+]\n"), VERSION);
+		exit(0);
+	}
 
-  Gtk::Window::set_default_icon_name("vbam");
+	Gtk::Window::set_default_icon_name("vbam");
 
-  std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.glade");
+	std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.glade");
 
-  Glib::RefPtr<Gtk::Builder> poBuilder;
-  try
-  {
-    poBuilder = Gtk::Builder::create_from_file(sGladeFile);
-  }
-  catch (const Glib::FileError & e)
-  {
-    Gtk::MessageDialog oDialog(e.what(),
-                               false,
-                               Gtk::MESSAGE_ERROR,
-                               Gtk::BUTTONS_OK);
-    oDialog.run();
-    return 1;
-  }
+	Glib::RefPtr<Gtk::Builder> poBuilder;
+	try
+	{
+		poBuilder = Gtk::Builder::create_from_file(sGladeFile);
+	}
+	catch (const Glib::FileError & e)
+	{
+		Gtk::MessageDialog oDialog(e.what(),
+		                           false,
+		                           Gtk::MESSAGE_ERROR,
+		                           Gtk::BUTTONS_OK);
+		oDialog.run();
+		return 1;
+	}
 
-  VBA::Window * poWindow = 0;
-  poBuilder->get_widget_derived("MainWindow", poWindow);
+	VBA::Window * poWindow = 0;
+	poBuilder->get_widget_derived("MainWindow", poWindow);
 
-  if (listRemaining.size() == 1)
-  {
-    // Display the window before loading the file
-    poWindow->show();
-    while (Gtk::Main::events_pending())
-    {
-      Gtk::Main::iteration();
-    }
+	if (listRemaining.size() == 1)
+	{
+		// Display the window before loading the file
+		poWindow->show();
+		while (Gtk::Main::events_pending())
+		{
+			Gtk::Main::iteration();
+		}
 
-    poWindow->bLoadROM(listRemaining[0]);
-  }
+		poWindow->bLoadROM(listRemaining[0]);
+	}
 
-  Gtk::Main::run(*poWindow);
-  delete poWindow;
+	Gtk::Main::run(*poWindow);
+	delete poWindow;
 
-  return 0;
+	return 0;
 }

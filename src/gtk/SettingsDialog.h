@@ -30,51 +30,51 @@ namespace VBA
 class SettingsDialog : public Gtk::Dialog
 {
 public:
-  SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
+	SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
 
-  void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig, 
-    Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow);
+	void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig,
+	                Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow);
 
 private:
-  VBA::Window *             m_poWindow;
+	VBA::Window *             m_poWindow;
 
-  // General
-  void vOnPauseChanged();
-  void vOnFrameskipChanged();
+	// General
+	void vOnPauseChanged();
+	void vOnFrameskipChanged();
 
-  Config::Section *         m_poCoreConfig;
-  Gtk::CheckButton *        m_poPauseOnInactiveCheckButton;
-  Gtk::CheckButton *        m_poEnableFrameskipCheckButton;
+	Config::Section *         m_poCoreConfig;
+	Gtk::CheckButton *        m_poPauseOnInactiveCheckButton;
+	Gtk::CheckButton *        m_poEnableFrameskipCheckButton;
 
-  // Sound
-  void vOnVolumeChanged();
-  void vOnRateChanged();
-  
-  Config::Section *         m_poSoundConfig;
-  Gtk::ComboBox *           m_poVolumeComboBox;
-  Gtk::ComboBox *           m_poRateComboBox;
-  
-  // Display
-  void vOnOutputChanged();
-  void vOnScaleChanged();
-  void vOnShowSpeedChanged();
+	// Sound
+	void vOnVolumeChanged();
+	void vOnRateChanged();
 
-  Config::Section *         m_poDisplayConfig;
-  Gtk::ComboBox *           m_poDefaultScaleComboBox;
-  Gtk::CheckButton *        m_poUseOpenGLCheckButton;
-  Gtk::CheckButton *        m_poShowSpeedCheckButton;
-  
-  // Paths
-  void vOnBiosChanged();
-  void vOnRomsChanged();
-  void vOnBatteriesChanged();
-  void vOnSavesChanged();
+	Config::Section *         m_poSoundConfig;
+	Gtk::ComboBox *           m_poVolumeComboBox;
+	Gtk::ComboBox *           m_poRateComboBox;
 
-  Config::Section *         m_poDirConfig;
-  Gtk::FileChooserButton *  m_poBiosFileChooserButton;
-  Gtk::FileChooserButton *  m_poRomsFileChooserButton;
-  Gtk::FileChooserButton *  m_poBatteriesFileChooserButton;
-  Gtk::FileChooserButton *  m_poSavesFileChooserButton;
+	// Display
+	void vOnOutputChanged();
+	void vOnScaleChanged();
+	void vOnShowSpeedChanged();
+
+	Config::Section *         m_poDisplayConfig;
+	Gtk::ComboBox *           m_poDefaultScaleComboBox;
+	Gtk::CheckButton *        m_poUseOpenGLCheckButton;
+	Gtk::CheckButton *        m_poShowSpeedCheckButton;
+
+	// Paths
+	void vOnBiosChanged();
+	void vOnRomsChanged();
+	void vOnBatteriesChanged();
+	void vOnSavesChanged();
+
+	Config::Section *         m_poDirConfig;
+	Gtk::FileChooserButton *  m_poBiosFileChooserButton;
+	Gtk::FileChooserButton *  m_poRomsFileChooserButton;
+	Gtk::FileChooserButton *  m_poBatteriesFileChooserButton;
+	Gtk::FileChooserButton *  m_poSavesFileChooserButton;
 };
 
 } // namespace VBA

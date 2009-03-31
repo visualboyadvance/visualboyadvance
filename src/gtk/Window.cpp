@@ -52,947 +52,947 @@ const Window::SJoypadKey Window::m_astJoypad[] =
 	{ "L",       KEY_BUTTON_L       },
 	{ "R",       KEY_BUTTON_R       },
 	{ "speed",   KEY_BUTTON_SPEED   },
-        { "autoA",   KEY_BUTTON_AUTO_A  },
-        { "autoB",   KEY_BUTTON_AUTO_B  }
+	{ "autoA",   KEY_BUTTON_AUTO_A  },
+	{ "autoB",   KEY_BUTTON_AUTO_B  }
 };
 
 Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBuilder) :
-  Gtk::Window       (_pstWindow),
-  m_iGBAScreenWidth (240),
-  m_iGBAScreenHeight(160),
-  m_iScaleMin       (1),
-  m_iScaleMax       (6),
-  m_iSoundSampleRateMin(11025),
-  m_iSoundSampleRateMax(48000),
-  m_fSoundVolumeMin (0.50f),
-  m_fSoundVolumeMax (2.00f),
-  m_bFullscreen     (false)
+		Gtk::Window       (_pstWindow),
+		m_iGBAScreenWidth (240),
+		m_iGBAScreenHeight(160),
+		m_iScaleMin       (1),
+		m_iScaleMax       (6),
+		m_iSoundSampleRateMin(11025),
+		m_iSoundSampleRateMax(48000),
+		m_fSoundVolumeMin (0.50f),
+		m_fSoundVolumeMax (2.00f),
+		m_bFullscreen     (false)
 {
-  m_poBuilder        = _poBuilder;
-  m_poFileOpenDialog = NULL;
-  m_iScreenWidth     = m_iGBAScreenWidth;
-  m_iScreenHeight    = m_iGBAScreenHeight;
-  m_eCartridge       = CartridgeNone;
+	m_poBuilder        = _poBuilder;
+	m_poFileOpenDialog = NULL;
+	m_iScreenWidth     = m_iGBAScreenWidth;
+	m_iScreenHeight    = m_iGBAScreenHeight;
+	m_eCartridge       = CartridgeNone;
 
-  vInitSDL();
-  vInitSystem();
+	vInitSDL();
+	vInitSystem();
 
-  vSetDefaultTitle();
+	vSetDefaultTitle();
 
-  // Get config
-  //
-  m_sUserDataDir = Glib::get_user_config_dir() + "/gvbam";
-  m_sConfigFile  = m_sUserDataDir + "/config";
+	// Get config
+	//
+	m_sUserDataDir = Glib::get_user_config_dir() + "/gvbam";
+	m_sConfigFile  = m_sUserDataDir + "/config";
 
-  vInitConfig();
+	vInitConfig();
 
-  if (! Glib::file_test(m_sUserDataDir, Glib::FILE_TEST_EXISTS))
-  {
-    mkdir(m_sUserDataDir.c_str(), 0777);
-  }
-  if (Glib::file_test(m_sConfigFile, Glib::FILE_TEST_EXISTS))
-  {
-    vLoadConfig(m_sConfigFile);
-    vCheckConfig();
-  }
-  else
-  {
-    vSaveConfig(m_sConfigFile);
-  }
+	if (! Glib::file_test(m_sUserDataDir, Glib::FILE_TEST_EXISTS))
+	{
+		mkdir(m_sUserDataDir.c_str(), 0777);
+	}
+	if (Glib::file_test(m_sConfigFile, Glib::FILE_TEST_EXISTS))
+	{
+		vLoadConfig(m_sConfigFile);
+		vCheckConfig();
+	}
+	else
+	{
+		vSaveConfig(m_sConfigFile);
+	}
 
-  vCreateFileOpenDialog();
-  vApplyConfigJoypads();
-  vApplyConfigScreenArea();
-  vApplyConfigVolume();
-  vApplyConfigShowSpeed();
-  vApplyConfigFrameskip();
-  vUpdateScreen();
-  inputSetDefaultJoypad(PAD_MAIN);
+	vCreateFileOpenDialog();
+	vApplyConfigJoypads();
+	vApplyConfigScreenArea();
+	vApplyConfigVolume();
+	vApplyConfigShowSpeed();
+	vApplyConfigFrameskip();
+	vUpdateScreen();
+	inputSetDefaultJoypad(PAD_MAIN);
 
-  Gtk::MenuItem *      poMI;
-  Gtk::CheckMenuItem * poCMI;
+	Gtk::MenuItem *      poMI;
+	Gtk::CheckMenuItem * poCMI;
 
-  // Menu bar
-  _poBuilder->get_widget("MenuBar", m_poMenuBar);
-  m_poMenuBar->signal_deactivate().connect(sigc::mem_fun(*this, &Window::vOnMenuExit));
-  
-  _poBuilder->get_widget("FileMenu", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
-  _poBuilder->get_widget("EmulationMenu", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
-  _poBuilder->get_widget("HelpMenu", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
+	// Menu bar
+	_poBuilder->get_widget("MenuBar", m_poMenuBar);
+	m_poMenuBar->signal_deactivate().connect(sigc::mem_fun(*this, &Window::vOnMenuExit));
 
-  // File menu
-  //
-  _poBuilder->get_widget("FileOpen", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileOpen));
+	_poBuilder->get_widget("FileMenu", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
+	_poBuilder->get_widget("EmulationMenu", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
+	_poBuilder->get_widget("HelpMenu", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnMenuEnter));
 
-  _poBuilder->get_widget("FileLoad", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileLoad));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+	// File menu
+	//
+	_poBuilder->get_widget("FileOpen", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileOpen));
 
-  _poBuilder->get_widget("FileSave", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileSave));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+	_poBuilder->get_widget("FileLoad", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileLoad));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-  for (int i = 0; i < 10; i++)
-  {
-    char csName[20];
-    snprintf(csName, 20, "LoadGameSlot%d", i + 1);
-    _poBuilder->get_widget(csName, m_apoLoadGameItem[i]);
-    snprintf(csName, 20, "SaveGameSlot%d", i + 1);
-    _poBuilder->get_widget(csName, m_apoSaveGameItem[i]);
+	_poBuilder->get_widget("FileSave", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileSave));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-    m_apoLoadGameItem[i]->signal_activate().connect(sigc::bind(
-                                                      sigc::mem_fun(*this, &Window::vOnLoadGame),
-                                                      i + 1));
-    m_apoSaveGameItem[i]->signal_activate().connect(sigc::bind(
-                                                      sigc::mem_fun(*this, &Window::vOnSaveGame),
-                                                      i + 1));
-  }
-  vUpdateGameSlots();
+	for (int i = 0; i < 10; i++)
+	{
+		char csName[20];
+		snprintf(csName, 20, "LoadGameSlot%d", i + 1);
+		_poBuilder->get_widget(csName, m_apoLoadGameItem[i]);
+		snprintf(csName, 20, "SaveGameSlot%d", i + 1);
+		_poBuilder->get_widget(csName, m_apoSaveGameItem[i]);
 
-  _poBuilder->get_widget("LoadGameMostRecent", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnLoadGameMostRecent));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+		m_apoLoadGameItem[i]->signal_activate().connect(sigc::bind(
+		            sigc::mem_fun(*this, &Window::vOnLoadGame),
+		            i + 1));
+		m_apoSaveGameItem[i]->signal_activate().connect(sigc::bind(
+		            sigc::mem_fun(*this, &Window::vOnSaveGame),
+		            i + 1));
+	}
+	vUpdateGameSlots();
 
-  _poBuilder->get_widget("LoadGameAuto", poCMI);
-  poCMI->set_active(m_poCoreConfig->oGetKey<bool>("load_game_auto"));
-  vOnLoadGameAutoToggled(poCMI);
-  poCMI->signal_toggled().connect(sigc::bind(
-                                    sigc::mem_fun(*this, &Window::vOnLoadGameAutoToggled),
-                                    poCMI));
+	_poBuilder->get_widget("LoadGameMostRecent", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnLoadGameMostRecent));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-  _poBuilder->get_widget("SaveGameOldest", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSaveGameOldest));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+	_poBuilder->get_widget("LoadGameAuto", poCMI);
+	poCMI->set_active(m_poCoreConfig->oGetKey<bool>("load_game_auto"));
+	vOnLoadGameAutoToggled(poCMI);
+	poCMI->signal_toggled().connect(sigc::bind(
+	                                    sigc::mem_fun(*this, &Window::vOnLoadGameAutoToggled),
+	                                    poCMI));
 
-  _poBuilder->get_widget("FilePause", m_poFilePauseItem);
-  m_poFilePauseItem->set_active(false);
-  vOnFilePauseToggled(m_poFilePauseItem);
-  m_poFilePauseItem->signal_toggled().connect(sigc::bind(
-                                                sigc::mem_fun(*this, &Window::vOnFilePauseToggled),
-                                                m_poFilePauseItem));
-  m_listSensitiveWhenPlaying.push_back(m_poFilePauseItem);
+	_poBuilder->get_widget("SaveGameOldest", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSaveGameOldest));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-  _poBuilder->get_widget("FileReset", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileReset));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+	_poBuilder->get_widget("FilePause", m_poFilePauseItem);
+	m_poFilePauseItem->set_active(false);
+	vOnFilePauseToggled(m_poFilePauseItem);
+	m_poFilePauseItem->signal_toggled().connect(sigc::bind(
+	            sigc::mem_fun(*this, &Window::vOnFilePauseToggled),
+	            m_poFilePauseItem));
+	m_listSensitiveWhenPlaying.push_back(m_poFilePauseItem);
 
-  _poBuilder->get_widget("FileClose", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileClose));
-  m_listSensitiveWhenPlaying.push_back(poMI);
+	_poBuilder->get_widget("FileReset", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileReset));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-  _poBuilder->get_widget("FileExit", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileExit));
+	_poBuilder->get_widget("FileClose", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileClose));
+	m_listSensitiveWhenPlaying.push_back(poMI);
 
-  // Recent menu
-  //
-  m_poRecentManager = Gtk::RecentManager::get_default();
+	_poBuilder->get_widget("FileExit", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnFileExit));
 
-  Gtk::RecentFilter oRecentFilter;
-  oRecentFilter.add_application( Glib::get_application_name() );
+	// Recent menu
+	//
+	m_poRecentManager = Gtk::RecentManager::get_default();
 
-  m_poRecentChooserMenu = Gtk::manage( new Gtk::RecentChooserMenu(m_poRecentManager) );
-  m_poRecentChooserMenu->set_show_numbers();
-  m_poRecentChooserMenu->set_show_tips();
-  m_poRecentChooserMenu->set_local_only();
-  m_poRecentChooserMenu->add_filter(oRecentFilter);
-  m_poRecentChooserMenu->signal_item_activated().connect(
-                                                   sigc::mem_fun(*this, &Window::vOnRecentFile));
+	Gtk::RecentFilter oRecentFilter;
+	oRecentFilter.add_application( Glib::get_application_name() );
+
+	m_poRecentChooserMenu = Gtk::manage( new Gtk::RecentChooserMenu(m_poRecentManager) );
+	m_poRecentChooserMenu->set_show_numbers();
+	m_poRecentChooserMenu->set_show_tips();
+	m_poRecentChooserMenu->set_local_only();
+	m_poRecentChooserMenu->add_filter(oRecentFilter);
+	m_poRecentChooserMenu->signal_item_activated().connect(
+	    sigc::mem_fun(*this, &Window::vOnRecentFile));
 
 
-  _poBuilder->get_widget("RecentMenu", m_poRecentMenu);
-  m_poRecentMenu->set_submenu(static_cast<Gtk::Menu &>(*m_poRecentChooserMenu));
+	_poBuilder->get_widget("RecentMenu", m_poRecentMenu);
+	m_poRecentMenu->set_submenu(static_cast<Gtk::Menu &>(*m_poRecentChooserMenu));
 
-  // Preferences menu
-  _poBuilder->get_widget("Preferences", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSettings));
+	// Preferences menu
+	_poBuilder->get_widget("Preferences", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSettings));
 
-  // Joypad menu
-  //
-  _poBuilder->get_widget("JoypadConfigure", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnJoypadConfigure));
+	// Joypad menu
+	//
+	_poBuilder->get_widget("JoypadConfigure", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnJoypadConfigure));
 
-  // Fullscreen menu
-  //
-  _poBuilder->get_widget("VideoFullscreen", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnVideoFullscreen));
+	// Fullscreen menu
+	//
+	_poBuilder->get_widget("VideoFullscreen", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnVideoFullscreen));
 
-  // Help menu
-  //
-  _poBuilder->get_widget("HelpAbout", poMI);
-  poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnHelpAbout));
+	// Help menu
+	//
+	_poBuilder->get_widget("HelpAbout", poMI);
+	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnHelpAbout));
 
-  // Init widgets sensitivity
-  for (std::list<Gtk::Widget *>::iterator it = m_listSensitiveWhenPlaying.begin();
-       it != m_listSensitiveWhenPlaying.end();
-       it++)
-  {
-    (*it)->set_sensitive(false);
-  }
+	// Init widgets sensitivity
+	for (std::list<Gtk::Widget *>::iterator it = m_listSensitiveWhenPlaying.begin();
+	        it != m_listSensitiveWhenPlaying.end();
+	        it++)
+	{
+		(*it)->set_sensitive(false);
+	}
 
-  if (m_poInstance == NULL)
-  {
-    m_poInstance = this;
-  }
-  else
-  {
-    abort();
-  }
+	if (m_poInstance == NULL)
+	{
+		m_poInstance = this;
+	}
+	else
+	{
+		abort();
+	}
 }
 
 Window::~Window()
 {
-  vOnFileClose();
-  vUnInitSystem();
-  vSaveJoypadsToConfig();
-  vSaveConfig(m_sConfigFile);
+	vOnFileClose();
+	vUnInitSystem();
+	vSaveJoypadsToConfig();
+	vSaveConfig(m_sConfigFile);
 
-  if (m_poFileOpenDialog != NULL)
-  {
-    delete m_poFileOpenDialog;
-  }
+	if (m_poFileOpenDialog != NULL)
+	{
+		delete m_poFileOpenDialog;
+	}
 
-  m_poInstance = NULL;
+	m_poInstance = NULL;
 }
 
 void Window::vInitColors(EColorFormat _eColorFormat)
 {
-  switch (_eColorFormat)
-  {
-    case ColorFormatBGR:
+	switch (_eColorFormat)
+	{
+	case ColorFormatBGR:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      Display::initColorMap(3, 11, 19);
+		Display::initColorMap(3, 11, 19);
 #else
-      Display::initColorMap(27, 19, 11);
+		Display::initColorMap(27, 19, 11);
 #endif
-      break;
-    default:
+		break;
+	default:
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      Display::initColorMap(19, 11, 3);
+		Display::initColorMap(19, 11, 3);
 #else
-      Display::initColorMap(11, 19, 27);
+		Display::initColorMap(11, 19, 27);
 #endif
-      break;
-  }
+		break;
+	}
 }
 
 void Window::vApplyConfigScreenArea()
 {
-  bool bUseOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
+	bool bUseOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
 
-  Gtk::Alignment * poC;
+	Gtk::Alignment * poC;
 
-  m_poBuilder->get_widget("ScreenContainer", poC);
-  poC->remove();
-  poC->set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 1.0, 1.0);
+	m_poBuilder->get_widget("ScreenContainer", poC);
+	poC->remove();
+	poC->set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 1.0, 1.0);
 
-  try
-  {
-    if (bUseOpenGL)
-    {
-      vInitColors(ColorFormatBGR);
-      m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
-    }
-    else
-    {
-      vInitColors(ColorFormatRGB);
-      m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
-    }
-  }
-  catch (std::exception e)
-  {
-    fprintf(stderr, "Unable to initialize output, falling back to Cairo\n");
-    m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
-  }
+	try
+	{
+		if (bUseOpenGL)
+		{
+			vInitColors(ColorFormatBGR);
+			m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
+		}
+		else
+		{
+			vInitColors(ColorFormatRGB);
+			m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
+		}
+	}
+	catch (std::exception e)
+	{
+		fprintf(stderr, "Unable to initialize output, falling back to Cairo\n");
+		m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
+	}
 
-  poC->add(*m_poScreenArea);
-  vDrawDefaultScreen();
-  m_poScreenArea->show();
+	poC->add(*m_poScreenArea);
+	vDrawDefaultScreen();
+	m_poScreenArea->show();
 }
 
 void Window::vInitSystem()
 {
-  systemVerbose = 0 //| VERBOSE_SWI
-  		//	| VERBOSE_UNALIGNED_MEMORY
-  			| VERBOSE_ILLEGAL_WRITE | VERBOSE_ILLEGAL_READ
-  		//	| VERBOSE_DMA0 | VERBOSE_DMA1 | VERBOSE_DMA2 | VERBOSE_DMA3
-  			| VERBOSE_UNDEFINED | VERBOSE_AGBPRINT | VERBOSE_SOUNDOUTPUT;
+	systemVerbose = 0 //| VERBOSE_SWI
+	                //	| VERBOSE_UNALIGNED_MEMORY
+	                | VERBOSE_ILLEGAL_WRITE | VERBOSE_ILLEGAL_READ
+	                //	| VERBOSE_DMA0 | VERBOSE_DMA1 | VERBOSE_DMA2 | VERBOSE_DMA3
+	                | VERBOSE_UNDEFINED | VERBOSE_AGBPRINT | VERBOSE_SOUNDOUTPUT;
 
-  systemFrameSkip = 0;
+	systemFrameSkip = 0;
 
-  emulating = 0;
+	emulating = 0;
 
-  m_iFrameCount = 0;
+	m_iFrameCount = 0;
 
-  soundInit();
+	soundInit();
 }
 
 void Window::vUnInitSystem()
 {
-  soundShutdown();
+	soundShutdown();
 }
 
 void Window::vInitSDL()
 {
-  static bool bDone = false;
+	static bool bDone = false;
 
-  if (bDone)
-    return;
+	if (bDone)
+		return;
 
-  int iFlags = (SDL_INIT_EVERYTHING | SDL_INIT_NOPARACHUTE);
+	int iFlags = (SDL_INIT_EVERYTHING | SDL_INIT_NOPARACHUTE);
 
-  if (SDL_Init(iFlags) < 0)
-  {
-    fprintf(stderr, "Failed to init SDL: %s", SDL_GetError());
-    abort();
-  }
+	if (SDL_Init(iFlags) < 0)
+	{
+		fprintf(stderr, "Failed to init SDL: %s", SDL_GetError());
+		abort();
+	}
 
-  inputSetKeymap(PAD_DEFAULT, KEY_LEFT, GDK_Left);
-  inputSetKeymap(PAD_DEFAULT, KEY_RIGHT, GDK_Right);
-  inputSetKeymap(PAD_DEFAULT, KEY_UP, GDK_Up);
-  inputSetKeymap(PAD_DEFAULT, KEY_DOWN, GDK_Down);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_A, GDK_z);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_B, GDK_x);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_START, GDK_Return);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SELECT, GDK_BackSpace);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_L, GDK_a);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_R, GDK_s);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SPEED, GDK_space);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_CAPTURE, GDK_F12);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_A, GDK_q);
-  inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_B, GDK_w);
+	inputSetKeymap(PAD_DEFAULT, KEY_LEFT, GDK_Left);
+	inputSetKeymap(PAD_DEFAULT, KEY_RIGHT, GDK_Right);
+	inputSetKeymap(PAD_DEFAULT, KEY_UP, GDK_Up);
+	inputSetKeymap(PAD_DEFAULT, KEY_DOWN, GDK_Down);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_A, GDK_z);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_B, GDK_x);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_START, GDK_Return);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SELECT, GDK_BackSpace);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_L, GDK_a);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_R, GDK_s);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SPEED, GDK_space);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_CAPTURE, GDK_F12);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_A, GDK_q);
+	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_B, GDK_w);
 
-  // TODO : remove
-  int sdlNumDevices = SDL_NumJoysticks();
-  for (int i = 0; i < sdlNumDevices; i++)
-    SDL_JoystickOpen(i);
+	// TODO : remove
+	int sdlNumDevices = SDL_NumJoysticks();
+	for (int i = 0; i < sdlNumDevices; i++)
+		SDL_JoystickOpen(i);
 
-  inputInitJoysticks();
+	inputInitJoysticks();
 
-  bDone = true;
+	bDone = true;
 }
 
 void Window::vInitConfig()
 {
-  m_oConfig.vClear();
+	m_oConfig.vClear();
 
-  // Directories section
-  //
-  m_poDirConfig = m_oConfig.poAddSection("Directories");
-  m_poDirConfig->vSetKey("gba_roms",  Glib::get_home_dir());
-  m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
-  m_poDirConfig->vSetKey("saves",     m_sUserDataDir);
+	// Directories section
+	//
+	m_poDirConfig = m_oConfig.poAddSection("Directories");
+	m_poDirConfig->vSetKey("gba_roms",  Glib::get_home_dir());
+	m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
+	m_poDirConfig->vSetKey("saves",     m_sUserDataDir);
 
-  // Core section
-  //
-  m_poCoreConfig = m_oConfig.poAddSection("Core");
-  m_poCoreConfig->vSetKey("load_game_auto",    false        );
-  m_poCoreConfig->vSetKey("frameskip",         false        );
-  m_poCoreConfig->vSetKey("bios_file",         ""           );
+	// Core section
+	//
+	m_poCoreConfig = m_oConfig.poAddSection("Core");
+	m_poCoreConfig->vSetKey("load_game_auto",    false        );
+	m_poCoreConfig->vSetKey("frameskip",         false        );
+	m_poCoreConfig->vSetKey("bios_file",         ""           );
 
-  // Display section
-  //
-  m_poDisplayConfig = m_oConfig.poAddSection("Display");
-  m_poDisplayConfig->vSetKey("scale",               1              );
-  m_poDisplayConfig->vSetKey("show_speed",          true           );
-  m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
-  m_poDisplayConfig->vSetKey("use_opengl",          true           );
+	// Display section
+	//
+	m_poDisplayConfig = m_oConfig.poAddSection("Display");
+	m_poDisplayConfig->vSetKey("scale",               1              );
+	m_poDisplayConfig->vSetKey("show_speed",          true           );
+	m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
+	m_poDisplayConfig->vSetKey("use_opengl",          true           );
 
 
-  // Sound section
-  //
-  m_poSoundConfig = m_oConfig.poAddSection("Sound");
-  m_poSoundConfig->vSetKey("sample_rate",    44100 );
-  m_poSoundConfig->vSetKey("volume",         1.00f );
+	// Sound section
+	//
+	m_poSoundConfig = m_oConfig.poAddSection("Sound");
+	m_poSoundConfig->vSetKey("sample_rate",    44100 );
+	m_poSoundConfig->vSetKey("volume",         1.00f );
 
-  // Input section
-  //
-  m_poInputConfig = m_oConfig.poAddSection("Input");
-  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-  {
-    m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-    			inputGetKeymap(PAD_DEFAULT, m_astJoypad[j].m_eKeyFlag));
-  }
+	// Input section
+	//
+	m_poInputConfig = m_oConfig.poAddSection("Input");
+	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
+	{
+		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
+		                         inputGetKeymap(PAD_DEFAULT, m_astJoypad[j].m_eKeyFlag));
+	}
 }
 
 void Window::vCheckConfig()
 {
-  int iValue;
-  int iAdjusted;
-  float fValue;
-  float fAdjusted;
-  std::string sValue;
+	int iValue;
+	int iAdjusted;
+	float fValue;
+	float fAdjusted;
+	std::string sValue;
 
-  // Directories section
-  //
-  sValue = m_poDirConfig->sGetKey("gba_roms");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-  {
-    m_poDirConfig->vSetKey("gba_roms", Glib::get_home_dir());
-  }
-  sValue = m_poDirConfig->sGetKey("batteries");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-  {
-    m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
-  }
-  sValue = m_poDirConfig->sGetKey("saves");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-  {
-    m_poDirConfig->vSetKey("saves", m_sUserDataDir);
-  }
+	// Directories section
+	//
+	sValue = m_poDirConfig->sGetKey("gba_roms");
+	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
+	{
+		m_poDirConfig->vSetKey("gba_roms", Glib::get_home_dir());
+	}
+	sValue = m_poDirConfig->sGetKey("batteries");
+	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
+	{
+		m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
+	}
+	sValue = m_poDirConfig->sGetKey("saves");
+	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
+	{
+		m_poDirConfig->vSetKey("saves", m_sUserDataDir);
+	}
 
-  // Core section
-  //
-  sValue = m_poCoreConfig->sGetKey("bios_file");
-  if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
-  {
-    m_poCoreConfig->vSetKey("bios_file", "");
-  }
+	// Core section
+	//
+	sValue = m_poCoreConfig->sGetKey("bios_file");
+	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
+	{
+		m_poCoreConfig->vSetKey("bios_file", "");
+	}
 
-  // Display section
-  //
-  iValue = m_poDisplayConfig->oGetKey<int>("scale");
-  iAdjusted = CLAMP(iValue, m_iScaleMin, m_iScaleMax);
-  if (iValue != iAdjusted)
-  {
-    m_poDisplayConfig->vSetKey("scale", iAdjusted);
-  }
+	// Display section
+	//
+	iValue = m_poDisplayConfig->oGetKey<int>("scale");
+	iAdjusted = CLAMP(iValue, m_iScaleMin, m_iScaleMax);
+	if (iValue != iAdjusted)
+	{
+		m_poDisplayConfig->vSetKey("scale", iAdjusted);
+	}
 
-  // Sound section
-  //
-  iValue = m_poSoundConfig->oGetKey<int>("sample_rate");
-  iAdjusted = CLAMP(iValue, m_iSoundSampleRateMin, m_iSoundSampleRateMax);
-  if (iValue != iAdjusted)
-  {
-    m_poSoundConfig->vSetKey("sample_rate", iAdjusted);
-  }
+	// Sound section
+	//
+	iValue = m_poSoundConfig->oGetKey<int>("sample_rate");
+	iAdjusted = CLAMP(iValue, m_iSoundSampleRateMin, m_iSoundSampleRateMax);
+	if (iValue != iAdjusted)
+	{
+		m_poSoundConfig->vSetKey("sample_rate", iAdjusted);
+	}
 
-  fValue = m_poSoundConfig->oGetKey<float>("volume");
-  fAdjusted = CLAMP(fValue, m_fSoundVolumeMin, m_fSoundVolumeMax);
-  if (fValue != fAdjusted)
-  {
-    m_poSoundConfig->vSetKey("volume", fAdjusted);
-  }
+	fValue = m_poSoundConfig->oGetKey<float>("volume");
+	fAdjusted = CLAMP(fValue, m_fSoundVolumeMin, m_fSoundVolumeMax);
+	if (fValue != fAdjusted)
+	{
+		m_poSoundConfig->vSetKey("volume", fAdjusted);
+	}
 }
 
 void Window::vLoadConfig(const std::string & _rsFile)
 {
-  try
-  {
-    m_oConfig.vLoad(_rsFile, false, false);
-  }
-  catch (const Glib::Error & e)
-  {
-    vPopupError(e.what().c_str());
-  }
+	try
+	{
+		m_oConfig.vLoad(_rsFile, false, false);
+	}
+	catch (const Glib::Error & e)
+	{
+		vPopupError(e.what().c_str());
+	}
 }
 
 void Window::vSaveConfig(const std::string & _rsFile)
 {
-  try
-  {
-    m_oConfig.vSave(_rsFile);
-  }
-  catch (const Glib::Error & e)
-  {
-    vPopupError(e.what().c_str());
-  }
+	try
+	{
+		m_oConfig.vSave(_rsFile);
+	}
+	catch (const Glib::Error & e)
+	{
+		vPopupError(e.what().c_str());
+	}
 }
 
 void Window::vApplyConfigVolume()
 {
-  float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
-  soundSetVolume(fSoundVolume);
+	float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
+	soundSetVolume(fSoundVolume);
 }
 
 void Window::vApplyConfigSoundSampleRate()
 {
-  long iSoundSampleRate = m_poSoundConfig->oGetKey<int>("sample_rate");
-  soundSetSampleRate(iSoundSampleRate);
+	long iSoundSampleRate = m_poSoundConfig->oGetKey<int>("sample_rate");
+	soundSetSampleRate(iSoundSampleRate);
 }
 
 void Window::vApplyConfigShowSpeed()
 {
-  m_bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
+	m_bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
 
-  if (!m_bShowSpeed)
-  {
-    vSetDefaultTitle();
-  }
+	if (!m_bShowSpeed)
+	{
+		vSetDefaultTitle();
+	}
 }
 
 void Window::vApplyConfigFrameskip()
 {
-  m_bAutoFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
-  systemFrameSkip  = 0;
+	m_bAutoFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
+	systemFrameSkip  = 0;
 }
 
 void Window::vHistoryAdd(const std::string & _rsFile)
 {
-  std::string sURL = "file://" + _rsFile;
+	std::string sURL = "file://" + _rsFile;
 
-  m_poRecentManager->add_item(sURL);
+	m_poRecentManager->add_item(sURL);
 }
 
 void Window::vApplyConfigJoypads()
 {
-  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-  {
-    inputSetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag,
-		    m_poInputConfig->oGetKey<guint>(std::string("joypadSDL_") + m_astJoypad[j].m_csKey));
-  }
+	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
+	{
+		inputSetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag,
+		               m_poInputConfig->oGetKey<guint>(std::string("joypadSDL_") + m_astJoypad[j].m_csKey));
+	}
 }
 
 void Window::vSaveJoypadsToConfig()
 {
-  for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-  {
-    m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-		    inputGetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag));
-  }
+	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
+	{
+		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
+		                         inputGetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag));
+	}
 }
 
 void Window::vUpdateScreen()
 {
 
-  m_iScreenWidth  = m_iGBAScreenWidth;
-  m_iScreenHeight = m_iGBAScreenHeight;
+	m_iScreenWidth  = m_iGBAScreenWidth;
+	m_iScreenHeight = m_iGBAScreenHeight;
 
-  g_return_if_fail(m_iScreenWidth >= 1 && m_iScreenHeight >= 1);
+	g_return_if_fail(m_iScreenWidth >= 1 && m_iScreenHeight >= 1);
 
-  m_poScreenArea->vSetSize(m_iScreenWidth, m_iScreenHeight);
-  m_poScreenArea->vSetScale(m_poDisplayConfig->oGetKey<int>("scale"));
+	m_poScreenArea->vSetSize(m_iScreenWidth, m_iScreenHeight);
+	m_poScreenArea->vSetScale(m_poDisplayConfig->oGetKey<int>("scale"));
 
-  resize(1, 1);
+	resize(1, 1);
 
-  if (emulating)
-  {
-    Display::drawScreen();
-  }
-  else
-  {
-    vDrawDefaultScreen();
-  }
+	if (emulating)
+	{
+		Display::drawScreen();
+	}
+	else
+	{
+		vDrawDefaultScreen();
+	}
 }
 
 bool Window::bLoadROM(const std::string & _rsFile)
 {
-  vOnFileClose();
+	vOnFileClose();
 
-  m_sRomFile = _rsFile;
-  const char * csFile = _rsFile.c_str();
+	m_sRomFile = _rsFile;
+	const char * csFile = _rsFile.c_str();
 
-  bool bUsableImage = utilIsUsableGBAImage(csFile);
-  
-  if (!bUsableImage)
-  {
-    vPopupError(_("Unknown file type %s"), csFile);
-    return false;
-  }
+	bool bUsableImage = utilIsUsableGBAImage(csFile);
 
-  if (!CPUInitMemory())
-    return false;
+	if (!bUsableImage)
+	{
+		vPopupError(_("Unknown file type %s"), csFile);
+		return false;
+	}
 
-  if (!Cartridge::loadDump(csFile))
-  {
-    CPUCleanUp();
-    return false;
-  }
+	if (!CPUInitMemory())
+		return false;
 
-  m_eCartridge = CartridgeGBA;
-  m_stEmulator = GBASystem;
+	if (!Cartridge::loadDump(csFile))
+	{
+		CPUCleanUp();
+		return false;
+	}
 
-  if (m_poCoreConfig->sGetKey("bios_file") == "")
-  {
-    vPopupError(_("Please choose a bios file in the preferences dialog."));
-    return false;
-  }
+	m_eCartridge = CartridgeGBA;
+	m_stEmulator = GBASystem;
 
-  if (!CPULoadBios(m_poCoreConfig->sGetKey("bios_file").c_str()))
-  {
-    return false;
-  }
+	if (m_poCoreConfig->sGetKey("bios_file") == "")
+	{
+		vPopupError(_("Please choose a bios file in the preferences dialog."));
+		return false;
+	}
 
-  CPUInit();
-  CPUReset();
+	if (!CPULoadBios(m_poCoreConfig->sGetKey("bios_file").c_str()))
+	{
+		return false;
+	}
 
-  vLoadBattery();
-  vUpdateScreen();
+	CPUInit();
+	CPUReset();
 
-  emulating = 1;
-  m_bWasEmulating = false;
+	vLoadBattery();
+	vUpdateScreen();
 
-  vApplyConfigSoundSampleRate();
+	emulating = 1;
+	m_bWasEmulating = false;
 
-  vUpdateGameSlots();
-  vHistoryAdd(_rsFile);
+	vApplyConfigSoundSampleRate();
 
-  for (std::list<Gtk::Widget *>::iterator it = m_listSensitiveWhenPlaying.begin();
-       it != m_listSensitiveWhenPlaying.end();
-       it++)
-  {
-    (*it)->set_sensitive();
-  }
+	vUpdateGameSlots();
+	vHistoryAdd(_rsFile);
 
-  if (m_poCoreConfig->oGetKey<bool>("load_game_auto"))
-  {
-    vOnLoadGameMostRecent();
-  }
+	for (std::list<Gtk::Widget *>::iterator it = m_listSensitiveWhenPlaying.begin();
+	        it != m_listSensitiveWhenPlaying.end();
+	        it++)
+	{
+		(*it)->set_sensitive();
+	}
 
-  vStartEmu();
+	if (m_poCoreConfig->oGetKey<bool>("load_game_auto"))
+	{
+		vOnLoadGameMostRecent();
+	}
 
-  return true;
+	vStartEmu();
+
+	return true;
 }
 
 void Window::vPopupError(const char * _csFormat, ...)
 {
-  va_list args;
-  va_start(args, _csFormat);
-  char * csMsg = g_strdup_vprintf(_csFormat, args);
-  va_end(args);
+	va_list args;
+	va_start(args, _csFormat);
+	char * csMsg = g_strdup_vprintf(_csFormat, args);
+	va_end(args);
 
-  Gtk::MessageDialog oDialog(*this,
-                             csMsg,
-                             false,
-                             Gtk::MESSAGE_ERROR,
-                             Gtk::BUTTONS_OK);
-  oDialog.run();
-  g_free(csMsg);
+	Gtk::MessageDialog oDialog(*this,
+	                           csMsg,
+	                           false,
+	                           Gtk::MESSAGE_ERROR,
+	                           Gtk::BUTTONS_OK);
+	oDialog.run();
+	g_free(csMsg);
 }
 
 void Window::vPopupErrorV(const char * _csFormat, va_list _args)
 {
-  char * csMsg = g_strdup_vprintf(_csFormat, _args);
+	char * csMsg = g_strdup_vprintf(_csFormat, _args);
 
-  Gtk::MessageDialog oDialog(*this,
-                             csMsg,
-                             false,
-                             Gtk::MESSAGE_ERROR,
-                             Gtk::BUTTONS_OK);
-  oDialog.run();
-  g_free(csMsg);
+	Gtk::MessageDialog oDialog(*this,
+	                           csMsg,
+	                           false,
+	                           Gtk::MESSAGE_ERROR,
+	                           Gtk::BUTTONS_OK);
+	oDialog.run();
+	g_free(csMsg);
 }
 
 void Window::vDrawScreen(u32 *pix)
 {
-  // TODO:Remove the cast
-  m_poScreenArea->vDrawPixels((u8 *)pix);
-  m_iFrameCount++;
+	// TODO:Remove the cast
+	m_poScreenArea->vDrawPixels((u8 *)pix);
+	m_iFrameCount++;
 }
 
 void Window::vDrawDefaultScreen()
 {
-  m_poScreenArea->vDrawBlackScreen();
+	m_poScreenArea->vDrawBlackScreen();
 }
 
 void Window::vSetDefaultTitle()
 {
-  set_title("VBA-M");
+	set_title("VBA-M");
 }
 
 void Window::vShowSpeed(int _iSpeed)
 {
-  char csTitle[50];
+	char csTitle[50];
 
-  if (m_bShowSpeed)
-  {
-    snprintf(csTitle, 50, "VBA-M - %d%% (%d, %d fps)",
-             _iSpeed, systemFrameSkip, m_iFrameCount);
-    set_title(csTitle);
-  }
-  
-  m_iFrameCount = 0;
+	if (m_bShowSpeed)
+	{
+		snprintf(csTitle, 50, "VBA-M - %d%% (%d, %d fps)",
+		         _iSpeed, systemFrameSkip, m_iFrameCount);
+		set_title(csTitle);
+	}
+
+	m_iFrameCount = 0;
 }
 
 void Window::vComputeFrameskip(int _iRate)
 {
-  static Glib::TimeVal uiLastTime;
-  static int iFrameskipAdjust = 0;
+	static Glib::TimeVal uiLastTime;
+	static int iFrameskipAdjust = 0;
 
-  Glib::TimeVal uiTime;
-  uiTime.assign_current_time();
+	Glib::TimeVal uiTime;
+	uiTime.assign_current_time();
 
-  if (m_bWasEmulating)
-  {
-    if (m_bAutoFrameskip)
-    {
-      Glib::TimeVal uiDiff = uiTime - uiLastTime;
-      const int iWantedSpeed = 100;
-      int iSpeed = iWantedSpeed;
+	if (m_bWasEmulating)
+	{
+		if (m_bAutoFrameskip)
+		{
+			Glib::TimeVal uiDiff = uiTime - uiLastTime;
+			const int iWantedSpeed = 100;
+			int iSpeed = iWantedSpeed;
 
-      if (uiDiff != Glib::TimeVal(0, 0))
-      {
-        iSpeed = (1000000 / _iRate) / (uiDiff.as_double() * 1000);
-      }
+			if (uiDiff != Glib::TimeVal(0, 0))
+			{
+				iSpeed = (1000000 / _iRate) / (uiDiff.as_double() * 1000);
+			}
 
-      if (iSpeed >= iWantedSpeed - 2)
-      {
-        iFrameskipAdjust++;
-        if (iFrameskipAdjust >= 3)
-        {
-          iFrameskipAdjust = 0;
-          if (systemFrameSkip > 0)
-          {
-            systemFrameSkip--;
-          }
-        }
-      }
-      else
-      {
-        if (iSpeed < iWantedSpeed - 20)
-        {
-          iFrameskipAdjust -= ((iWantedSpeed - 10) - iSpeed) / 5;
-        }
-        else if (systemFrameSkip < 9)
-        {
-          iFrameskipAdjust--;
-        }
+			if (iSpeed >= iWantedSpeed - 2)
+			{
+				iFrameskipAdjust++;
+				if (iFrameskipAdjust >= 3)
+				{
+					iFrameskipAdjust = 0;
+					if (systemFrameSkip > 0)
+					{
+						systemFrameSkip--;
+					}
+				}
+			}
+			else
+			{
+				if (iSpeed < iWantedSpeed - 20)
+				{
+					iFrameskipAdjust -= ((iWantedSpeed - 10) - iSpeed) / 5;
+				}
+				else if (systemFrameSkip < 9)
+				{
+					iFrameskipAdjust--;
+				}
 
-        if (iFrameskipAdjust <= -4)
-        {
-          iFrameskipAdjust = 0;
-          if (systemFrameSkip < 9)
-          {
-            systemFrameSkip++;
-          }
-        }
-      }
-    }
-  }
-  else
-  {
-    m_bWasEmulating = true;
-  }
+				if (iFrameskipAdjust <= -4)
+				{
+					iFrameskipAdjust = 0;
+					if (systemFrameSkip < 9)
+					{
+						systemFrameSkip++;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		m_bWasEmulating = true;
+	}
 
-  uiLastTime = uiTime;
+	uiLastTime = uiTime;
 }
 
 void Window::vCreateFileOpenDialog()
 {
-  if (m_poFileOpenDialog != NULL)
-  {
-    return;
-  }
+	if (m_poFileOpenDialog != NULL)
+	{
+		return;
+	}
 
-  std::string sGBADir = m_poDirConfig->sGetKey("gba_roms");
+	std::string sGBADir = m_poDirConfig->sGetKey("gba_roms");
 
-  Gtk::FileChooserDialog * poDialog = new Gtk::FileChooserDialog(*this, _("Open"));
-  poDialog->add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  poDialog->add_button(Gtk::Stock::OPEN,   Gtk::RESPONSE_OK);
+	Gtk::FileChooserDialog * poDialog = new Gtk::FileChooserDialog(*this, _("Open"));
+	poDialog->add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	poDialog->add_button(Gtk::Stock::OPEN,   Gtk::RESPONSE_OK);
 
-  try
-  {
-    if (sGBADir != "")
-    {
-      poDialog->add_shortcut_folder(sGBADir);
-      poDialog->set_current_folder(sGBADir);
-    }
-  }
-  catch (const Gtk::FileChooserError& e)
-  {
-    // Most likely the shortcut already exists, so do nothing
-  }
+	try
+	{
+		if (sGBADir != "")
+		{
+			poDialog->add_shortcut_folder(sGBADir);
+			poDialog->set_current_folder(sGBADir);
+		}
+	}
+	catch (const Gtk::FileChooserError& e)
+	{
+		// Most likely the shortcut already exists, so do nothing
+	}
 
-  const char * acsPattern[] =
-  {
-    // GBA
-    "*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
-    // Both
-    "*.[mM][bB]", "*.[eE][lL][fF]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
-  };
+	const char * acsPattern[] =
+	{
+		// GBA
+		"*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
+		// Both
+		"*.[mM][bB]", "*.[eE][lL][fF]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
+	};
 
-  Gtk::FileFilter oAllGBAFilter;
-  oAllGBAFilter.set_name(_("All Gameboy Advance files"));
-  for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
-  {
-    oAllGBAFilter.add_pattern(acsPattern[i]);
-  }
+	Gtk::FileFilter oAllGBAFilter;
+	oAllGBAFilter.set_name(_("All Gameboy Advance files"));
+	for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
+	{
+		oAllGBAFilter.add_pattern(acsPattern[i]);
+	}
 
-  Gtk::FileFilter oGBAFilter;
-  oGBAFilter.set_name(_("Gameboy Advance files"));
-  for (int i = 0; i < 3; i++)
-  {
-    oGBAFilter.add_pattern(acsPattern[i]);
-  }
+	Gtk::FileFilter oGBAFilter;
+	oGBAFilter.set_name(_("Gameboy Advance files"));
+	for (int i = 0; i < 3; i++)
+	{
+		oGBAFilter.add_pattern(acsPattern[i]);
+	}
 
-  poDialog->add_filter(oAllGBAFilter);
-  poDialog->add_filter(oGBAFilter);
+	poDialog->add_filter(oAllGBAFilter);
+	poDialog->add_filter(oGBAFilter);
 
-  m_poFileOpenDialog = poDialog;
+	m_poFileOpenDialog = poDialog;
 }
 
 void Window::vLoadBattery()
 {
-  std::string sBattery;
-  std::string sDir = m_poDirConfig->sGetKey("batteries");
-  if (sDir == "")
-  {
-    sDir = m_sUserDataDir;
-  }
+	std::string sBattery;
+	std::string sDir = m_poDirConfig->sGetKey("batteries");
+	if (sDir == "")
+	{
+		sDir = m_sUserDataDir;
+	}
 
-  sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
+	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
 
-  if (Cartridge::readBatteryFromFile(sBattery.c_str()))
-  {
-    systemScreenMessage(_("Loaded battery"));
-  }
+	if (Cartridge::readBatteryFromFile(sBattery.c_str()))
+	{
+		systemScreenMessage(_("Loaded battery"));
+	}
 }
 
 void Window::vSaveBattery()
 {
-  std::string sBattery;
-  std::string sDir = m_poDirConfig->sGetKey("batteries");
-  if (sDir == "")
-  {
-    sDir = m_sUserDataDir;
-  }
+	std::string sBattery;
+	std::string sDir = m_poDirConfig->sGetKey("batteries");
+	if (sDir == "")
+	{
+		sDir = m_sUserDataDir;
+	}
 
-  sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
+	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
 
-  if (Cartridge::writeBatteryToFile(sBattery.c_str()))
-  {
-    systemScreenMessage(_("Saved battery"));
-  }
+	if (Cartridge::writeBatteryToFile(sBattery.c_str()))
+	{
+		systemScreenMessage(_("Saved battery"));
+	}
 }
 
 void Window::vStartEmu()
 {
-  if (m_oEmuSig.connected())
-  {
-    return;
-  }
+	if (m_oEmuSig.connected())
+	{
+		return;
+	}
 
-  m_oEmuSig = Glib::signal_idle().connect(sigc::mem_fun(*this, &Window::bOnEmuIdle),
-                                          Glib::PRIORITY_HIGH_IDLE + 30);
+	m_oEmuSig = Glib::signal_idle().connect(sigc::mem_fun(*this, &Window::bOnEmuIdle),
+	                                        Glib::PRIORITY_HIGH_IDLE + 30);
 }
 
 void Window::vStopEmu()
 {
-  m_oEmuSig.disconnect();
-  m_bWasEmulating = false;
+	m_oEmuSig.disconnect();
+	m_bWasEmulating = false;
 }
 
 void Window::vUpdateGameSlots()
 {
-  if (m_eCartridge == CartridgeNone)
-  {
-    std::string sDateTime = _("----/--/-- --:--:--");
+	if (m_eCartridge == CartridgeNone)
+	{
+		std::string sDateTime = _("----/--/-- --:--:--");
 
-    for (int i = 0; i < 10; i++)
-    {
-      char csPrefix[10];
-      snprintf(csPrefix, sizeof(csPrefix), "%2d ", i + 1);
+		for (int i = 0; i < 10; i++)
+		{
+			char csPrefix[10];
+			snprintf(csPrefix, sizeof(csPrefix), "%2d ", i + 1);
 
-      Gtk::Label * poLabel;
-      poLabel = dynamic_cast<Gtk::Label *>(m_apoLoadGameItem[i]->get_child());
-      poLabel->set_text(csPrefix + sDateTime);
-      m_apoLoadGameItem[i]->set_sensitive(false);
+			Gtk::Label * poLabel;
+			poLabel = dynamic_cast<Gtk::Label *>(m_apoLoadGameItem[i]->get_child());
+			poLabel->set_text(csPrefix + sDateTime);
+			m_apoLoadGameItem[i]->set_sensitive(false);
 
-      poLabel = dynamic_cast<Gtk::Label *>(m_apoSaveGameItem[i]->get_child());
-      poLabel->set_text(csPrefix + sDateTime);
-      m_apoSaveGameItem[i]->set_sensitive(false);
+			poLabel = dynamic_cast<Gtk::Label *>(m_apoSaveGameItem[i]->get_child());
+			poLabel->set_text(csPrefix + sDateTime);
+			m_apoSaveGameItem[i]->set_sensitive(false);
 
-      m_astGameSlot[i].m_bEmpty = true;
-    }
-  }
-  else
-  {
-    std::string sFileBase;
-    std::string sDir = m_poDirConfig->sGetKey("saves");
-    if (sDir == "")
-    {
-      sDir = m_sUserDataDir;
-    }
+			m_astGameSlot[i].m_bEmpty = true;
+		}
+	}
+	else
+	{
+		std::string sFileBase;
+		std::string sDir = m_poDirConfig->sGetKey("saves");
+		if (sDir == "")
+		{
+			sDir = m_sUserDataDir;
+		}
 
-    sFileBase = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile));
+		sFileBase = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile));
 
-    const char * csDateFormat = _("%Y/%m/%d %H:%M:%S");
+		const char * csDateFormat = _("%Y/%m/%d %H:%M:%S");
 
-    for (int i = 0; i < 10; i++)
-    {
-      char csPrefix[10];
-      snprintf(csPrefix, sizeof(csPrefix), "%2d ", i + 1);
+		for (int i = 0; i < 10; i++)
+		{
+			char csPrefix[10];
+			snprintf(csPrefix, sizeof(csPrefix), "%2d ", i + 1);
 
-      char csSlot[10];
-      snprintf(csSlot, sizeof(csSlot), "%d", i + 1);
-      m_astGameSlot[i].m_sFile = sFileBase + csSlot + ".sgm";
+			char csSlot[10];
+			snprintf(csSlot, sizeof(csSlot), "%d", i + 1);
+			m_astGameSlot[i].m_sFile = sFileBase + csSlot + ".sgm";
 
-      std::string sDateTime;
-      struct stat stStat;
-      if (stat(m_astGameSlot[i].m_sFile.c_str(), &stStat) == -1)
-      {
-        sDateTime = _("----/--/-- --:--:--");
-        m_astGameSlot[i].m_bEmpty = true;
-      }
-      else
-      {
-        char csDateTime[30];
-        strftime(csDateTime, sizeof(csDateTime), csDateFormat,
-                 localtime(&stStat.st_mtime));
-        sDateTime = csDateTime;
-        m_astGameSlot[i].m_bEmpty = false;
-        m_astGameSlot[i].m_uiTime = stStat.st_mtime;
-      }
+			std::string sDateTime;
+			struct stat stStat;
+			if (stat(m_astGameSlot[i].m_sFile.c_str(), &stStat) == -1)
+			{
+				sDateTime = _("----/--/-- --:--:--");
+				m_astGameSlot[i].m_bEmpty = true;
+			}
+			else
+			{
+				char csDateTime[30];
+				strftime(csDateTime, sizeof(csDateTime), csDateFormat,
+				         localtime(&stStat.st_mtime));
+				sDateTime = csDateTime;
+				m_astGameSlot[i].m_bEmpty = false;
+				m_astGameSlot[i].m_uiTime = stStat.st_mtime;
+			}
 
-      Gtk::Label * poLabel;
-      poLabel = dynamic_cast<Gtk::Label *>(m_apoLoadGameItem[i]->get_child());
-      poLabel->set_text(csPrefix + sDateTime);
-      m_apoLoadGameItem[i]->set_sensitive(! m_astGameSlot[i].m_bEmpty);
+			Gtk::Label * poLabel;
+			poLabel = dynamic_cast<Gtk::Label *>(m_apoLoadGameItem[i]->get_child());
+			poLabel->set_text(csPrefix + sDateTime);
+			m_apoLoadGameItem[i]->set_sensitive(! m_astGameSlot[i].m_bEmpty);
 
-      poLabel = dynamic_cast<Gtk::Label *>(m_apoSaveGameItem[i]->get_child());
-      poLabel->set_text(csPrefix + sDateTime);
-      m_apoSaveGameItem[i]->set_sensitive();
-    }
-  }
+			poLabel = dynamic_cast<Gtk::Label *>(m_apoSaveGameItem[i]->get_child());
+			poLabel->set_text(csPrefix + sDateTime);
+			m_apoSaveGameItem[i]->set_sensitive();
+		}
+	}
 }
 
 void Window::vToggleFullscreen()
 {
-  if(!m_bFullscreen)
-  {
-    fullscreen();
-    m_poMenuBar->hide();
-  }
-  else
-  {
-    unfullscreen();
-    m_poMenuBar->show();
-  }
+	if (!m_bFullscreen)
+	{
+		fullscreen();
+		m_poMenuBar->hide();
+	}
+	else
+	{
+		unfullscreen();
+		m_poMenuBar->show();
+	}
 }
 
 void Window::vSDLPollEvents()
 {
-  SDL_Event event;
-  while(SDL_PollEvent(&event))
-  {
-    switch(event.type)
-    {
-      case SDL_JOYHATMOTION:
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
-      case SDL_JOYAXISMOTION:
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
-        inputProcessSDLEvent(event);
-        break;
-    }
-  }
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_JOYHATMOTION:
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYBUTTONUP:
+		case SDL_JOYAXISMOTION:
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			inputProcessSDLEvent(event);
+			break;
+		}
+	}
 }
 
 std::string Window::sGetUiFilePath(const std::string &_sFileName)
 {
-  // Use the ui file from the source folder if it exists
-  // to make gvbam runnable without installation
-  std::string sUiFile = "data/gtk/ui/" + _sFileName;
-  if (!Glib::file_test(sUiFile, Glib::FILE_TEST_EXISTS))
-  {
-    sUiFile = PKGDATADIR "/ui/" + _sFileName;
-  }
+	// Use the ui file from the source folder if it exists
+	// to make gvbam runnable without installation
+	std::string sUiFile = "data/gtk/ui/" + _sFileName;
+	if (!Glib::file_test(sUiFile, Glib::FILE_TEST_EXISTS))
+	{
+		sUiFile = PKGDATADIR "/ui/" + _sFileName;
+	}
 
-  return sUiFile;
+	return sUiFile;
 }
 
 } // VBA namespace

@@ -33,36 +33,36 @@ namespace VBA
 class JoypadConfigDialog : public Gtk::Dialog
 {
 public:
-  JoypadConfigDialog(Config::Section * _poConfig);
-  virtual ~JoypadConfigDialog();
+	JoypadConfigDialog(Config::Section * _poConfig);
+	virtual ~JoypadConfigDialog();
 
 protected:
-  bool bOnEntryFocusIn(GdkEventFocus * _pstEvent, guint _uiEntry);
-  bool bOnEntryFocusOut(GdkEventFocus * _pstEvent);
+	bool bOnEntryFocusIn(GdkEventFocus * _pstEvent, guint _uiEntry);
+	bool bOnEntryFocusOut(GdkEventFocus * _pstEvent);
 
-  void vOnInputEvent(const SDL_Event &event);
-  bool on_key_press_event(GdkEventKey * _pstEvent);
+	void vOnInputEvent(const SDL_Event &event);
+	bool on_key_press_event(GdkEventKey * _pstEvent);
 
 private:
-  struct SJoypadKey
-  {
-	const EKey   m_eKeyFlag;
-	const char * m_csKeyName;
-  };
+	struct SJoypadKey
+	{
+		const EKey   m_eKeyFlag;
+		const char * m_csKeyName;
+	};
 
-  Gtk::Table                m_oTable;
-  Gtk::Button *             m_poOkButton;
-  std::vector<Gtk::Entry *> m_oEntries;
-  gint                      m_iCurrentEntry;
-  bool                      m_bUpdating;
-  static const SJoypadKey   m_astKeys[];
-  sigc::connection          m_oConfigSig;
-  SDL_Event                 m_oPreviousEvent;
-  Config::Section *         m_poConfig;
+	Gtk::Table                m_oTable;
+	Gtk::Button *             m_poOkButton;
+	std::vector<Gtk::Entry *> m_oEntries;
+	gint                      m_iCurrentEntry;
+	bool                      m_bUpdating;
+	static const SJoypadKey   m_astKeys[];
+	sigc::connection          m_oConfigSig;
+	SDL_Event                 m_oPreviousEvent;
+	Config::Section *         m_poConfig;
 
-  bool bOnConfigIdle();
-  void vUpdateEntries();
-  void vEmptyEventQueue();
+	bool bOnConfigIdle();
+	void vUpdateEntries();
+	void vEmptyEventQueue();
 };
 
 } // namespace VBA

@@ -31,38 +31,38 @@ namespace VBA
 class ScreenArea : public Gtk::DrawingArea
 {
 public:
-  ScreenArea(int _iWidth, int _iHeight, int _iScale = 1);
-  virtual ~ScreenArea();
+	ScreenArea(int _iWidth, int _iHeight, int _iScale = 1);
+	virtual ~ScreenArea();
 
-  void vSetSize(int _iWidth, int _iHeight);
-  void vSetScale(int _iScale);
-  void vSetEnableRender(bool _bEnable);
-  virtual void vDrawPixels(u8 * _puiData);
-  virtual void vDrawBlackScreen() = 0;
+	void vSetSize(int _iWidth, int _iHeight);
+	void vSetScale(int _iScale);
+	void vSetEnableRender(bool _bEnable);
+	virtual void vDrawPixels(u8 * _puiData);
+	virtual void vDrawBlackScreen() = 0;
 
 protected:
-  virtual bool on_motion_notify_event(GdkEventMotion * _pstEvent);
-  virtual bool on_enter_notify_event(GdkEventCrossing * _pstEvent);
-  virtual bool on_leave_notify_event(GdkEventCrossing * _pstEvent);
-  virtual bool on_configure_event(GdkEventConfigure * event);
-  virtual bool bOnCursorTimeout();
+	virtual bool on_motion_notify_event(GdkEventMotion * _pstEvent);
+	virtual bool on_enter_notify_event(GdkEventCrossing * _pstEvent);
+	virtual bool on_leave_notify_event(GdkEventCrossing * _pstEvent);
+	virtual bool on_configure_event(GdkEventConfigure * event);
+	virtual bool bOnCursorTimeout();
 
-  int      m_iWidth;
-  int      m_iHeight;
-  int      m_iScale;
-  u32 *    m_puiPixels;
-  bool     m_bEnableRender;
+	int      m_iWidth;
+	int      m_iHeight;
+	int      m_iScale;
+	u32 *    m_puiPixels;
+	bool     m_bEnableRender;
 
-  bool             m_bShowCursor;
-  Gdk::Cursor *    m_poEmptyCursor;
-  sigc::connection m_oCursorSig;
+	bool             m_bShowCursor;
+	Gdk::Cursor *    m_poEmptyCursor;
+	sigc::connection m_oCursorSig;
 
-  void vUpdateSize();
-  virtual void vOnWidgetResize() = 0;
-  void vStartCursorTimeout();
-  void vStopCursorTimeout();
-  void vHideCursor();
-  void vShowCursor();
+	void vUpdateSize();
+	virtual void vOnWidgetResize() = 0;
+	void vStartCursorTimeout();
+	void vStopCursorTimeout();
+	void vHideCursor();
+	void vShowCursor();
 };
 
 } // namespace VBA
