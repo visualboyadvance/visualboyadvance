@@ -526,7 +526,7 @@ void Window::vApplyConfigShowSpeed()
 
 void Window::vApplyConfigFrameskip()
 {
-	m_bAutoFrameskip = !m_poCoreConfig->oGetKey<bool>("frameskip");
+	m_bAutoFrameskip = m_poCoreConfig->oGetKey<bool>("frameskip");
 	systemFrameSkip  = 0;
 }
 

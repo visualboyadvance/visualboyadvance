@@ -5,7 +5,7 @@
 namespace Display
 {
 static const int width = 240;
-static const int height = 240;
+static const int height = 160;
 
 static u32 colorMap[0x10000];
 static u32 *pix;
