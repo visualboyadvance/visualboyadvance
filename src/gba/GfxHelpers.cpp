@@ -162,7 +162,6 @@ void gfxDrawRotScreen(u16 control,
 				    u16 pa,  u16 pb,
 				    u16 pc,  u16 pd,
 				    int& currentX, int& currentY,
-				    int changed,
 				    u32 *line)
 {
   u16 *palette = (u16 *)paletteRAM;
@@ -203,25 +202,6 @@ void gfxDrawRotScreen(u16 control,
   int dmy = pd & 0x7FFF;
   if(pd & 0x8000)
     dmy |= 0xFFFF8000;
-
-  if(VCOUNT == 0)
-    changed = 3;
-
-  if(changed & 1) {
-    currentX = (x_l) | ((x_h & 0x07FF)<<16);
-    if(x_h & 0x0800)
-      currentX |= 0xF8000000;
-  } else {
-    currentX += dmx;
-  }
-
-  if(changed & 2) {
-    currentY = (y_l) | ((y_h & 0x07FF)<<16);
-    if(y_h & 0x0800)
-      currentY |= 0xF8000000;
-  } else {
-    currentY += dmy;
-  }
 
   int realX = currentX;
   int realY = currentY;
@@ -289,6 +269,9 @@ void gfxDrawRotScreen(u16 control,
       }
     }
   }
+  
+  currentX += dmx;
+  currentY += dmy;
 }
 
 void gfxDrawRotScreen16Bit(u16 control,
@@ -297,7 +280,6 @@ void gfxDrawRotScreen16Bit(u16 control,
 					 u16 pa,  u16 pb,
 					 u16 pc,  u16 pd,
 					 int& currentX, int& currentY,
-					 int changed,
 					 u32 *line)
 {
   u16 *screenBase = (u16 *)&vram[0];
@@ -324,24 +306,6 @@ void gfxDrawRotScreen16Bit(u16 control,
   int dmy = pd & 0x7FFF;
   if(pd & 0x8000)
     dmy |= 0xFFFF8000;
-
-  if(VCOUNT == 0)
-    changed = 3;
-
-  if(changed & 1) {
-    currentX = (x_l) | ((x_h & 0x07FF)<<16);
-    if(x_h & 0x0800)
-      currentX |= 0xF8000000;
-  } else
-    currentX += dmx;
-
-  if(changed & 2) {
-    currentY = (y_l) | ((y_h & 0x07FF)<<16);
-    if(y_h & 0x0800)
-      currentY |= 0xF8000000;
-  } else {
-    currentY += dmy;
-  }
 
   int realX = currentX;
   int realY = currentY;
@@ -386,6 +350,9 @@ void gfxDrawRotScreen16Bit(u16 control,
       }
     }
   }
+  
+  currentX += dmx;
+  currentY += dmy;
 }
 
 void gfxDrawRotScreen256(u16 control,
@@ -394,7 +361,6 @@ void gfxDrawRotScreen256(u16 control,
 				       u16 pa,  u16 pb,
 				       u16 pc,  u16 pd,
 				       int &currentX, int& currentY,
-				       int changed,
 				       u32 *line)
 {
   u16 *palette = (u16 *)paletteRAM;
@@ -422,25 +388,6 @@ void gfxDrawRotScreen256(u16 control,
   int dmy = pd & 0x7FFF;
   if(pd & 0x8000)
     dmy |= 0xFFFF8000;
-
-  if(VCOUNT == 0)
-    changed = 3;
-
-  if(changed & 1) {
-    currentX = (x_l) | ((x_h & 0x07FF)<<16);
-    if(x_h & 0x0800)
-      currentX |= 0xF8000000;
-  } else {
-    currentX += dmx;
-  }
-
-  if(changed & 2) {
-    currentY = (y_l) | ((y_h & 0x07FF)<<16);
-    if(y_h & 0x0800)
-      currentY |= 0xF8000000;
-  } else {
-    currentY += dmy;
-  }
 
   int realX = currentX;
   int realY = currentY;
@@ -487,6 +434,9 @@ void gfxDrawRotScreen256(u16 control,
       }
     }
   }
+  
+  currentX += dmx;
+  currentY += dmy;
 }
 
 void gfxDrawRotScreen16Bit160(u16 control,
@@ -495,7 +445,6 @@ void gfxDrawRotScreen16Bit160(u16 control,
 					    u16 pa,  u16 pb,
 					    u16 pc,  u16 pd,
 					    int& currentX, int& currentY,
-					    int changed,
 					    u32 *line)
 {
   u16 *screenBase = (DISPCNT & 0x0010) ? (u16 *)&vram[0xa000] :
@@ -523,25 +472,6 @@ void gfxDrawRotScreen16Bit160(u16 control,
   int dmy = pd & 0x7FFF;
   if(pd & 0x8000)
     dmy |= 0xFFFF8000;
-
-  if(VCOUNT == 0)
-    changed = 3;
-
-  if(changed & 1) {
-    currentX = (x_l) | ((x_h & 0x07FF)<<16);
-    if(x_h & 0x0800)
-      currentX |= 0xF8000000;
-  } else {
-    currentX += dmx;
-  }
-
-  if(changed & 2) {
-    currentY = (y_l) | ((y_h & 0x07FF)<<16);
-    if(y_h & 0x0800)
-      currentY |= 0xF8000000;
-  } else {
-    currentY += dmy;
-  }
 
   int realX = currentX;
   int realY = currentY;
@@ -586,6 +516,9 @@ void gfxDrawRotScreen16Bit160(u16 control,
       }
     }
   }
+  
+  currentX += dmx;
+  currentY += dmy;
 }
 
 void gfxDrawSprites(u32 *lineOBJ)

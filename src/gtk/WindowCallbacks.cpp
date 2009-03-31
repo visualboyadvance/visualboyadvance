@@ -37,7 +37,7 @@ namespace VBA
 
 void Window::vOnMenuEnter()
 {
-  if (emulating && ! m_bPaused)
+  if (emulating && !m_bPaused)
   {
     m_poScreenArea->vSetEnableRender(false);
     vStopEmu();
@@ -47,11 +47,15 @@ void Window::vOnMenuEnter()
 
 void Window::vOnMenuExit()
 {
-  if (emulating && ! m_bPaused)
+  if (emulating && !m_bPaused)
   {
     m_poScreenArea->vSetEnableRender(true);
     vStartEmu();
     soundResume();
+  }
+  else
+  {
+    vDrawDefaultScreen();
   }
 }
 

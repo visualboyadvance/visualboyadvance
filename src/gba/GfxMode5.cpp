@@ -13,22 +13,16 @@ void mode5RenderLine()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
                              BG2Y_L, BG2Y_H, BG2PA, BG2PB,
                              BG2PC, BG2PD,
-                             gfxBG2X, gfxBG2Y, changed,
+                             gfxBG2X, gfxBG2Y,
                              line2);
   }
 
@@ -80,8 +74,6 @@ void mode5RenderLine()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 void mode5RenderLineNoWindow()
@@ -90,22 +82,16 @@ void mode5RenderLineNoWindow()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
                              BG2Y_L, BG2Y_H, BG2PA, BG2PB,
                              BG2PC, BG2PD,
-                             gfxBG2X, gfxBG2Y, changed,
+                             gfxBG2X, gfxBG2Y,
                              line2);
   }
 
@@ -198,8 +184,6 @@ void mode5RenderLineNoWindow()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 void mode5RenderLineAll()
@@ -208,22 +192,16 @@ void mode5RenderLineAll()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
   u16 *palette = (u16 *)paletteRAM;
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen16Bit160(BG2CNT, BG2X_L, BG2X_H,
                              BG2Y_L, BG2Y_H, BG2PA, BG2PB,
                              BG2PC, BG2PD,
-                             gfxBG2X, gfxBG2Y, changed,
+                             gfxBG2X, gfxBG2Y,
                              line2);
   }
 
@@ -359,8 +337,6 @@ void mode5RenderLineAll()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 } // namespace GFX

@@ -23,14 +23,47 @@ bool gfxInWin0[240];
 bool gfxInWin1[240];
 int lineOBJpixleft[128];
 
-int gfxBG2Changed = 0;
-int gfxBG3Changed = 0;
-
 int gfxBG2X = 0;
 int gfxBG2Y = 0;
 int gfxBG3X = 0;
 int gfxBG3Y = 0;
 int gfxLastVCOUNT = 0;
+
+void updateBG2X()
+{
+  gfxBG2X = (BG2X_L) | ((BG2X_H & 0x07FF)<<16);
+  if(BG2X_H & 0x0800)
+    gfxBG2X |= 0xF8000000;
+}
+
+void updateBG2Y()
+{
+  gfxBG2Y = (BG2Y_L) | ((BG2Y_H & 0x07FF)<<16);
+  if(BG2Y_H & 0x0800)
+    gfxBG2Y |= 0xF8000000;
+}
+
+void updateBG3X()
+{
+  gfxBG3X = (BG3X_L) | ((BG3X_H & 0x07FF)<<16);
+  if(BG3X_H & 0x0800)
+    gfxBG3X |= 0xF8000000;
+}
+
+void updateBG3Y()
+{
+  gfxBG3Y = (BG3Y_L) | ((BG3Y_H & 0x07FF)<<16);
+  if(BG3Y_H & 0x0800)
+    gfxBG3Y |= 0xF8000000;
+}
+
+void newFrame()
+{
+  updateBG2X();
+  updateBG2Y();
+  updateBG3X();
+  updateBG3Y();
+}
 
 void chooseRenderer()
 {

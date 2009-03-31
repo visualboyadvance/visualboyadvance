@@ -9,8 +9,13 @@ namespace GFX
 typedef void (*LineRenderer)();
 extern LineRenderer renderLine;
 
+void newFrame();
 void chooseRenderer();
 void clearRenderBuffers(bool force);
+void updateBG2X();
+void updateBG2Y();
+void updateBG3X();
+void updateBG3Y();
 void updateWindow0();
 void updateWindow1();
 
@@ -50,14 +55,10 @@ extern bool gfxInWin0[240];
 extern bool gfxInWin1[240];
 extern int lineOBJpixleft[128];
 
-extern int gfxBG2Changed;
-extern int gfxBG3Changed;
-
 extern int gfxBG2X;
 extern int gfxBG2Y;
 extern int gfxBG3X;
 extern int gfxBG3Y;
-extern int gfxLastVCOUNT;
 
 } // namespace GFX
 

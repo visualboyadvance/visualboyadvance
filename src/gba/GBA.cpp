@@ -975,22 +975,22 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x28:
     BG2X_L = value;
     UPDATE_REG(0x28, BG2X_L);
-    GFX::gfxBG2Changed |= 1;
+    GFX::updateBG2X();
     break;
   case 0x2A:
     BG2X_H = (value & 0xFFF);
     UPDATE_REG(0x2A, BG2X_H);
-    GFX::gfxBG2Changed |= 1;
+    GFX::updateBG2X();
     break;
   case 0x2C:
     BG2Y_L = value;
     UPDATE_REG(0x2C, BG2Y_L);
-    GFX::gfxBG2Changed |= 2;
+    GFX::updateBG2Y();
     break;
   case 0x2E:
     BG2Y_H = value & 0xFFF;
     UPDATE_REG(0x2E, BG2Y_H);
-    GFX::gfxBG2Changed |= 2;
+    GFX::updateBG2Y();
     break;
   case 0x30:
     BG3PA = value;
@@ -1011,22 +1011,22 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x38:
     BG3X_L = value;
     UPDATE_REG(0x38, BG3X_L);
-    GFX::gfxBG3Changed |= 1;
+    GFX::updateBG3X();
     break;
   case 0x3A:
     BG3X_H = value & 0xFFF;
     UPDATE_REG(0x3A, BG3X_H);
-    GFX::gfxBG3Changed |= 1;
+    GFX::updateBG3X();
     break;
   case 0x3C:
     BG3Y_L = value;
     UPDATE_REG(0x3C, BG3Y_L);
-    GFX::gfxBG3Changed |= 2;
+    GFX::updateBG3Y();
     break;
   case 0x3E:
     BG3Y_H = value & 0xFFF;
     UPDATE_REG(0x3E, BG3Y_H);
-    GFX::gfxBG3Changed |= 2;
+    GFX::updateBG3Y();
     break;
   case 0x40:
     WIN0H = value;
@@ -1732,6 +1732,7 @@ void CPULoop(int ticks)
             VCOUNT = 0;
             UPDATE_REG(0x06, VCOUNT);
             CPUCompareVCOUNT();
+            GFX::newFrame();
           }
         } else {
           int framesToSkip = systemFrameSkip;

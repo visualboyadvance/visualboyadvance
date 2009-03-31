@@ -15,28 +15,19 @@ void mode2RenderLine()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
-                     changed, line2);
+                     line2);
   }
 
   if(layerEnable & 0x0800) {
-    int changed = gfxBG3Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
-                     changed, line3);
+                     line3);
   }
 
   gfxDrawSprites(lineOBJ);
@@ -98,9 +89,6 @@ void mode2RenderLine()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxBG3Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 void mode2RenderLineNoWindow()
@@ -111,28 +99,19 @@ void mode2RenderLineNoWindow()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
-                     changed, line2);
+                     line2);
   }
 
   if(layerEnable & 0x0800) {
-    int changed = gfxBG3Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
-                     changed, line3);
+                     line3);
   }
 
   gfxDrawSprites(lineOBJ);
@@ -241,9 +220,6 @@ void mode2RenderLineNoWindow()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxBG3Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 void mode2RenderLineAll()
@@ -254,7 +230,6 @@ void mode2RenderLineAll()
     for(int x = 0; x < 240; x++) {
       lineMix[x] = 0x7fff;
     }
-    gfxLastVCOUNT = VCOUNT;
     return;
   }
 
@@ -281,23 +256,15 @@ void mode2RenderLineAll()
   }
 
   if(layerEnable & 0x0400) {
-    int changed = gfxBG2Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG2CNT, BG2X_L, BG2X_H, BG2Y_L, BG2Y_H,
                      BG2PA, BG2PB, BG2PC, BG2PD, gfxBG2X, gfxBG2Y,
-                     changed, line2);
+                     line2);
   }
 
   if(layerEnable & 0x0800) {
-    int changed = gfxBG3Changed;
-    if(gfxLastVCOUNT > VCOUNT)
-      changed = 3;
-
     gfxDrawRotScreen(BG3CNT, BG3X_L, BG3X_H, BG3Y_L, BG3Y_H,
                      BG3PA, BG3PB, BG3PC, BG3PD, gfxBG3X, gfxBG3Y,
-                     changed, line3);
+                     line3);
   }
 
   gfxDrawSprites(lineOBJ);
@@ -427,9 +394,6 @@ void mode2RenderLineAll()
 
     lineMix[x] = color;
   }
-  gfxBG2Changed = 0;
-  gfxBG3Changed = 0;
-  gfxLastVCOUNT = VCOUNT;
 }
 
 } // namespace GFX
