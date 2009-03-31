@@ -32,7 +32,7 @@ extern struct EmulatedSystem GBASystem;
   {\
     WRITE16LE(((u16 *)&ioMem[address]),value);\
   }\
-
+ 
 #define R13_IRQ  18
 #define R14_IRQ  19
 #define SPSR_IRQ 20

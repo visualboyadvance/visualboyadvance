@@ -37,9 +37,11 @@ static float soundVolume     = 1.0f;
 static float soundFiltering_ = -1;
 static float soundVolume_    = -1;
 
-void interp_rate() { /* empty for now */ }
+void interp_rate()
+{ /* empty for now */ }
 
-class Gba_Pcm {
+class Gba_Pcm
+{
 public:
 	void init();
 	void apply_control( int idx );
@@ -53,7 +55,8 @@ private:
 	int shift;
 };
 
-class Gba_Pcm_Fifo {
+class Gba_Pcm_Fifo
+{
 public:
 	int     which;
 	Gba_Pcm pcm;
@@ -104,9 +107,15 @@ void Gba_Pcm::apply_control( int idx )
 	Blip_Buffer* out = 0;
 	switch ( ch )
 	{
-	case 1: out = stereo_buffer->right();  break;
-	case 2: out = stereo_buffer->left();   break;
-	case 3: out = stereo_buffer->center(); break;
+	case 1:
+		out = stereo_buffer->right();
+		break;
+	case 2:
+		out = stereo_buffer->left();
+		break;
+	case 3:
+		out = stereo_buffer->center();
+		break;
 	}
 
 	if ( output != out )
@@ -233,7 +242,7 @@ static int gba_to_gb_sound( int addr )
 		0xFF1A,     0,0xFF1B,0xFF1C,0xFF1D,0xFF1E,     0,     0,
 		0xFF20,0xFF21,     0,     0,0xFF22,0xFF23,     0,     0,
 		0xFF24,0xFF25,     0,     0,0xFF26,     0,     0,     0,
-		     0,     0,     0,     0,     0,     0,     0,     0,
+		0,     0,     0,     0,     0,     0,     0,     0,
 		0xFF30,0xFF31,0xFF32,0xFF33,0xFF34,0xFF35,0xFF36,0xFF37,
 		0xFF38,0xFF39,0xFF3A,0xFF3B,0xFF3C,0xFF3D,0xFF3E,0xFF3F,
 	};
@@ -348,7 +357,7 @@ static void flush_samples(Multi_Buffer * buffer)
 	while ( buffer->samples_avail() >= out_buf_size )
 	{
 		buffer->read_samples( (blip_sample_t*) soundFinalWave, out_buf_size );
-		if(soundPaused)
+		if (soundPaused)
 			soundResume();
 
 		soundDriver->write(soundFinalWave, soundBufferLen);
@@ -373,7 +382,7 @@ static void apply_filtering()
 
 void psoundTickfn()
 {
- 	if ( gb_apu && stereo_buffer )
+	if ( gb_apu && stereo_buffer )
 	{
 		// Run sound hardware to present
 		end_frame( SOUND_CLOCK_TICKS );
@@ -401,8 +410,8 @@ static void apply_muting()
 		// APU
 		for ( int i = 0; i < 4; i++ )
 		{
-				gb_apu->set_output( stereo_buffer->center(),
-						stereo_buffer->left(), stereo_buffer->right(), i );
+			gb_apu->set_output( stereo_buffer->center(),
+			                    stereo_buffer->left(), stereo_buffer->right(), i );
 		}
 	}
 }

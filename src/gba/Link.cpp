@@ -25,108 +25,114 @@ static bool oncewait = false;
 static int GetSioMode(u16, u16);
 //static u16 StartRFU(u16);
 
-void linkUpdateSIOCNT(u16 value){
-	if(linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
-	
+void linkUpdateSIOCNT(u16 value)
+{
+	if (linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
+
 	UPDATE_REG(0x128, value);
-	
+
 	if (value & SIO_START)
 	{
 		fprintf(stderr, "start\n");
 		UPDATE_REG(0x120, 6200);
 		return;
 	}
-	
-	
-		switch(GetSioMode(value, READ16LE(&ioMem[0x134]))){
-		case MULTIPLAYER:
-			if(linklog) fprintf(linklogfile, "Attempt to use Multiplayer mode %04x\n", value);
-			UPDATE_REG(0x128, value);
-			break;
-		case NORMAL8:
-			if(linklog) fprintf(linklogfile, "Attempt to use 8-bit Normal mode %04x\n", value);
-			UPDATE_REG(0x128, value);
-			break;
-		case NORMAL32:
-			if(linklog) fprintf(linklogfile, "Attempt to use 32-bit Normal mode %04x %02x%02x\n", value, READ16LE(&ioMem[0x122]), READ16LE(&ioMem[0x120]));
-			UPDATE_REG(0x128, value);
-			break;
-		case UART:
-			if(linklog) fprintf(linklogfile, "Attempt to use UART mode %04x\n", value);
-			UPDATE_REG(0x128, value);
-			break;
-		case JOYBUS:
-			if(linklog) fprintf(linklogfile, "Attempt to use JOYBUS mode %04x\n", value);
-			UPDATE_REG(0x128, value);
-			break;
-		default:
-			UPDATE_REG(0x128, value);
-			break;
-		}
-}
 
-void linkUpdateRCNT(u16 value){
-	if(linklog) fprintf(linklogfile, "RCNT %04x\n", value);
-	
-	UPDATE_REG(0x134, value);
-	
-	
-/*	if(!value){
-		UPDATE_REG(0x134, 0);
-		return;
-	}
-	switch(GetSioMode(READ16LE(&ioMem[0x128]), value)){
+
+	switch (GetSioMode(value, READ16LE(&ioMem[0x134])))
+	{
 	case MULTIPLAYER:
-		value &= 0xc0f0;
-		value |= 3;
-		if(linkid) value |= 4;
-		UPDATE_REG(0x134, value);
-		UPDATE_REG(0x128, ((READ16LE(&ioMem[0x128])&0xff8b)|(linkid ? 0xc : 8)|(linkid<<4)));
-		return;
+		if (linklog) fprintf(linklogfile, "Attempt to use Multiplayer mode %04x\n", value);
+		UPDATE_REG(0x128, value);
 		break;
-	case GP:
-		if(linklog){
-			if(value==0x8000) fprintf(linklogfile, "Circuit reset\n");
-			else if(!adapter) fprintf(linklogfile, "Attempt to use General-purpose mode %04x\n", value);
-		}
-		if(adapter) rfu_state = RFU_INIT;
-		// This was not there, but sonic games won't start if it's not here.
-		UPDATE_REG(0x134, value);
+	case NORMAL8:
+		if (linklog) fprintf(linklogfile, "Attempt to use 8-bit Normal mode %04x\n", value);
+		UPDATE_REG(0x128, value);
+		break;
+	case NORMAL32:
+		if (linklog) fprintf(linklogfile, "Attempt to use 32-bit Normal mode %04x %02x%02x\n", value, READ16LE(&ioMem[0x122]), READ16LE(&ioMem[0x120]));
+		UPDATE_REG(0x128, value);
+		break;
+	case UART:
+		if (linklog) fprintf(linklogfile, "Attempt to use UART mode %04x\n", value);
+		UPDATE_REG(0x128, value);
 		break;
 	case JOYBUS:
-		UPDATE_REG(0x134, value);
+		if (linklog) fprintf(linklogfile, "Attempt to use JOYBUS mode %04x\n", value);
+		UPDATE_REG(0x128, value);
 		break;
 	default:
-		UPDATE_REG(0x134, value);
+		UPDATE_REG(0x128, value);
 		break;
 	}
-	return;*/
 }
 
-void StartJOYLink(u16 value){
-	if(!value){
+void linkUpdateRCNT(u16 value)
+{
+	if (linklog) fprintf(linklogfile, "RCNT %04x\n", value);
+
+	UPDATE_REG(0x134, value);
+
+
+	/*	if(!value){
+			UPDATE_REG(0x134, 0);
+			return;
+		}
+		switch(GetSioMode(READ16LE(&ioMem[0x128]), value)){
+		case MULTIPLAYER:
+			value &= 0xc0f0;
+			value |= 3;
+			if(linkid) value |= 4;
+			UPDATE_REG(0x134, value);
+			UPDATE_REG(0x128, ((READ16LE(&ioMem[0x128])&0xff8b)|(linkid ? 0xc : 8)|(linkid<<4)));
+			return;
+			break;
+		case GP:
+			if(linklog){
+				if(value==0x8000) fprintf(linklogfile, "Circuit reset\n");
+				else if(!adapter) fprintf(linklogfile, "Attempt to use General-purpose mode %04x\n", value);
+			}
+			if(adapter) rfu_state = RFU_INIT;
+			// This was not there, but sonic games won't start if it's not here.
+			UPDATE_REG(0x134, value);
+			break;
+		case JOYBUS:
+			UPDATE_REG(0x134, value);
+			break;
+		default:
+			UPDATE_REG(0x134, value);
+			break;
+		}
+		return;*/
+}
+
+void StartJOYLink(u16 value)
+{
+	if (!value)
+	{
 		UPDATE_REG(0x140, 0);
 		return;
 	}
-	if(GetSioMode(READ16LE(&ioMem[0x128]), READ16LE(&ioMem[0x134]))==JOYBUS&&linklog) fprintf(linklogfile, "Attempt to use JOY-BUS mode %04x\n", value);
+	if (GetSioMode(READ16LE(&ioMem[0x128]), READ16LE(&ioMem[0x134]))==JOYBUS&&linklog) fprintf(linklogfile, "Attempt to use JOY-BUS mode %04x\n", value);
 	return;
 }
 
-void LinkUpdate(int ticks){
-/*	linktime += ticks;
-	if(adapter){
-		linktime2 += ticks;
-		transferend -= ticks;
-		if(transfer&&transferend<=0){
-			transfer = 0;
-			if(READ16LE(&ioMem[0x128])&0x4000){
-				IF |= 0x80;
-				UPDATE_REG(0x202, IF);
+void LinkUpdate(int ticks)
+{
+	/*	linktime += ticks;
+		if(adapter){
+			linktime2 += ticks;
+			transferend -= ticks;
+			if(transfer&&transferend<=0){
+				transfer = 0;
+				if(READ16LE(&ioMem[0x128])&0x4000){
+					IF |= 0x80;
+					UPDATE_REG(0x202, IF);
+				}
+				UPDATE_REG(0x128, READ16LE(&ioMem[0x128]) & 0xff7f);
 			}
-			UPDATE_REG(0x128, READ16LE(&ioMem[0x128]) & 0xff7f);
-		}
-		return;
-	}*/
+			return;
+		}*/
 
 	/*if(lanlink.active){
 		if(lanlink.connected){
@@ -197,7 +203,7 @@ void LinkUpdate(int ticks){
 		}
 	}*/
 
-	if(!transfer) return;
+	if (!transfer) return;
 
 	/*if(transfer&&linktime>=trtimedata[transfer-1][tspeed]&&transfer<=linkmem->numgbas){
 		if(transfer-linkid==2){
@@ -236,9 +242,12 @@ void LinkUpdate(int ticks){
 	return;
 }
 
-static int GetSioMode(u16 reg1, u16 reg2){
-	if(!(reg2&0x8000)){
-		switch(reg1&0x3000){
+static int GetSioMode(u16 reg1, u16 reg2)
+{
+	if (!(reg2&0x8000))
+	{
+		switch (reg1&0x3000)
+		{
 		case 0x0000:
 			return NORMAL8;
 		case 0x1000:
@@ -249,7 +258,7 @@ static int GetSioMode(u16 reg1, u16 reg2){
 			return UART;
 		}
 	}
-	if(reg2&0x4000) return JOYBUS;
+	if (reg2&0x4000) return JOYBUS;
 	return GP;
 }
 
@@ -468,156 +477,160 @@ static int GetSioMode(u16 reg1, u16 reg2){
 	}
 }*/
 
-int InitLink(void){
-/*	WSADATA wsadata;
-	BOOL disable = true;
+int InitLink(void)
+{
+	/*	WSADATA wsadata;
+		BOOL disable = true;
 
-	linkid = 0;
-
-	if(WSAStartup(MAKEWORD(1,1), &wsadata)!=0){
-		WSACleanup();
-		return 0;
-	}
-
-	if((lanlink.tcpsocket=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))==INVALID_SOCKET){
-		MessageBox(NULL, "Couldn't create socket.", "Error!", MB_OK);
-		WSACleanup();
-		return 0;
-	}
-
-	setsockopt(lanlink.tcpsocket, IPPROTO_TCP, TCP_NODELAY, (char*)&disable, sizeof(BOOL));
-
-	if((mmf=CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(LINKDATA), "VBA link memory"))==NULL){
-		closesocket(lanlink.tcpsocket);
-		WSACleanup();
-		MessageBox(NULL, "Error creating file mapping", "Error", MB_OK|MB_ICONEXCLAMATION);
-		return 0;
-	}
-
-	if(GetLastError() == ERROR_ALREADY_EXISTS)
-		vbaid = 1;
-	else
- 		vbaid = 0;
-
-	if((linkmem=(LINKDATA *)MapViewOfFile(mmf, FILE_MAP_WRITE, 0, 0, sizeof(LINKDATA)))==NULL){
-		closesocket(lanlink.tcpsocket);
-		WSACleanup();
-		CloseHandle(mmf);
-		MessageBox(NULL, "Error mapping file", "Error", MB_OK|MB_ICONEXCLAMATION);
-		return 0;
-	}
-
-	if(linkmem->linkflags&LINK_PARENTLOST)
-		vbaid = 0;
-
-	if(vbaid==0){
 		linkid = 0;
-		if(linkmem->linkflags&LINK_PARENTLOST){
-			linkmem->numgbas++;
-			linkmem->linkflags &= ~LINK_PARENTLOST;
-		}
-		else
-			linkmem->numgbas=1;
 
-		for(i=0;i<4;i++){
-			linkevent[15]=(char)i+'1';
-			if((linksync[i]=CreateEvent(NULL, true, false, linkevent))==NULL){
-				closesocket(lanlink.tcpsocket);
-				WSACleanup();
-				UnmapViewOfFile(linkmem);
-				CloseHandle(mmf);
-				for(j=0;j<i;j++){
-					CloseHandle(linksync[j]);
-				}
-				MessageBox(NULL, "Error opening event", "Error", MB_OK|MB_ICONEXCLAMATION);
-				return 0;
-			}
-		}
-	} else {
-		vbaid=linkmem->numgbas;
-		linkid = vbaid;
-		linkmem->numgbas++;
-
-		linklog = 0;
-		if(linkmem->numgbas>4){
-			linkmem->numgbas=4;
-			closesocket(lanlink.tcpsocket);
+		if(WSAStartup(MAKEWORD(1,1), &wsadata)!=0){
 			WSACleanup();
-			MessageBox(NULL, "5 or more GBAs not supported.", "Error!", MB_OK|MB_ICONEXCLAMATION);
-			UnmapViewOfFile(linkmem);
-			CloseHandle(mmf);
 			return 0;
 		}
-		for(i=0;i<4;i++){
-			linkevent[15]=(char)i+'1';
-			if((linksync[i]=OpenEvent(EVENT_ALL_ACCESS, false, linkevent))==NULL){
+
+		if((lanlink.tcpsocket=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))==INVALID_SOCKET){
+			MessageBox(NULL, "Couldn't create socket.", "Error!", MB_OK);
+			WSACleanup();
+			return 0;
+		}
+
+		setsockopt(lanlink.tcpsocket, IPPROTO_TCP, TCP_NODELAY, (char*)&disable, sizeof(BOOL));
+
+		if((mmf=CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(LINKDATA), "VBA link memory"))==NULL){
+			closesocket(lanlink.tcpsocket);
+			WSACleanup();
+			MessageBox(NULL, "Error creating file mapping", "Error", MB_OK|MB_ICONEXCLAMATION);
+			return 0;
+		}
+
+		if(GetLastError() == ERROR_ALREADY_EXISTS)
+			vbaid = 1;
+		else
+	 		vbaid = 0;
+
+		if((linkmem=(LINKDATA *)MapViewOfFile(mmf, FILE_MAP_WRITE, 0, 0, sizeof(LINKDATA)))==NULL){
+			closesocket(lanlink.tcpsocket);
+			WSACleanup();
+			CloseHandle(mmf);
+			MessageBox(NULL, "Error mapping file", "Error", MB_OK|MB_ICONEXCLAMATION);
+			return 0;
+		}
+
+		if(linkmem->linkflags&LINK_PARENTLOST)
+			vbaid = 0;
+
+		if(vbaid==0){
+			linkid = 0;
+			if(linkmem->linkflags&LINK_PARENTLOST){
+				linkmem->numgbas++;
+				linkmem->linkflags &= ~LINK_PARENTLOST;
+			}
+			else
+				linkmem->numgbas=1;
+
+			for(i=0;i<4;i++){
+				linkevent[15]=(char)i+'1';
+				if((linksync[i]=CreateEvent(NULL, true, false, linkevent))==NULL){
+					closesocket(lanlink.tcpsocket);
+					WSACleanup();
+					UnmapViewOfFile(linkmem);
+					CloseHandle(mmf);
+					for(j=0;j<i;j++){
+						CloseHandle(linksync[j]);
+					}
+					MessageBox(NULL, "Error opening event", "Error", MB_OK|MB_ICONEXCLAMATION);
+					return 0;
+				}
+			}
+		} else {
+			vbaid=linkmem->numgbas;
+			linkid = vbaid;
+			linkmem->numgbas++;
+
+			linklog = 0;
+			if(linkmem->numgbas>4){
+				linkmem->numgbas=4;
 				closesocket(lanlink.tcpsocket);
 				WSACleanup();
-				CloseHandle(mmf);
+				MessageBox(NULL, "5 or more GBAs not supported.", "Error!", MB_OK|MB_ICONEXCLAMATION);
 				UnmapViewOfFile(linkmem);
-				for(j=0;j<i;j++){
-					CloseHandle(linksync[j]);
-				}
-				MessageBox(NULL, "Error opening event", "Error", MB_OK|MB_ICONEXCLAMATION);
+				CloseHandle(mmf);
 				return 0;
 			}
-		}
-	}
-
-	linkmem->lastlinktime=0xffffffff;
-	linkmem->numtransfers=0;
-	linkmem->linkflags=0;
-	lanlink.connected = false;
-	lanlink.thread = NULL;
-	lanlink.speed = false;
-	for(i=0;i<4;i++){
-		linkmem->linkdata[i] = 0xffff;
-		linkdata[i] = 0xffff;
-	}*/
-return 1;
-}
-
-void CloseLink(void){
-/*	if(lanlink.connected){
-		if(linkid){
-			char outbuffer[4];
-			outbuffer[0] = 4;
-			outbuffer[1] = -32;
-			if(lanlink.type==0) send(lanlink.tcpsocket, outbuffer, 4, 0);
-		} else {
-			char outbuffer[12];
-			int i;
-			outbuffer[0] = 12;
-			outbuffer[1] = -32;
-			for(i=1;i<=lanlink.numgbas;i++){
-				if(lanlink.type==0){
-					send(ls.tcpsocket[i], outbuffer, 12, 0);
+			for(i=0;i<4;i++){
+				linkevent[15]=(char)i+'1';
+				if((linksync[i]=OpenEvent(EVENT_ALL_ACCESS, false, linkevent))==NULL){
+					closesocket(lanlink.tcpsocket);
+					WSACleanup();
+					CloseHandle(mmf);
+					UnmapViewOfFile(linkmem);
+					for(j=0;j<i;j++){
+						CloseHandle(linksync[j]);
+					}
+					MessageBox(NULL, "Error opening event", "Error", MB_OK|MB_ICONEXCLAMATION);
+					return 0;
 				}
-				closesocket(ls.tcpsocket[i]);
 			}
 		}
-	}
-	linkmem->numgbas--;
-	if(!linkid&&linkmem->numgbas!=0)
-		linkmem->linkflags|=LINK_PARENTLOST;
-	CloseHandle(mmf);
-	UnmapViewOfFile(linkmem);
 
-	for(i=0;i<4;i++){
-		if(linksync[i]!=NULL){
-			PulseEvent(linksync[i]);
-			CloseHandle(linksync[i]);
-		}
-	}
-	regSetDwordValue("LAN", lanlink.active);
-	if(linklog) closeLinkLog();
-	closesocket(lanlink.tcpsocket);
-	WSACleanup();*/
-return;
+		linkmem->lastlinktime=0xffffffff;
+		linkmem->numtransfers=0;
+		linkmem->linkflags=0;
+		lanlink.connected = false;
+		lanlink.thread = NULL;
+		lanlink.speed = false;
+		for(i=0;i<4;i++){
+			linkmem->linkdata[i] = 0xffff;
+			linkdata[i] = 0xffff;
+		}*/
+	return 1;
 }
 
-void LinkSStop(void){
-	if(!oncewait){
+void CloseLink(void)
+{
+	/*	if(lanlink.connected){
+			if(linkid){
+				char outbuffer[4];
+				outbuffer[0] = 4;
+				outbuffer[1] = -32;
+				if(lanlink.type==0) send(lanlink.tcpsocket, outbuffer, 4, 0);
+			} else {
+				char outbuffer[12];
+				int i;
+				outbuffer[0] = 12;
+				outbuffer[1] = -32;
+				for(i=1;i<=lanlink.numgbas;i++){
+					if(lanlink.type==0){
+						send(ls.tcpsocket[i], outbuffer, 12, 0);
+					}
+					closesocket(ls.tcpsocket[i]);
+				}
+			}
+		}
+		linkmem->numgbas--;
+		if(!linkid&&linkmem->numgbas!=0)
+			linkmem->linkflags|=LINK_PARENTLOST;
+		CloseHandle(mmf);
+		UnmapViewOfFile(linkmem);
+
+		for(i=0;i<4;i++){
+			if(linksync[i]!=NULL){
+				PulseEvent(linksync[i]);
+				CloseHandle(linksync[i]);
+			}
+		}
+		regSetDwordValue("LAN", lanlink.active);
+		if(linklog) closeLinkLog();
+		closesocket(lanlink.tcpsocket);
+		WSACleanup();*/
+	return;
+}
+
+void LinkSStop(void)
+{
+	if (!oncewait)
+	{
 		/*if(linkid){
 			if(lanlink.numgbas==1) return;
 			lc.Recv();
@@ -628,12 +641,13 @@ void LinkSStop(void){
 		UPDATE_REG(0x122, linkdata[1]);
 		UPDATE_REG(0x124, linkdata[2]);
 		UPDATE_REG(0x126, linkdata[3]);
-		if(linklog) fprintf(linklogfile, "%04x %04x %04x %04x %10u\n", linkdata[0], linkdata[1], linkdata[2], linkdata[3], savedlinktime);
+		if (linklog) fprintf(linklogfile, "%04x %04x %04x %04x %10u\n", linkdata[0], linkdata[1], linkdata[2], linkdata[3], savedlinktime);
 	}
 	return;
 }
 
-void LinkSSend(u16 value){
+void LinkSSend(u16 value)
+{
 	/*if(linkid&&!lc.oncesend){
 		linkdata[linkid] = value;
 		lc.Send();

@@ -29,7 +29,7 @@ static int flashBank = 0;
 
 static void flashSetSize(int size)
 {
-	if(size == 0x10000)
+	if (size == 0x10000)
 	{
 		flashDeviceID = 0x1b;
 		flashManufacturerID = 0x32;
@@ -60,25 +60,25 @@ u8 flashRead(u32 address)
 {
 	address &= 0xFFFF;
 
-	switch(flashReadState)
+	switch (flashReadState)
 	{
-		case FLASH_READ_ARRAY:
-			return flashSaveMemory[(flashBank << 16) + address];
-		case FLASH_AUTOSELECT:
-			switch(address & 0xFF)
-			{
-				case 0:
-					// manufacturer ID
-					return flashManufacturerID;
-				case 1:
-					// device ID
-					return flashDeviceID;
-			}
-			break;
-		case FLASH_ERASE_COMPLETE:
-			flashState = FLASH_READ_ARRAY;
-			flashReadState = FLASH_READ_ARRAY;
-			return 0xFF;
+	case FLASH_READ_ARRAY:
+		return flashSaveMemory[(flashBank << 16) + address];
+	case FLASH_AUTOSELECT:
+		switch (address & 0xFF)
+		{
+		case 0:
+			// manufacturer ID
+			return flashManufacturerID;
+		case 1:
+			// device ID
+			return flashDeviceID;
+		}
+		break;
+	case FLASH_ERASE_COMPLETE:
+		flashState = FLASH_READ_ARRAY;
+		flashReadState = FLASH_READ_ARRAY;
+		return 0xFF;
 	};
 	return 0;
 }
@@ -88,126 +88,126 @@ void flashWrite(u32 address, u8 byte)
 	//  log("Writing %02x at %08x\n", byte, address);
 	//  log("Current state is %d\n", flashState);
 	address &= 0xFFFF;
-	switch(flashState)
+	switch (flashState)
 	{
-		case FLASH_READ_ARRAY:
-			if(address == 0x5555 && byte == 0xAA)
+	case FLASH_READ_ARRAY:
+		if (address == 0x5555 && byte == 0xAA)
 			flashState = FLASH_CMD_1;
-			break;
-		case FLASH_CMD_1:
-			if(address == 0x2AAA && byte == 0x55)
-				flashState = FLASH_CMD_2;
-			else
-				flashState = FLASH_READ_ARRAY;
-			break;
-		case FLASH_CMD_2:
-			if(address == 0x5555)
+		break;
+	case FLASH_CMD_1:
+		if (address == 0x2AAA && byte == 0x55)
+			flashState = FLASH_CMD_2;
+		else
+			flashState = FLASH_READ_ARRAY;
+		break;
+	case FLASH_CMD_2:
+		if (address == 0x5555)
+		{
+			if (byte == 0x90)
 			{
-				if(byte == 0x90)
-				{
-					flashState = FLASH_AUTOSELECT;
-					flashReadState = FLASH_AUTOSELECT;
-				}
-				else if(byte == 0x80)
-				{
-					flashState = FLASH_CMD_3;
-				}
-				else if(byte == 0xF0)
-				{
-					flashState = FLASH_READ_ARRAY;
-					flashReadState = FLASH_READ_ARRAY;
-				}
-				else if(byte == 0xA0)
-				{
-					flashState = FLASH_PROGRAM;
-				}
-				else if(byte == 0xB0 && flashSize == 0x20000)
-				{
-					flashState = FLASH_SETBANK;
-				}
-				else
-				{
-					flashState = FLASH_READ_ARRAY;
-					flashReadState = FLASH_READ_ARRAY;
-				}
+				flashState = FLASH_AUTOSELECT;
+				flashReadState = FLASH_AUTOSELECT;
+			}
+			else if (byte == 0x80)
+			{
+				flashState = FLASH_CMD_3;
+			}
+			else if (byte == 0xF0)
+			{
+				flashState = FLASH_READ_ARRAY;
+				flashReadState = FLASH_READ_ARRAY;
+			}
+			else if (byte == 0xA0)
+			{
+				flashState = FLASH_PROGRAM;
+			}
+			else if (byte == 0xB0 && flashSize == 0x20000)
+			{
+				flashState = FLASH_SETBANK;
 			}
 			else
 			{
 				flashState = FLASH_READ_ARRAY;
 				flashReadState = FLASH_READ_ARRAY;
 			}
-			break;
-		case FLASH_CMD_3:
-			if(address == 0x5555 && byte == 0xAA)
-			{
-				flashState = FLASH_CMD_4;
-			}
-			else
-			{
-				flashState = FLASH_READ_ARRAY;
-				flashReadState = FLASH_READ_ARRAY;
-			}
-			break;
-		case FLASH_CMD_4:
-			if(address == 0x2AAA && byte == 0x55)
-			{
-				flashState = FLASH_CMD_5;
-			}
-			else
-			{
-				flashState = FLASH_READ_ARRAY;
-				flashReadState = FLASH_READ_ARRAY;
-			}
-			break;
-		case FLASH_CMD_5:
-			if(byte == 0x30)
-			{
-				// SECTOR ERASE
-				u8 *offset = flashSaveMemory + (flashBank << 16) + (address & 0xF000);
-				std::fill(offset, offset + 0x1000, 0);
-				flashReadState = FLASH_ERASE_COMPLETE;
-			}
-			else if(byte == 0x10)
-			{
-				// CHIP ERASE
-				std::fill(flashSaveMemory, flashSaveMemory + flashSize, 0);
-				flashReadState = FLASH_ERASE_COMPLETE;
-			}
-			else
-			{
-				flashState = FLASH_READ_ARRAY;
-				flashReadState = FLASH_READ_ARRAY;
-			}
-			break;
-		case FLASH_AUTOSELECT:
-			if(byte == 0xF0)
-			{
-				flashState = FLASH_READ_ARRAY;
-				flashReadState = FLASH_READ_ARRAY;
-			}
-			else if(address == 0x5555 && byte == 0xAA)
-			{
-				flashState = FLASH_CMD_1;
-			}
-			else
-			{
-				flashState = FLASH_READ_ARRAY;
-				flashReadState = FLASH_READ_ARRAY;
-			}
-			break;
-		case FLASH_PROGRAM:
-			flashSaveMemory[(flashBank<<16)+address] = byte;
+		}
+		else
+		{
 			flashState = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
-			break;
-		case FLASH_SETBANK:
-			if(address == 0)
-			{
-				flashBank = (byte & 1);
-			}
+		}
+		break;
+	case FLASH_CMD_3:
+		if (address == 0x5555 && byte == 0xAA)
+		{
+			flashState = FLASH_CMD_4;
+		}
+		else
+		{
 			flashState = FLASH_READ_ARRAY;
 			flashReadState = FLASH_READ_ARRAY;
-			break;
+		}
+		break;
+	case FLASH_CMD_4:
+		if (address == 0x2AAA && byte == 0x55)
+		{
+			flashState = FLASH_CMD_5;
+		}
+		else
+		{
+			flashState = FLASH_READ_ARRAY;
+			flashReadState = FLASH_READ_ARRAY;
+		}
+		break;
+	case FLASH_CMD_5:
+		if (byte == 0x30)
+		{
+			// SECTOR ERASE
+			u8 *offset = flashSaveMemory + (flashBank << 16) + (address & 0xF000);
+			std::fill(offset, offset + 0x1000, 0);
+			flashReadState = FLASH_ERASE_COMPLETE;
+		}
+		else if (byte == 0x10)
+		{
+			// CHIP ERASE
+			std::fill(flashSaveMemory, flashSaveMemory + flashSize, 0);
+			flashReadState = FLASH_ERASE_COMPLETE;
+		}
+		else
+		{
+			flashState = FLASH_READ_ARRAY;
+			flashReadState = FLASH_READ_ARRAY;
+		}
+		break;
+	case FLASH_AUTOSELECT:
+		if (byte == 0xF0)
+		{
+			flashState = FLASH_READ_ARRAY;
+			flashReadState = FLASH_READ_ARRAY;
+		}
+		else if (address == 0x5555 && byte == 0xAA)
+		{
+			flashState = FLASH_CMD_1;
+		}
+		else
+		{
+			flashState = FLASH_READ_ARRAY;
+			flashReadState = FLASH_READ_ARRAY;
+		}
+		break;
+	case FLASH_PROGRAM:
+		flashSaveMemory[(flashBank<<16)+address] = byte;
+		flashState = FLASH_READ_ARRAY;
+		flashReadState = FLASH_READ_ARRAY;
+		break;
+	case FLASH_SETBANK:
+		if (address == 0)
+		{
+			flashBank = (byte & 1);
+		}
+		flashState = FLASH_READ_ARRAY;
+		flashReadState = FLASH_READ_ARRAY;
+		break;
 	}
 }
 

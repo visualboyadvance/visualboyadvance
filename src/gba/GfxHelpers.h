@@ -10,25 +10,25 @@ namespace GFX
 void gfxClearArray(u32 *array);
 void gfxDrawTextScreen(u16, u16, u16, u32 *);
 void gfxDrawRotScreen(u16,
-			     u16, u16,
-			     u16, u16,
-			     int&, int&,
-			     u32*);
+                      u16, u16,
+                      u16, u16,
+                      int&, int&,
+                      u32*);
 void gfxDrawRotScreen16Bit(u16,
-				  u16, u16,
-				  u16, u16,
-				  int&, int&,
-				  u32*);
+                           u16, u16,
+                           u16, u16,
+                           int&, int&,
+                           u32*);
 void gfxDrawRotScreen256(u16,
-				u16, u16,
-				u16, u16,
-				int&, int&,
-				u32*);
+                         u16, u16,
+                         u16, u16,
+                         int&, int&,
+                         u32*);
 void gfxDrawRotScreen16Bit160(u16,
-				     u16, u16,
-				     u16, u16,
-				     int&, int&,
-				     u32*);
+                              u16, u16,
+                              u16, u16,
+                              int&, int&,
+                              u32*);
 void gfxDrawSprites(u32 *);
 void gfxDrawOBJWin(u32 *lineOBJWin);
 u32 gfxIncreaseBrightness(u32 color, int coeff);

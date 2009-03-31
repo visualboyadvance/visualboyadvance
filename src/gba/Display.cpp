@@ -12,11 +12,11 @@ static u32 *pix;
 
 void initColorMap(int redShift, int greenShift, int blueShift)
 {
-	for(int i = 0; i < 0x10000; i++)
+	for (int i = 0; i < 0x10000; i++)
 	{
 		colorMap[i] = ((i & 0x1f) << redShift) |
-					(((i & 0x3e0) >> 5) << greenShift) |
-					(((i & 0x7c00) >> 10) << blueShift);
+		              (((i & 0x3e0) >> 5) << greenShift) |
+		              (((i & 0x7c00) >> 10) << blueShift);
 	}
 }
 
@@ -53,7 +53,8 @@ void clear()
 void drawLine(int line, u32* src)
 {
 	u32 *dest = pix + width * line;
-	for(int x = 0; x < width; ) {
+	for (int x = 0; x < width; )
+	{
 		*dest++ = colorMap[src[x++] & 0xFFFF];
 		*dest++ = colorMap[src[x++] & 0xFFFF];
 		*dest++ = colorMap[src[x++] & 0xFFFF];

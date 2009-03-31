@@ -8,7 +8,8 @@ namespace Cartridge
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
-typedef struct {
+typedef struct
+{
 	u8 byte0;
 	u8 byte1;
 	u8 byte2;
@@ -64,39 +65,39 @@ static u8 toBCD(u8 value)
 
 bool rtcWrite(u32 address, u16 value)
 {
-	if(!rtcEnabled)
+	if (!rtcEnabled)
 		return false;
 
-	if(address == 0x80000c8)
+	if (address == 0x80000c8)
 	{
 		rtcClockData.byte2 = (u8)value; // enable ?
 	}
-	else if(address == 0x80000c6)
+	else if (address == 0x80000c6)
 	{
 		rtcClockData.byte1 = (u8)value; // read/write
 	}
-	else if(address == 0x80000c4)
+	else if (address == 0x80000c4)
 	{
-		if(rtcClockData.byte2 & 1)
+		if (rtcClockData.byte2 & 1)
 		{
-			if(rtcClockData.state == IDLE && rtcClockData.byte0 == 1 && value == 5)
+			if (rtcClockData.state == IDLE && rtcClockData.byte0 == 1 && value == 5)
 			{
 				rtcClockData.state = COMMAND;
 				rtcClockData.bits = 0;
 				rtcClockData.command = 0;
 			}
-			else if(!(rtcClockData.byte0 & 1) && (value & 1)) // bit transfer
+			else if (!(rtcClockData.byte0 & 1) && (value & 1)) // bit transfer
 			{
 				rtcClockData.byte0 = (u8)value;
-				switch(rtcClockData.state)
+				switch (rtcClockData.state)
 				{
 				case COMMAND:
 					rtcClockData.command |= ((value & 2) >> 1) << (7-rtcClockData.bits);
 					rtcClockData.bits++;
-					if(rtcClockData.bits == 8)
+					if (rtcClockData.bits == 8)
 					{
 						rtcClockData.bits = 0;
-						switch(rtcClockData.command)
+						switch (rtcClockData.command)
 						{
 						case 0x60:
 							// not sure what this command does but it doesn't take parameters
@@ -158,16 +159,16 @@ bool rtcWrite(u32 address, u16 value)
 					}
 					break;
 				case DATA:
-					if(rtcClockData.byte1 & 2) 
+					if (rtcClockData.byte1 & 2)
 					{
 					}
 					else
 					{
 						rtcClockData.byte0 = (rtcClockData.byte0 & ~2) |
-							((rtcClockData.data[rtcClockData.bits >> 3] >>
-							(rtcClockData.bits & 7)) & 1)*2;
+						                     ((rtcClockData.data[rtcClockData.bits >> 3] >>
+						                       (rtcClockData.bits & 7)) & 1)*2;
 						rtcClockData.bits++;
-						if(rtcClockData.bits == 8*rtcClockData.dataLen)
+						if (rtcClockData.bits == 8*rtcClockData.dataLen)
 						{
 							rtcClockData.bits = 0;
 							rtcClockData.state = IDLE;
@@ -175,16 +176,16 @@ bool rtcWrite(u32 address, u16 value)
 					}
 					break;
 				case READDATA:
-					if(!(rtcClockData.byte1 & 2))
+					if (!(rtcClockData.byte1 & 2))
 					{
 					}
 					else
 					{
 						rtcClockData.data[rtcClockData.bits >> 3] =
-							(rtcClockData.data[rtcClockData.bits >> 3] >> 1) |
-							((value << 6) & 128);
+						    (rtcClockData.data[rtcClockData.bits >> 3] >> 1) |
+						    ((value << 6) & 128);
 						rtcClockData.bits++;
-						if(rtcClockData.bits == 8*rtcClockData.dataLen)
+						if (rtcClockData.bits == 8*rtcClockData.dataLen)
 						{
 							rtcClockData.bits = 0;
 							rtcClockData.state = IDLE;

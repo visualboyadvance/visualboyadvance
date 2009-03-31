@@ -58,10 +58,10 @@ static void clearFeatures(Features &features)
 static void processFeatureToken(Features &features, const std::string &token)
 {
 	if (token == "FLASH_V120" || token == "FLASH_V121" ||
-		token == "FLASH_V123" || token == "FLASH_V124" ||
-		token == "FLASH_V125" || token == "FLASH_V126" ||
-		token == "FLASH512_V130" || token == "FLASH512_V131" ||
-		token == "FLASH512_V133")
+	        token == "FLASH_V123" || token == "FLASH_V124" ||
+	        token == "FLASH_V125" || token == "FLASH_V126" ||
+	        token == "FLASH512_V130" || token == "FLASH512_V131" ||
+	        token == "FLASH512_V133")
 	{
 		features.saveType = SaveFlash;
 		features.flashSize = 0x10000;
@@ -72,16 +72,16 @@ static void processFeatureToken(Features &features, const std::string &token)
 		features.flashSize = 0x20000;
 	}
 	else if (token == "EEPROM_V111" || token == "EEPROM_V120" ||
-			 token == "EEPROM_V121" || token == "EEPROM_V122" ||
-			 token == "EEPROM_V124" || token == "EEPROM_V125" ||
-			 token == "EEPROM_V126")
+	         token == "EEPROM_V121" || token == "EEPROM_V122" ||
+	         token == "EEPROM_V124" || token == "EEPROM_V125" ||
+	         token == "EEPROM_V126")
 	{
 		features.saveType = SaveEEPROM;
 	}
 	else if (token == "SRAM_V110" || token == "SRAM_V111" ||
-			 token == "SRAM_V112" || token == "SRAM_V113" ||
-			 token == "SRAM_F_V100" || token == "SRAM_F_V102" ||
-			 token == "SRAM_F_V103")
+	         token == "SRAM_V112" || token == "SRAM_V113" ||
+	         token == "SRAM_F_V100" || token == "SRAM_F_V102" ||
+	         token == "SRAM_F_V103")
 	{
 		features.saveType = SaveSRAM;
 	}
@@ -110,18 +110,18 @@ static void findFeatures(Features &features, const GameSerial &gs)
 		{
 			std::string line;
 			GameSerial lineGS;
-			
+
 			std::getline(file, line);
-			
+
 			if (line.length() < 4) continue;
-			
+
 			gameSerialFromString(line, lineGS);
-			
+
 			if (areEqual(lineGS, gs))
 			{
 				std::string token;
 				std::istringstream iss(line);
-				
+
 				while (iss >> token)
 				{
 					processFeatureToken(features, token);
@@ -200,7 +200,7 @@ bool writeBatteryToFile(const char *fileName)
 	{
 		FILE *file = fopen(fileName, "wb");
 
-		if(!file)
+		if (!file)
 		{
 			systemMessage("Error creating file %s", fileName);
 			return false;
@@ -224,7 +224,7 @@ bool writeBatteryToFile(const char *fileName)
 		}
 
 		fclose(file);
-		
+
 		return res;
 	}
 
@@ -235,7 +235,7 @@ bool readBatteryFromFile(const char *fileName)
 {
 	FILE *file = fopen(fileName, "rb");
 
-	if(!file)
+	if (!file)
 		return false;
 
 	// check file size to know what we should read
@@ -267,7 +267,7 @@ bool readBatteryFromFile(const char *fileName)
 
 u32 readMemory32(const u32 address)
 {
-	switch(address >> 24)
+	switch (address >> 24)
 	{
 	case 8:
 	case 9:
@@ -277,7 +277,7 @@ u32 readMemory32(const u32 address)
 		return READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
 		break;
 	case 13:
-		if (features.saveType == SaveEEPROM) 
+		if (features.saveType == SaveEEPROM)
 			return eepromRead(address);
 		break;
 	case 14:
@@ -369,7 +369,7 @@ u8 readMemory8(const u32 address)
 
 void writeMemory32(const u32 address, const u32 value)
 {
-	switch(address >> 24)
+	switch (address >> 24)
 	{
 	case 13:
 		if (features.saveType == SaveEEPROM)
@@ -394,7 +394,7 @@ void writeMemory32(const u32 address, const u32 value)
 
 void writeMemory16(const u32 address, const u16 value)
 {
-	switch(address >> 24)
+	switch (address >> 24)
 	{
 	case 8:
 		if (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
@@ -425,7 +425,7 @@ void writeMemory16(const u32 address, const u16 value)
 
 void writeMemory8(const u32 address, const u8 value)
 {
-	switch(address >> 24)
+	switch (address >> 24)
 	{
 	case 13:
 		if (features.saveType == SaveEEPROM)
