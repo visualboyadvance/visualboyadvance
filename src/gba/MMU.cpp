@@ -52,6 +52,7 @@ u32 CPUReadMemory(u32 address)
 #endif
 
 				value = READ32LE(((u32 *)&biosProtected));
+				log("bios protected read %d", value);
 			}
 			else goto unreadable;
 		}
