@@ -31,6 +31,7 @@
 #include "Intl.h"
 #include "ScreenAreaCairo.h"
 #include "ScreenAreaOpenGL.h"
+#include "GameXml.h"
 
 extern int emulating;
 
@@ -72,7 +73,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 	m_poFileOpenDialog = NULL;
 	m_iScreenWidth     = m_iGBAScreenWidth;
 	m_iScreenHeight    = m_iGBAScreenHeight;
-	m_eCartridge       = CartridgeNone;
 
 	vInitSDL();
 	vInitSystem();
@@ -582,27 +582,18 @@ bool Window::bLoadROM(const std::string & _rsFile)
 {
 	vOnFileClose();
 
-	m_sRomFile = _rsFile;
-	const char * csFile = _rsFile.c_str();
-
-	bool bUsableImage = utilIsUsableGBAImage(csFile);
-
-	if (!bUsableImage)
-	{
-		vPopupError(_("Unknown file type %s"), csFile);
-		return false;
-	}
+	GameXml oGame;
+	oGame.parseFile(_rsFile);
 
 	if (!CPUInitMemory())
 		return false;
 
-	if (!Cartridge::loadDump(csFile))
+	if (!Cartridge::loadGame(oGame))
 	{
 		CPUCleanUp();
 		return false;
 	}
 
-	m_eCartridge = CartridgeGBA;
 	m_stEmulator = GBASystem;
 
 	if (m_poCoreConfig->sGetKey("bios_file") == "")
@@ -796,29 +787,10 @@ void Window::vCreateFileOpenDialog()
 		// Most likely the shortcut already exists, so do nothing
 	}
 
-	const char * acsPattern[] =
-	{
-		// GBA
-		"*.[bB][iI][nN]", "*.[aA][gG][bB]", "*.[gG][bB][aA]",
-		// Both
-		"*.[mM][bB]", "*.[eE][lL][fF]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
-	};
-
-	Gtk::FileFilter oAllGBAFilter;
-	oAllGBAFilter.set_name(_("All Gameboy Advance files"));
-	for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
-	{
-		oAllGBAFilter.add_pattern(acsPattern[i]);
-	}
-
 	Gtk::FileFilter oGBAFilter;
 	oGBAFilter.set_name(_("Gameboy Advance files"));
-	for (int i = 0; i < 3; i++)
-	{
-		oGBAFilter.add_pattern(acsPattern[i]);
-	}
+	oGBAFilter.add_pattern("*.[xX][mM][lL]");
 
-	poDialog->add_filter(oAllGBAFilter);
 	poDialog->add_filter(oGBAFilter);
 
 	m_poFileOpenDialog = poDialog;
@@ -833,7 +805,7 @@ void Window::vLoadBattery()
 		sDir = m_sUserDataDir;
 	}
 
-	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
+	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())) + ".sav";
 
 	if (Cartridge::readBatteryFromFile(sBattery.c_str()))
 	{
@@ -850,7 +822,7 @@ void Window::vSaveBattery()
 		sDir = m_sUserDataDir;
 	}
 
-	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile)) + ".sav";
+	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())) + ".sav";
 
 	if (Cartridge::writeBatteryToFile(sBattery.c_str()))
 	{
@@ -877,7 +849,7 @@ void Window::vStopEmu()
 
 void Window::vUpdateGameSlots()
 {
-	if (m_eCartridge == CartridgeNone)
+	if (!Cartridge::getGame().isPresent())
 	{
 		std::string sDateTime = _("----/--/-- --:--:--");
 
@@ -907,7 +879,7 @@ void Window::vUpdateGameSlots()
 			sDir = m_sUserDataDir;
 		}
 
-		sFileBase = sDir + "/" + sCutSuffix(Glib::path_get_basename(m_sRomFile));
+		sFileBase = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump()));
 
 		const char * csDateFormat = _("%Y/%m/%d %H:%M:%S");
 

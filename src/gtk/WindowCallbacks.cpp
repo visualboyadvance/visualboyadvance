@@ -20,6 +20,7 @@
 
 #include <SDL.h>
 
+#include "../gba/Cartridge.h"
 #include "../gba/GBA.h"
 #include "../gba/Sound.h"
 
@@ -81,7 +82,7 @@ void Window::vOnFileLoad()
 
 	if (sSaveDir == "")
 	{
-		oDialog.set_current_folder(Glib::path_get_dirname(m_sRomFile));
+		oDialog.set_current_folder(Cartridge::getGame().getBasePath());
 	}
 	else
 	{
@@ -115,14 +116,14 @@ void Window::vOnFileSave()
 
 	if (sSaveDir == "")
 	{
-		oDialog.set_current_folder(Glib::path_get_dirname(m_sRomFile));
+		oDialog.set_current_folder(Glib::path_get_dirname(Cartridge::getGame().getBasePath()));
 	}
 	else
 	{
 		oDialog.set_current_folder(sSaveDir);
 		oDialog.add_shortcut_folder(sSaveDir);
 	}
-	oDialog.set_current_name(sCutSuffix(Glib::path_get_basename(m_sRomFile)));
+	oDialog.set_current_name(sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())));
 
 	Gtk::FileFilter oSaveFilter;
 	oSaveFilter.set_name(_("VisualBoyAdvance save game"));
@@ -266,15 +267,15 @@ void Window::vOnRecentFile()
 
 void Window::vOnFileClose()
 {
-	if (m_eCartridge != CartridgeNone)
+	if (Cartridge::getGame().isPresent())
 	{
 		soundPause();
 		vStopEmu();
 		vSetDefaultTitle();
 		vDrawDefaultScreen();
 		vSaveBattery();
+		Cartridge::unloadGame();
 		m_stEmulator.emuCleanUp();
-		m_eCartridge = CartridgeNone;
 		emulating = 0;
 
 		vUpdateGameSlots();

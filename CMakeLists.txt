@@ -58,6 +58,7 @@ SET(SRC_GBA
 	src/gba/CPUArm.cpp
 	src/gba/CPUThumb.cpp
 	src/gba/Display.cpp
+	src/gba/GameInfos.cpp
 	src/gba/GBA.cpp
 	src/gba/Gfx.cpp
 	src/gba/GfxHelpers.cpp
@@ -95,6 +96,7 @@ SET(SRC_GTK
 	src/gtk/Tools.cpp
 	src/gtk/Window.cpp
 	src/gtk/InputSDL.cpp
+	src/gtk/GameXml.cpp
 	src/common/SoundSDL.cpp
 )
 

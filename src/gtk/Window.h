@@ -43,12 +43,6 @@ public:
 	}
 	static std::string sGetUiFilePath(const std::string &_sFileName);
 
-	enum ECartridge
-	{
-		CartridgeNone,
-		CartridgeGBA
-	};
-
 	// GBA screen size
 	const int m_iGBAScreenWidth;
 	const int m_iGBAScreenHeight;
@@ -66,10 +60,6 @@ public:
 	void vApplyConfigFrameskip();
 	void vUpdateScreen();
 	void vUpdateGameSlots();
-
-	inline ECartridge eGetCartridge() const {
-		return m_eCartridge;
-	}
 
 protected:
 	Window(GtkWindow * _pstWindow,
@@ -169,8 +159,6 @@ private:
 	int m_iScreenHeight;
 	int m_iFrameCount;
 
-	std::string    m_sRomFile;
-	ECartridge     m_eCartridge;
 	EmulatedSystem m_stEmulator;
 	bool           m_bPaused;
 	bool           m_bWasEmulating;

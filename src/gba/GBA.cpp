@@ -1895,8 +1895,10 @@ updateLoop:
 							// update joystick information
 							joy = systemReadJoypad();
 							P1 = 0x03FF ^ (joy & 0x3FF);
-							if (Cartridge::features.hasMotionSensor)
-								systemUpdateMotionSensor();
+							
+							//FIXME: Reenable
+							/*if (Cartridge::features.hasMotionSensor)
+								systemUpdateMotionSensor();*/
 							UPDATE_REG(0x130, P1);
 							u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
 							// this seems wrong, but there are cases where the game

@@ -2,36 +2,19 @@
 #define CARTRIDGE_H
 
 #include "../common/Types.h"
+#include "GameInfos.h"
 
 namespace Cartridge
 {
 
-typedef char GameSerial[4];
-
-enum ESaveType
-{
-	SaveNone,
-	SaveEEPROM,
-	SaveSRAM,
-	SaveFlash
-};
-
-struct Features
-{
-	ESaveType saveType;
-	int eepromSize;
-	int flashSize;
-	bool hasRTC;
-	bool hasMotionSensor;
-};
-
-extern Features features;
-
 bool init();
 void reset();
 void uninit();
-bool loadDump(const char *file);
+bool loadGame(const GameInfos &_game);
+void unloadGame();
 void getGameName(u8 *romname);
+const GameInfos &getGame();
+
 bool readBatteryFromFile(const char *fileName);
 bool writeBatteryToFile(const char *fileName);
 

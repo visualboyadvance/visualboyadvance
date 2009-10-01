@@ -17,131 +17,17 @@
 namespace Cartridge
 {
 
-Features features = {SaveNone, 0x2000, 0x10000, false, false};
+static GameInfos game;
 static u8 *rom = 0;
 
-static bool areEqual(const GameSerial &x, const GameSerial &y)
+bool loadGame(const GameInfos &_game)
 {
-	return (x[0] == y[0]) && (x[1] == y[1]) && (x[2] == y[2]) && (x[3] == y[3]);
-}
-
-static void gameSerialFromString(const std::string &str, GameSerial &gs)
-{
-	gs[0] = str[0];
-	gs[1] = str[1];
-	gs[2] = str[2];
-	gs[3] = str[3];
-}
-
-static void getGameSerial(GameSerial &gs)
-{
-	gs[0] = rom[0xac];
-	gs[1] = rom[0xad];
-	gs[2] = rom[0xae];
-	gs[3] = rom[0xaf];
-}
-
-void getGameName(u8 *romname)
-{
-	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
-}
-
-static void clearFeatures(Features &features)
-{
-	features.saveType = SaveNone;
-	features.eepromSize = 0x2000;
-	features.flashSize = 0x10000;
-	features.hasRTC = false;
-	features.hasMotionSensor = false;
-}
-
-static void processFeatureToken(Features &features, const std::string &token)
-{
-	if (token == "FLASH_V120" || token == "FLASH_V121" ||
-	        token == "FLASH_V123" || token == "FLASH_V124" ||
-	        token == "FLASH_V125" || token == "FLASH_V126" ||
-	        token == "FLASH512_V130" || token == "FLASH512_V131" ||
-	        token == "FLASH512_V133")
-	{
-		features.saveType = SaveFlash;
-		features.flashSize = 0x10000;
-	}
-	else if (token == "FLASH1M_V102" || token == "FLASH1M_V103")
-	{
-		features.saveType = SaveFlash;
-		features.flashSize = 0x20000;
-	}
-	else if (token == "EEPROM_V111" || token == "EEPROM_V120" ||
-	         token == "EEPROM_V121" || token == "EEPROM_V122" ||
-	         token == "EEPROM_V124" || token == "EEPROM_V125" ||
-	         token == "EEPROM_V126")
-	{
-		features.saveType = SaveEEPROM;
-	}
-	else if (token == "SRAM_V110" || token == "SRAM_V111" ||
-	         token == "SRAM_V112" || token == "SRAM_V113" ||
-	         token == "SRAM_F_V100" || token == "SRAM_F_V102" ||
-	         token == "SRAM_F_V103")
-	{
-		features.saveType = SaveSRAM;
-	}
-	else if (token == "EEPROM_4K")
-	{
-		features.eepromSize = 0x0200;
-	}
-	else if (token == "EEPROM_64K")
-	{
-		features.eepromSize = 0x2000;
-	}
-	else if (token == "SIIRTC_V001")
-	{
-		features.hasRTC = true;
-	}
-}
-
-static void findFeatures(Features &features, const GameSerial &gs)
-{
-	clearFeatures(features);
-
-	std::ifstream file(PKGDATADIR "/GamesDB.txt");
-	if (file.is_open())
-	{
-		while (!file.eof())
-		{
-			std::string line;
-			GameSerial lineGS;
-
-			std::getline(file, line);
-
-			if (line.length() < 4) continue;
-
-			gameSerialFromString(line, lineGS);
-
-			if (areEqual(lineGS, gs))
-			{
-				std::string token;
-				std::istringstream iss(line);
-
-				while (iss >> token)
-				{
-					processFeatureToken(features, token);
-				}
-				break;
-			}
-		}
-		file.close();
-	}
-	else
-	{
-		systemMessage("Error reading the game database.");
-	}
-}
-
-bool loadDump(const char *file)
-{
+	game = _game;
+	std::string file = game.getBasePath() + game.getRomDump();
+	
 	int romSize = 0x2000000;
 
-	return utilLoad(file, utilIsGBAImage, rom, romSize);
+	return utilLoad(file.c_str(), utilIsGBAImage, rom, romSize);
 
 	// What does this do ?
 	/*u16 *temp = (u16 *)(rom+((romSize+1)&~1));
@@ -150,6 +36,22 @@ bool loadDump(const char *file)
 		WRITE16LE(temp, (i >> 1) & 0xFFFF);
 		temp++;
 	}*/
+}
+
+void unloadGame()
+{
+	GameInfos g;
+	game = g;
+}
+
+const GameInfos &getGame()
+{
+	return game;
+}
+
+void getGameName(u8 *romname)
+{
+	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
 }
 
 bool init()
@@ -170,19 +72,11 @@ bool init()
 
 void reset()
 {
-	Features f;
-	GameSerial gs;
-
-	getGameSerial(gs);
-	findFeatures(f, gs);
-
-	eepromReset(f.eepromSize);
-	flashReset(f.flashSize);
+	eepromReset(game.getEEPROMSize());
+	flashReset(game.getFlashSize());
 
 	rtcReset();
-	rtcEnable(f.hasRTC);
-
-	features = f;
+	rtcEnable(game.hasRTC());
 }
 
 void uninit()
@@ -196,7 +90,7 @@ void uninit()
 
 bool writeBatteryToFile(const char *fileName)
 {
-	if (features.saveType != SaveNone)
+	if (game.hasFlash() || game.hasEEPROM() || game.hasSRAM())
 	{
 		FILE *file = fopen(fileName, "wb");
 
@@ -208,19 +102,17 @@ bool writeBatteryToFile(const char *fileName)
 
 		bool res = true;
 
-		switch (features.saveType)
+		if (game.hasFlash())
 		{
-		case SaveFlash:
 			res = flashWriteBattery(file);
-			break;
-		case SaveEEPROM:
+		}
+		else if (game.hasEEPROM())
+		{
 			res = eepromWriteBattery(file);
-			break;
-		case SaveSRAM:
+		}
+		else if (game.hasSRAM())
+		{
 			res = sramWriteBattery(file);
-			break;
-		case SaveNone:
-			break;
 		}
 
 		fclose(file);
@@ -246,19 +138,17 @@ bool readBatteryFromFile(const char *fileName)
 
 	bool res = true;
 
-	switch (features.saveType)
+	if (game.hasFlash())
 	{
-	case SaveSRAM:
-		res = sramReadBattery(file, size);
-		break;
-	case SaveFlash:
 		res = flashReadBattery(file, size);
-		break;
-	case SaveEEPROM:
+	}
+	else if (game.hasEEPROM())
+	{
 		res = eepromReadBattery(file, size);
-		break;
-	case SaveNone:
-		break;
+	}
+	else if (game.hasSRAM())
+	{
+		res = sramReadBattery(file, size);
 	}
 
 	fclose(file);
@@ -277,13 +167,13 @@ u32 readMemory32(const u32 address)
 		return READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
 		break;
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 			return eepromRead(address);
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 			return sramRead(address);
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 			return flashRead(address);
 		break;
 	default:
@@ -308,13 +198,13 @@ u16 readMemory16(const u32 address)
 			return READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 		break;
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 			return eepromRead(address);
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 			return sramRead(address);
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 			return flashRead(address);
 		break;
 	default:
@@ -336,16 +226,16 @@ u8 readMemory8(const u32 address)
 		return rom[address & 0x1FFFFFF];
 		break;
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 			return eepromRead(address);
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 			return sramRead(address);
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 			return flashRead(address);
 
-		if (features.hasMotionSensor)
+		/*if (game.hasMotionSensor())
 		{
 			switch (address & 0x00008f00)
 			{
@@ -358,7 +248,7 @@ u8 readMemory8(const u32 address)
 			case 0x8500:
 				return systemGetSensorY() >> 8;
 			}
-		}
+		}*/
 		break;
 	default:
 		break;
@@ -372,17 +262,17 @@ void writeMemory32(const u32 address, const u32 value)
 	switch (address >> 24)
 	{
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 		{
 			eepromWrite(address, value);
 		}
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 		{
 			sramWrite(address, (u8)value);
 		}
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 		{
 			flashWrite(address, (u8)value);
 		}
@@ -403,17 +293,17 @@ void writeMemory16(const u32 address, const u16 value)
 		}
 		break;
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 		{
 			eepromWrite(address, (u8)value);
 		}
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 		{
 			sramWrite(address, (u8)value);
 		}
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 		{
 			flashWrite(address, (u8)value);
 		}
@@ -428,17 +318,17 @@ void writeMemory8(const u32 address, const u8 value)
 	switch (address >> 24)
 	{
 	case 13:
-		if (features.saveType == SaveEEPROM)
+		if (game.hasEEPROM())
 		{
 			eepromWrite(address, value);
 		}
 		break;
 	case 14:
-		if (features.saveType == SaveSRAM)
+		if (game.hasSRAM())
 		{
 			sramWrite(address, value);
 		}
-		else if (features.saveType == SaveFlash)
+		else if (game.hasFlash())
 		{
 			flashWrite(address, value);
 		}
