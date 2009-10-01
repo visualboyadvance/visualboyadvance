@@ -1,6 +1,5 @@
 #include "Globals.h"
 
-bool ioReadable[0x400];
 bool speedup = false;
 int layerEnable = 0xff00;
 

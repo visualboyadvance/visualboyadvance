@@ -3,6 +3,8 @@
 
 #include "../common/Port.h"
 
+void MMUinit();
+
 u32 CPUReadMemory(u32 address);
 u32 CPUReadHalfWord(u32 address);
 u16 CPUReadHalfWordSigned(u32 address);

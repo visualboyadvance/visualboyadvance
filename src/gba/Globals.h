@@ -3,7 +3,6 @@
 
 #include "../common/Types.h"
 
-extern bool ioReadable[0x400];
 extern bool speedup;
 extern int layerEnable;
 

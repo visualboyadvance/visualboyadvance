@@ -21,6 +21,45 @@ extern int timer3Ticks;
 extern int timer3ClockReload;
 
 static const u32 objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
+static bool ioReadable[0x400];
+
+void MMUinit()
+{
+	for (int i = 0; i < 0x400; i++)
+		ioReadable[i] = true;
+	for (int i = 0x10; i < 0x48; i++)
+		ioReadable[i] = false;
+	for (int i = 0x4c; i < 0x50; i++)
+		ioReadable[i] = false;
+	for (int i = 0x54; i < 0x60; i++)
+		ioReadable[i] = false;
+	for (int i = 0x8c; i < 0x90; i++)
+		ioReadable[i] = false;
+	for (int i = 0xa0; i < 0xb8; i++)
+		ioReadable[i] = false;
+	for (int i = 0xbc; i < 0xc4; i++)
+		ioReadable[i] = false;
+	for (int i = 0xc8; i < 0xd0; i++)
+		ioReadable[i] = false;
+	for (int i = 0xd4; i < 0xdc; i++)
+		ioReadable[i] = false;
+	for (int i = 0xe0; i < 0x100; i++)
+		ioReadable[i] = false;
+	for (int i = 0x110; i < 0x120; i++)
+		ioReadable[i] = false;
+	for (int i = 0x12c; i < 0x130; i++)
+		ioReadable[i] = false;
+	for (int i = 0x138; i < 0x140; i++)
+		ioReadable[i] = false;
+	for (int i = 0x144; i < 0x150; i++)
+		ioReadable[i] = false;
+	for (int i = 0x15c; i < 0x200; i++)
+		ioReadable[i] = false;
+	for (int i = 0x20c; i < 0x300; i++)
+		ioReadable[i] = false;
+	for (int i = 0x304; i < 0x400; i++)
+		ioReadable[i] = false;
+}
 
 u32 CPUReadMemory(u32 address)
 {
