@@ -24,7 +24,6 @@
 #define _stricmp strcasecmp
 #endif
 
-int SWITicks = 0;
 static int IRQTicks = 0;
 
 static int layerEnableDelay = 0;
@@ -69,7 +68,6 @@ static u32 dma2Source = 0;
 static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
-static int frameCount = 0;
 static u32 lastTime = 0;
 static int count = 0;
 
@@ -246,12 +244,6 @@ static inline int CPUUpdateTicks()
 	if (timer3On && !(TM3CNT & 4) && (timer3Ticks < cpuLoopTicks))
 	{
 		cpuLoopTicks = timer3Ticks;
-	}
-
-	if (SWITicks)
-	{
-		if (SWITicks < cpuLoopTicks)
-			cpuLoopTicks = SWITicks;
 	}
 
 	if (IRQTicks)
@@ -1738,7 +1730,6 @@ void CPUReset()
 	dma3Source = 0;
 	dma3Dest = 0;
 	GFX::chooseRenderer();
-	frameCount = 0;
 	layerEnable = DISPCNT;
 
 	GFX::clearRenderBuffers(true);
@@ -1754,7 +1745,6 @@ void CPUReset()
 
 	lastTime = systemGetClock();
 
-	SWITicks = 0;
 }
 
 void CPULoop(int ticks)
@@ -1775,7 +1765,7 @@ void CPULoop(int ticks)
 
 	for (;;)
 	{
-		if (!holdState && !SWITicks)
+		if (!holdState)
 		{
 			if (CPU::armState)
 			{
@@ -1798,13 +1788,6 @@ void CPULoop(int ticks)
 		if (cpuTotalTicks >= cpuNextEvent)
 		{
 			int remainingTicks = cpuTotalTicks - cpuNextEvent;
-
-			if (SWITicks)
-			{
-				SWITicks-=clockTicks;
-				if (SWITicks<0)
-					SWITicks = 0;
-			}
 
 			clockTicks = cpuNextEvent;
 			cpuTotalTicks = 0;
@@ -1859,8 +1842,6 @@ updateLoop:
 				}
 				else
 				{
-					int framesToSkip = systemFrameSkip;
-
 					if (DISPSTAT & 2)
 					{
 						// if in H-Blank, leave it and move to drawing mode
@@ -1872,12 +1853,7 @@ updateLoop:
 						if (VCOUNT == 160)
 						{
 							count++;
-							systemFrame();
 
-							if ((count % 10) == 0)
-							{
-								system10Frames(60);
-							}
 							if (count == 60)
 							{
 								u32 time = systemGetClock();
@@ -1937,13 +1913,7 @@ updateLoop:
 								UPDATE_REG(0x202, IF);
 							}
 							CPUCheckDMA(1, 0x0f);
-							if (frameCount >= framesToSkip)
-							{
-								Display::drawScreen();
-								frameCount = 0;
-							}
-							else
-								frameCount++;
+							Display::drawScreen();
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
@@ -1952,11 +1922,9 @@ updateLoop:
 					}
 					else
 					{
-						if (frameCount >= framesToSkip)
-						{
-							GFX::renderLine();
-							Display::drawLine(VCOUNT, GFX::lineMix);
-						}
+						GFX::renderLine();
+						Display::drawLine(VCOUNT, GFX::lineMix);
+
 						// entering H-Blank
 						DISPSTAT |= 2;
 						UPDATE_REG(0x04, DISPSTAT);
@@ -2173,11 +2141,6 @@ updateLoop:
 							stopState = false;
 						}
 					}
-
-					// Stops the SWI Ticks emulation if an IRQ is executed
-					//(to avoid problems with nested IRQ/SWI)
-					if (SWITicks)
-						SWITicks = 0;
 				}
 			}
 

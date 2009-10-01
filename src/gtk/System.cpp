@@ -26,7 +26,6 @@
 // Required vars, used by the emulator core
 //
 int  systemVerbose;
-int  systemFrameSkip;
 
 int  emulating;
 
@@ -58,15 +57,6 @@ u32 systemReadJoypad()
 void systemShowSpeed(int _iSpeed)
 {
 	GUI()->vShowSpeed(_iSpeed);
-}
-
-void system10Frames(int _iRate)
-{
-	GUI()->vComputeFrameskip(_iRate);
-}
-
-void systemFrame()
-{
 }
 
 u32 systemGetClock()

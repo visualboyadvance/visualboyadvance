@@ -1521,7 +1521,7 @@ int thumbExecute()
 		cpuTotalTicks += clockTicks;
 
 	}
-	while (cpuTotalTicks < cpuNextEvent && !armState && !holdState && !SWITicks);
+	while (cpuTotalTicks < cpuNextEvent && !armState && !holdState);
 
 	return 1;
 }

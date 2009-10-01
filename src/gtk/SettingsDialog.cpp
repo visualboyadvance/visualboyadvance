@@ -39,7 +39,6 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 	refBuilder->get_widget("BatteriesFileChooserButton", m_poBatteriesFileChooserButton);
 	refBuilder->get_widget("SavesFileChooserButton", m_poSavesFileChooserButton);
 	refBuilder->get_widget("PauseOnInactiveCheckButton", m_poPauseOnInactiveCheckButton);
-	refBuilder->get_widget("EnableFrameskipCheckButton", m_poEnableFrameskipCheckButton);
 
 	m_poVolumeComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnVolumeChanged));
 	m_poRateComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRateChanged));
@@ -51,7 +50,6 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 	m_poBatteriesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBatteriesChanged));
 	m_poSavesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnSavesChanged));
 	m_poPauseOnInactiveCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnPauseChanged));
-	m_poEnableFrameskipCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnFrameskipChanged));
 
 	// Bios FileChooserButton
 	const char * acsPattern[] =
@@ -137,9 +135,6 @@ void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Sectio
 
 	bool bPauseWhenInactive = m_poDisplayConfig->oGetKey<bool>("pause_when_inactive");
 	m_poPauseOnInactiveCheckButton->set_active(bPauseWhenInactive);
-
-	bool bFrameskip = m_poCoreConfig->oGetKey<bool>("frameskip");
-	m_poEnableFrameskipCheckButton->set_active(bFrameskip);
 }
 
 void SettingsDialog::vOnVolumeChanged()
@@ -250,13 +245,6 @@ void SettingsDialog::vOnPauseChanged()
 {
 	bool bPauseWhenInactive = m_poPauseOnInactiveCheckButton->get_active();
 	m_poDisplayConfig->vSetKey("pause_when_inactive", bPauseWhenInactive);
-}
-
-void SettingsDialog::vOnFrameskipChanged()
-{
-	bool bFrameskip = m_poEnableFrameskipCheckButton->get_active();
-	m_poCoreConfig->vSetKey("frameskip", bFrameskip);
-	m_poWindow->vApplyConfigFrameskip();
 }
 
 } // namespace VBA

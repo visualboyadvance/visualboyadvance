@@ -105,7 +105,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 	vApplyConfigScreenArea();
 	vApplyConfigVolume();
 	vApplyConfigShowSpeed();
-	vApplyConfigFrameskip();
 	vUpdateScreen();
 	inputSetDefaultJoypad(PAD_MAIN);
 
@@ -321,11 +320,7 @@ void Window::vInitSystem()
 	                //	| VERBOSE_DMA0 | VERBOSE_DMA1 | VERBOSE_DMA2 | VERBOSE_DMA3
 	                | VERBOSE_UNDEFINED | VERBOSE_AGBPRINT | VERBOSE_SOUNDOUTPUT;
 
-	systemFrameSkip = 0;
-
 	emulating = 0;
-
-	m_iFrameCount = 0;
 
 	soundInit();
 }
@@ -390,7 +385,6 @@ void Window::vInitConfig()
 	//
 	m_poCoreConfig = m_oConfig.poAddSection("Core");
 	m_poCoreConfig->vSetKey("load_game_auto",    false        );
-	m_poCoreConfig->vSetKey("frameskip",         false        );
 	m_poCoreConfig->vSetKey("bios_file",         ""           );
 
 	// Display section
@@ -522,12 +516,6 @@ void Window::vApplyConfigShowSpeed()
 	{
 		vSetDefaultTitle();
 	}
-}
-
-void Window::vApplyConfigFrameskip()
-{
-	m_bAutoFrameskip = m_poCoreConfig->oGetKey<bool>("frameskip");
-	systemFrameSkip  = 0;
 }
 
 void Window::vHistoryAdd(const std::string & _rsFile)
@@ -671,7 +659,6 @@ void Window::vDrawScreen(u32 *pix)
 {
 	// TODO:Remove the cast
 	m_poScreenArea->vDrawPixels((u8 *)pix);
-	m_iFrameCount++;
 }
 
 void Window::vDrawDefaultScreen()
@@ -690,75 +677,10 @@ void Window::vShowSpeed(int _iSpeed)
 
 	if (m_bShowSpeed)
 	{
-		snprintf(csTitle, 50, "VBA-M - %d%% (%d, %d fps)",
-		         _iSpeed, systemFrameSkip, m_iFrameCount);
+		snprintf(csTitle, 50, "VBA-M - %d%%",
+		         _iSpeed);
 		set_title(csTitle);
 	}
-
-	m_iFrameCount = 0;
-}
-
-void Window::vComputeFrameskip(int _iRate)
-{
-	static Glib::TimeVal uiLastTime;
-	static int iFrameskipAdjust = 0;
-
-	Glib::TimeVal uiTime;
-	uiTime.assign_current_time();
-
-	if (m_bWasEmulating)
-	{
-		if (m_bAutoFrameskip)
-		{
-			Glib::TimeVal uiDiff = uiTime - uiLastTime;
-			const int iWantedSpeed = 100;
-			int iSpeed = iWantedSpeed;
-
-			if (uiDiff != Glib::TimeVal(0, 0))
-			{
-				iSpeed = (1000000 / _iRate) / (uiDiff.as_double() * 1000);
-			}
-
-			if (iSpeed >= iWantedSpeed - 2)
-			{
-				iFrameskipAdjust++;
-				if (iFrameskipAdjust >= 3)
-				{
-					iFrameskipAdjust = 0;
-					if (systemFrameSkip > 0)
-					{
-						systemFrameSkip--;
-					}
-				}
-			}
-			else
-			{
-				if (iSpeed < iWantedSpeed - 20)
-				{
-					iFrameskipAdjust -= ((iWantedSpeed - 10) - iSpeed) / 5;
-				}
-				else if (systemFrameSkip < 9)
-				{
-					iFrameskipAdjust--;
-				}
-
-				if (iFrameskipAdjust <= -4)
-				{
-					iFrameskipAdjust = 0;
-					if (systemFrameSkip < 9)
-					{
-						systemFrameSkip++;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		m_bWasEmulating = true;
-	}
-
-	uiLastTime = uiTime;
 }
 
 void Window::vCreateFileOpenDialog()

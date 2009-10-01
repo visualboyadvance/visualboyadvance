@@ -33,8 +33,6 @@ extern void systemUpdateMotionSensor();
 extern int  systemGetSensorX();
 extern int  systemGetSensorY();
 extern void systemShowSpeed(int);
-extern void system10Frames(int);
-extern void systemFrame();
 
 #define VERBOSE_SWI                  1
 #define VERBOSE_UNALIGNED_MEMORY     2
@@ -49,6 +47,5 @@ extern void systemFrame();
 #define VERBOSE_SOUNDOUTPUT       1024
 
 extern int systemVerbose;
-extern int systemFrameSkip;
 
 #endif // SYSTEM_H

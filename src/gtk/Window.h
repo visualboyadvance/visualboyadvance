@@ -51,13 +51,11 @@ public:
 	void vPopupError(const char * _csFormat, ...);
 	void vPopupErrorV(const char * _csFormat, va_list _args);
 	void vDrawScreen(u32 *pix);
-	void vComputeFrameskip(int _iRate);
 	void vShowSpeed(int _iSpeed);
 	void vApplyConfigScreenArea();
 	void vApplyConfigVolume();
 	void vApplyConfigSoundSampleRate();
 	void vApplyConfigShowSpeed();
-	void vApplyConfigFrameskip();
 	void vUpdateScreen();
 	void vUpdateGameSlots();
 
@@ -157,12 +155,10 @@ private:
 	int m_bFullscreen;
 	int m_iScreenWidth;
 	int m_iScreenHeight;
-	int m_iFrameCount;
 
 	EmulatedSystem m_stEmulator;
 	bool           m_bPaused;
 	bool           m_bWasEmulating;
-	bool           m_bAutoFrameskip;
 	bool           m_bShowSpeed;
 
 	void vInitSystem();
