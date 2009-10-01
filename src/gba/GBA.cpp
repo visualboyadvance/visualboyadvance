@@ -222,6 +222,11 @@ static variable_desc saveGameStruct[] =
 	{ NULL, 0 }
 };
 
+static inline void UPDATE_REG(u32 address, u16 value)
+{
+	WRITE16LE(((u16 *)&ioMem[address]), value);
+}
+
 static inline int CPUUpdateTicks()
 {
 	int cpuLoopTicks = lcdTicks;

@@ -27,7 +27,7 @@ static int GetSioMode(u16, u16);
 
 void linkUpdateSIOCNT(u16 value)
 {
-	if (linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
+/*	if (linklog) fprintf(linklogfile, "SIOCNT %04x\n", value);
 
 	UPDATE_REG(0x128, value);
 
@@ -64,17 +64,17 @@ void linkUpdateSIOCNT(u16 value)
 	default:
 		UPDATE_REG(0x128, value);
 		break;
-	}
+	}*/
 }
 
 void linkUpdateRCNT(u16 value)
 {
 	if (linklog) fprintf(linklogfile, "RCNT %04x\n", value);
 
-	UPDATE_REG(0x134, value);
+	/*UPDATE_REG(0x134, value);
 
 
-	/*	if(!value){
+		if(!value){
 			UPDATE_REG(0x134, 0);
 			return;
 		}
@@ -108,13 +108,13 @@ void linkUpdateRCNT(u16 value)
 
 void StartJOYLink(u16 value)
 {
-	if (!value)
+	/*if (!value)
 	{
 		UPDATE_REG(0x140, 0);
 		return;
 	}
 	if (GetSioMode(READ16LE(&ioMem[0x128]), READ16LE(&ioMem[0x134]))==JOYBUS&&linklog) fprintf(linklogfile, "Attempt to use JOY-BUS mode %04x\n", value);
-	return;
+	return;*/
 }
 
 void LinkUpdate(int ticks)
@@ -635,13 +635,13 @@ void LinkSStop(void)
 			if(lanlink.numgbas==1) return;
 			lc.Recv();
 		}
-		else ls.Recv();*/
+		else ls.Recv();
 
 		oncewait = true;
 		UPDATE_REG(0x122, linkdata[1]);
 		UPDATE_REG(0x124, linkdata[2]);
 		UPDATE_REG(0x126, linkdata[3]);
-		if (linklog) fprintf(linklogfile, "%04x %04x %04x %04x %10u\n", linkdata[0], linkdata[1], linkdata[2], linkdata[3], savedlinktime);
+		if (linklog) fprintf(linklogfile, "%04x %04x %04x %04x %10u\n", linkdata[0], linkdata[1], linkdata[2], linkdata[3], savedlinktime);*/
 	}
 	return;
 }

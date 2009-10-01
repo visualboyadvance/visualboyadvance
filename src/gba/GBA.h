@@ -9,7 +9,6 @@
 extern u8 biosProtected[4];
 extern int cpuNextEvent;
 extern int cpuTotalTicks;
-extern int SWITicks;
 extern bool holdState;
 extern u8 memoryWait[16];
 extern u8 memoryWait32[16];
@@ -28,11 +27,6 @@ extern void CPUCheckDMA(int,int);
 
 extern struct EmulatedSystem GBASystem;
 
-#define UPDATE_REG(address, value)\
-  {\
-    WRITE16LE(((u16 *)&ioMem[address]),value);\
-  }\
- 
 #define R13_IRQ  18
 #define R14_IRQ  19
 #define SPSR_IRQ 20
