@@ -31,7 +31,7 @@ static bool ioReadable[0x400];
 template<typename T>
 static T unreadable(u32 address);
 
-template<typename T>
+template<int s, typename T>
 static T readGeneric(u32 address);
 
 template<typename T, int mask>
@@ -80,12 +80,12 @@ static MemAccess memMap[] =
 {
 	{ 0, 0x00003FFF, readBios<u8, 0x03>, readBios<u16, 0x02>, readBios<u32, 0x0F>, unwritable<u8>,    unwritable<u16>,    unwritable<u32>    }, // 0 - bios - mask values are probably wrong
 	{ 0, 0x00000000, unreadable<u8>,     unreadable<u16>,     unreadable<u32>,     unwritable<u8>,    unwritable<u16>,    unwritable<u32>    }, // 1
-	{ 0, 0x0003FFFF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 2
-	{ 0, 0x00007FFF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 3
+	{ 0, 0x0003FFFF, readGeneric<2, u8>, readGeneric<2, u16>, readGeneric<2, u32>, writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 2
+	{ 0, 0x00007FFF, readGeneric<3, u8>, readGeneric<3, u16>, readGeneric<3, u32>, writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 3
 	{ 0, 0x000003FF, readIo8,            readIo16,            readIo32,            writeIo8,          writeIo16,          writeIo32          }, // 4
-	{ 0, 0x000003FF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    writeVideo8,       writeGeneric<u16>,  writeGeneric<u32>  }, // 5
+	{ 0, 0x000003FF, readGeneric<5, u8>, readGeneric<5, u16>, readGeneric<5, u32>, writeVideo8,       writeGeneric<u16>,  writeGeneric<u32>  }, // 5
 	{ 0, 0x0001FFFF, readVRAM<u8>,       readVRAM<u16>,       readVRAM<u32>,       writeVRAM<u8>,     writeVRAM<u16>,     writeVRAM<u32>     }, // 6
-	{ 0, 0x000003FF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    unwritable<u8>,    writeGeneric<u16>,  writeGeneric<u32>  }, // 7
+	{ 0, 0x000003FF, readGeneric<7, u8>, readGeneric<7, u16>, readGeneric<7, u32>, unwritable<u8>,    writeGeneric<u16>,  writeGeneric<u32>  }, // 7
 	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 8
 	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 9
 	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 10
@@ -335,13 +335,12 @@ static T unreadable(u32 address)
 	return 0;
 }
 
-template<typename T>
+template<int s, typename T>
 static T readGeneric(u32 address)
 {
-	int segment = address >> 24;
-	u32 mask = memMap[segment].mask;
+	u32 mask = memMap[s].mask;
 
-	return readLE<T>(&memMap[segment].mem[address & mask]);
+	return readLE<T>(&memMap[s].mem[address & mask]);
 }
 
 template<typename T, int mask>
@@ -362,7 +361,7 @@ static T readBios(u32 address)
 		}
 	}
 	else
-		value = readGeneric<T>(address);
+		value = readGeneric<0, T>(address);
 
 	return value;
 }
@@ -371,7 +370,7 @@ static u8 readIo8(u32 address)
 {
 	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
 	{
-		return readGeneric<u8>(address);
+		return readGeneric<4, u8>(address);
 	}
 	else
 	{
@@ -385,7 +384,7 @@ static u16 readIo16(u32 address)
 
 	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
 	{
-		value = readGeneric<u16>(address);
+		value = readGeneric<4, u16>(address);
 		if (((address & 0x3fe)>0xFF) && ((address & 0x3fe)<0x10E))
 		{
 			if (((address & 0x3fe) == 0x100) && timer0On)
@@ -416,9 +415,9 @@ static u32 readIo32(u32 address)
 	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
 	{
 		if (ioReadable[(address & 0x3FF) + 2])
-			value = readGeneric<u32>(address);
+			value = readGeneric<4, u32>(address);
 		else
-			value = readGeneric<u16>(address);
+			value = readGeneric<4, u16>(address);
 	}
 	else
 	{
@@ -442,7 +441,7 @@ static T readVRAM(u32 address)
 		address &= 0x17FFF;
 	}
 
-	return readGeneric<T>(6 << 24 | address);
+	return readGeneric<6, T>(address);
 }
 
 // Memory write functions implementations
