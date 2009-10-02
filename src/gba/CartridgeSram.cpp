@@ -1,5 +1,6 @@
 #include "CartridgeSram.h"
 #include <algorithm>
+#include <cstdio>
 
 namespace Cartridge
 {

@@ -1,6 +1,8 @@
 #include "GBA.h"
 #include "CartridgeEEprom.h"
 
+#include <cstdio>
+
 namespace Cartridge
 {
 

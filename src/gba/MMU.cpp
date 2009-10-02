@@ -301,6 +301,7 @@ static T readBios(u32 address)
 		if (address < 0x4000)
 		{
 			value = readLE<T>(&biosProtected[address & mask]);
+			fprintf(stderr, "Reading protected bios memory %d %d\n", address, value);
 		}
 		else
 		{
