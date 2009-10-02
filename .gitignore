@@ -1,1 +1,10 @@
 bin
+CMakeFiles
+gvbam
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+.cproject
+.project
+libvbamcore.a
+install_manifest.txt
