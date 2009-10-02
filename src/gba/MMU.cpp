@@ -98,33 +98,13 @@ static MemAccess memMap[] =
 // MMU public functions
 bool init()
 {
-	workRAM = new u8[0x40000];
-	if (!workRAM)
-		return false;
-
-	bios = new u8[0x4000];
-	if (!bios)
-		return false;
-
+	workRAM     = new u8[0x40000];
+	bios        = new u8[0x4000];
 	internalRAM = new u8[0x8000];
-	if (!internalRAM)
-		return false;
-
-	paletteRAM = new u8[0x400];
-	if (!paletteRAM)
-		return false;
-
-	vram = new u8[0x20000];
-	if (!vram)
-		return false;
-
-	oam = new u8[0x400];
-	if (!oam)
-		return false;
-
-	ioMem = new u8[0x400];
-	if (!ioMem)
-		return false;
+	paletteRAM  = new u8[0x400];
+	vram        = new u8[0x20000];
+	oam         = new u8[0x400];
+	ioMem       = new u8[0x400];
 
 	memMap[0].mem = bios;
 	memMap[2].mem = workRAM;
@@ -174,47 +154,13 @@ bool init()
 
 void uninit()
 {
-	if (vram)
- 	{
-		delete vram;
-		vram = 0;
-	}
- 
-	if (paletteRAM)
-	{
-		delete paletteRAM;
-		paletteRAM = 0;
-	}
-
-	if (internalRAM)
-	{
-		delete internalRAM;
-		internalRAM = 0;
-	}
-
-	if (workRAM)
-	{
-		delete workRAM;
-		workRAM = 0;
-	}
-
-	if (bios)
-	{
-		delete bios;
-		bios = 0;
-	}
-
-	if (oam)
-	{
-		delete oam;
-		oam = 0;
-	}
-
-	if (ioMem)
-	{
-		delete ioMem;
-		ioMem = 0;
-	}
+	delete vram;
+	delete paletteRAM;
+	delete internalRAM;
+	delete workRAM;
+	delete bios;
+	delete oam;
+	delete ioMem;
 }
 
 u32 read32(u32 address)

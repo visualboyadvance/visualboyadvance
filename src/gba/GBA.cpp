@@ -424,10 +424,10 @@ void CPUCleanUp()
 
 bool CPUInitMemory()
 {
-	if (vram != NULL)
+/*	if (vram != NULL)
 	{
 		CPUCleanUp();
-	}
+	}*/
 
 	if (!MMU::init())
 	{
