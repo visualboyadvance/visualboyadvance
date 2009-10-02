@@ -8,7 +8,23 @@ namespace GFX
 
 typedef void (*InternalLineRenderer)();
 
-InternalLineRenderer internalrenderLine = mode0RenderLine;
+struct ModeLineRenderers {
+	InternalLineRenderer simple;
+	InternalLineRenderer noWindow;
+	InternalLineRenderer all;
+};
+
+static const ModeLineRenderers lineRenderers[] =
+{
+	{ mode0RenderLine, mode0RenderLineNoWindow, mode0RenderLineAll },
+	{ mode1RenderLine, mode1RenderLineNoWindow, mode1RenderLineAll },
+	{ mode2RenderLine, mode2RenderLineNoWindow, mode2RenderLineAll },
+	{ mode3RenderLine, mode3RenderLineNoWindow, mode3RenderLineAll },
+	{ mode4RenderLine, mode4RenderLineNoWindow, mode4RenderLineAll },
+	{ mode5RenderLine, mode5RenderLineNoWindow, mode5RenderLineAll }
+};
+
+static InternalLineRenderer internalRenderLine = lineRenderers[0].simple;
 
 int coeff[32] =
 {
@@ -43,7 +59,7 @@ void renderLine()
 		return;
 	}
 
-	internalrenderLine();
+	internalRenderLine();
 }
 
 void updateBG2X()
@@ -86,58 +102,22 @@ void chooseRenderer()
 {
 	bool fxOn = ((BLDMOD>>6)&3) != 0;
 	bool windowOn = (layerEnable & 0x6000) ? true : false;
+	int mode = DISPCNT & 7;
 
-	switch (DISPCNT & 7)
+	if (mode > 5)
+		return;
+
+	if (!fxOn && !windowOn && !(layerEnable & 0x8000))
 	{
-	case 0:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode0RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode0RenderLineNoWindow;
-		else
-			internalrenderLine = mode0RenderLineAll;
-		break;
-	case 1:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode1RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode1RenderLineNoWindow;
-		else
-			internalrenderLine = mode1RenderLineAll;
-		break;
-	case 2:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode2RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode2RenderLineNoWindow;
-		else
-			internalrenderLine = mode2RenderLineAll;
-		break;
-	case 3:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode3RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode3RenderLineNoWindow;
-		else
-			internalrenderLine = mode3RenderLineAll;
-		break;
-	case 4:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode4RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode4RenderLineNoWindow;
-		else
-			internalrenderLine = mode4RenderLineAll;
-		break;
-	case 5:
-		if (!fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode5RenderLine;
-		else if (fxOn && !windowOn && !(layerEnable & 0x8000))
-			internalrenderLine = mode5RenderLineNoWindow;
-		else
-			internalrenderLine = mode5RenderLineAll;
-	default:
-		break;
+		internalRenderLine = lineRenderers[mode].simple;
+	}
+	else if (fxOn && !windowOn && !(layerEnable & 0x8000))
+	{
+		internalRenderLine = lineRenderers[mode].noWindow;
+	}
+	else
+	{
+		internalRenderLine = lineRenderers[mode].all;
 	}
 }
 
