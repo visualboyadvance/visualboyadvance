@@ -589,7 +589,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				CPUWriteMemory(d, 0);
+				MMU::CPUWriteMemory(d, 0);
 				d += di;
 				c--;
 			}
@@ -598,8 +598,8 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				cpuDmaLast = CPUReadMemory(s);
-				CPUWriteMemory(d, cpuDmaLast);
+				cpuDmaLast = MMU::CPUReadMemory(s);
+				MMU::CPUWriteMemory(d, cpuDmaLast);
 				d += di;
 				s += si;
 				c--;
@@ -615,7 +615,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				CPUWriteHalfWord(d, 0);
+				MMU::CPUWriteHalfWord(d, 0);
 				d += di;
 				c--;
 			}
@@ -624,8 +624,8 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				cpuDmaLast = CPUReadHalfWord(s);
-				CPUWriteHalfWord(d, cpuDmaLast);
+				cpuDmaLast = MMU::CPUReadHalfWord(s);
+				MMU::CPUWriteHalfWord(d, cpuDmaLast);
 				cpuDmaLast |= (cpuDmaLast<<16);
 				d += di;
 				s += si;
@@ -1564,7 +1564,7 @@ void CPUInit()
 	biosProtected[3] = 0xe1;
 
 	CPU::init();
-	MMUinit();
+	MMU::MMUinit();
 }
 
 void CPUReset()

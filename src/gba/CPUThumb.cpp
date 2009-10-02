@@ -676,7 +676,7 @@ static INSN_REGPARM void thumb48(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = (reg[15].I & 0xFFFFFFFC) + ((opcode & 0xFF) << 2);
-	reg[regist].I = CPUReadMemory(address);
+	reg[regist].I = MMU::CPUReadMemory(address);
 	busPrefetchCount=0;
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
@@ -687,7 +687,7 @@ static INSN_REGPARM void thumb50(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	CPUWriteMemory(address, reg[opcode & 7].I);
+	MMU::CPUWriteMemory(address, reg[opcode & 7].I);
 	clockTicks = dataTicksAccess32(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -697,7 +697,7 @@ static INSN_REGPARM void thumb52(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	CPUWriteHalfWord(address, reg[opcode&7].W.W0);
+	MMU::CPUWriteHalfWord(address, reg[opcode&7].W.W0);
 	clockTicks = dataTicksAccess16(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -707,7 +707,7 @@ static INSN_REGPARM void thumb54(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode >>6)&7].I;
-	CPUWriteByte(address, reg[opcode & 7].B.B0);
+	MMU::CPUWriteByte(address, reg[opcode & 7].B.B0);
 	clockTicks = dataTicksAccess16(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -717,7 +717,7 @@ static INSN_REGPARM void thumb56(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	reg[opcode&7].I = (s8)CPUReadByte(address);
+	reg[opcode&7].I = (s8)MMU::CPUReadByte(address);
 	clockTicks = 3 + dataTicksAccess16(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -727,7 +727,7 @@ static INSN_REGPARM void thumb58(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	reg[opcode&7].I = CPUReadMemory(address);
+	reg[opcode&7].I = MMU::CPUReadMemory(address);
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -737,7 +737,7 @@ static INSN_REGPARM void thumb5A(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	reg[opcode&7].I = CPUReadHalfWord(address);
+	reg[opcode&7].I = MMU::CPUReadHalfWord(address);
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -747,7 +747,7 @@ static INSN_REGPARM void thumb5C(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	reg[opcode&7].I = CPUReadByte(address);
+	reg[opcode&7].I = MMU::CPUReadByte(address);
 	clockTicks = 3 + dataTicksAccess16(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -757,7 +757,7 @@ static INSN_REGPARM void thumb5E(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-	reg[opcode&7].I = (s16)CPUReadHalfWordSigned(address);
+	reg[opcode&7].I = (s16)MMU::CPUReadHalfWordSigned(address);
 	clockTicks = 3 + dataTicksAccess16(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -767,7 +767,7 @@ static INSN_REGPARM void thumb60(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
-	CPUWriteMemory(address, reg[opcode&7].I);
+	MMU::CPUWriteMemory(address, reg[opcode&7].I);
 	clockTicks = dataTicksAccess32(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -777,7 +777,7 @@ static INSN_REGPARM void thumb68(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
-	reg[opcode&7].I = CPUReadMemory(address);
+	reg[opcode&7].I = MMU::CPUReadMemory(address);
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -787,7 +787,7 @@ static INSN_REGPARM void thumb70(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
-	CPUWriteByte(address, reg[opcode&7].B.B0);
+	MMU::CPUWriteByte(address, reg[opcode&7].B.B0);
 	clockTicks = dataTicksAccess16(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -797,7 +797,7 @@ static INSN_REGPARM void thumb78(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
-	reg[opcode&7].I = CPUReadByte(address);
+	reg[opcode&7].I = MMU::CPUReadByte(address);
 	clockTicks = 3 + dataTicksAccess16(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -807,7 +807,7 @@ static INSN_REGPARM void thumb80(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
-	CPUWriteHalfWord(address, reg[opcode&7].W.W0);
+	MMU::CPUWriteHalfWord(address, reg[opcode&7].W.W0);
 	clockTicks = dataTicksAccess16(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -817,7 +817,7 @@ static INSN_REGPARM void thumb88(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
-	reg[opcode&7].I = CPUReadHalfWord(address);
+	reg[opcode&7].I = MMU::CPUReadHalfWord(address);
 	clockTicks = 3 + dataTicksAccess16(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -828,7 +828,7 @@ static INSN_REGPARM void thumb90(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[13].I + ((opcode&255)<<2);
-	CPUWriteMemory(address, reg[regist].I);
+	MMU::CPUWriteMemory(address, reg[regist].I);
 	clockTicks = dataTicksAccess32(address) + codeTicksAccess16(armNextPC) + 2;
 }
 
@@ -839,7 +839,7 @@ static INSN_REGPARM void thumb98(u32 opcode)
 	if (busPrefetchCount == 0)
 		busPrefetch = busPrefetchEnable;
 	u32 address = reg[13].I + ((opcode&255)<<2);
-	reg[regist].I = CPUReadMemory(address);
+	reg[regist].I = MMU::CPUReadMemory(address);
 	clockTicks = 3 + dataTicksAccess32(address) + codeTicksAccess16(armNextPC);
 }
 
@@ -874,7 +874,7 @@ static inline void PUSH_REG(u32 opcode, int &count, u32 &address, int val, int r
 {
 	if (opcode & val)
 	{
-		CPUWriteMemory(address, reg[r].I);
+		MMU::CPUWriteMemory(address, reg[r].I);
 		if (!count)
 		{
 			clockTicks += 1 + dataTicksAccess32(address);
@@ -892,7 +892,7 @@ static inline void POP_REG(u32 opcode, int &count, u32 &address, int val, int r)
 {
 	if (opcode & val)
 	{
-		reg[r].I = CPUReadMemory(address);
+		reg[r].I = MMU::CPUReadMemory(address);
 		if (!count)
 		{
 			clockTicks += 1 + dataTicksAccess32(address);
@@ -983,7 +983,7 @@ static INSN_REGPARM void thumbBD(u32 opcode)
 	POP_REG(opcode, count, address, 32, 5);
 	POP_REG(opcode, count, address, 64, 6);
 	POP_REG(opcode, count, address, 128, 7);
-	reg[15].I = (CPUReadMemory(address) & 0xFFFFFFFE);
+	reg[15].I = (MMU::CPUReadMemory(address) & 0xFFFFFFFE);
 	if (!count)
 	{
 		clockTicks += 1 + dataTicksAccess32(address);
@@ -1007,7 +1007,7 @@ static inline void THUMB_STM_REG(u32 opcode, int &count, u32 &address, u32 temp,
 {
 	if (opcode & val)
 	{
-		CPUWriteMemory(address, reg[r].I);
+		MMU::CPUWriteMemory(address, reg[r].I);
 		reg[b].I = temp;
 		if (!count)
 		{
@@ -1026,7 +1026,7 @@ static inline void THUMB_LDM_REG(u32 opcode, int &count, u32 &address, int val, 
 {
 	if (opcode & (val))
 	{
-		reg[(r)].I = CPUReadMemory(address);
+		reg[(r)].I = MMU::CPUReadMemory(address);
 		if (!count)
 		{
 			clockTicks += 1 + dataTicksAccess32(address);

@@ -679,8 +679,8 @@ static INSN_REGPARM void arm0F9(u32 opcode)
 static INSN_REGPARM void arm109(u32 opcode)
 {
 	u32 address = reg[(opcode >> 16) & 15].I;
-	u32 temp = CPUReadMemory(address);
-	CPUWriteMemory(address, reg[opcode&15].I);
+	u32 temp = MMU::CPUReadMemory(address);
+	MMU::CPUWriteMemory(address, reg[opcode&15].I);
 	reg[(opcode >> 12) & 15].I = temp;
 	clockTicks = 4 + dataTicksAccess32(address) + dataTicksAccess32(address)
 	             + codeTicksAccess32(armNextPC);
@@ -690,8 +690,8 @@ static INSN_REGPARM void arm109(u32 opcode)
 static INSN_REGPARM void arm149(u32 opcode)
 {
 	u32 address = reg[(opcode >> 16) & 15].I;
-	u32 temp = CPUReadByte(address);
-	CPUWriteByte(address, reg[opcode&15].B.B0);
+	u32 temp = MMU::CPUReadByte(address);
+	MMU::CPUWriteByte(address, reg[opcode&15].B.B0);
 	reg[(opcode>>12)&15].I = temp;
 	clockTicks = 4 + dataTicksAccess32(address) + dataTicksAccess32(address)
 	             + codeTicksAccess32(armNextPC);
@@ -924,14 +924,14 @@ static INSN_REGPARM void arm121(u32 opcode)
 #define ADDRESS_PREDEC (reg[base].I - offset)
 #define ADDRESS_PREINC (reg[base].I + offset)
 
-#define OP_STR    CPUWriteMemory(address, reg[dest].I)
-#define OP_STRH   CPUWriteHalfWord(address, reg[dest].W.W0)
-#define OP_STRB   CPUWriteByte(address, reg[dest].B.B0)
-#define OP_LDR    reg[dest].I = CPUReadMemory(address)
-#define OP_LDRH   reg[dest].I = CPUReadHalfWord(address)
-#define OP_LDRB   reg[dest].I = CPUReadByte(address)
-#define OP_LDRSH  reg[dest].I = (s16)CPUReadHalfWordSigned(address)
-#define OP_LDRSB  reg[dest].I = (s8)CPUReadByte(address)
+#define OP_STR    MMU::CPUWriteMemory(address, reg[dest].I)
+#define OP_STRH   MMU::CPUWriteHalfWord(address, reg[dest].W.W0)
+#define OP_STRB   MMU::CPUWriteByte(address, reg[dest].B.B0)
+#define OP_LDR    reg[dest].I = MMU::CPUReadMemory(address)
+#define OP_LDRH   reg[dest].I = MMU::CPUReadHalfWord(address)
+#define OP_LDRB   reg[dest].I = MMU::CPUReadByte(address)
+#define OP_LDRSH  reg[dest].I = (s16)MMU::CPUReadHalfWordSigned(address)
+#define OP_LDRSB  reg[dest].I = (s8)MMU::CPUReadByte(address)
 
 #define WRITEBACK_NONE     /*nothing*/
 #define WRITEBACK_PRE      reg[base].I = address
@@ -1847,7 +1847,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
 
 #define STM_REG(bit,num) \
     if (opcode & (1U<<(bit))) {                         \
-        CPUWriteMemory(address, reg[(num)].I);          \
+    	MMU::CPUWriteMemory(address, reg[(num)].I);          \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -1858,7 +1858,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     }
 #define STMW_REG(bit,num) \
     if (opcode & (1U<<(bit))) {                         \
-        CPUWriteMemory(address, reg[(num)].I);          \
+    	MMU::CPUWriteMemory(address, reg[(num)].I);          \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -1870,7 +1870,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     }
 #define LDM_REG(bit,num) \
     if (opcode & (1U<<(bit))) {                         \
-        reg[(num)].I = CPUReadMemory(address);          \
+        reg[(num)].I = MMU::CPUReadMemory(address);          \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -1919,7 +1919,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     }
 #define STM_PC \
     if (opcode & (1U<<15)) {                            \
-        CPUWriteMemory(address, reg[15].I+4);           \
+    	MMU::CPUWriteMemory(address, reg[15].I+4);           \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -1929,7 +1929,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     }
 #define STMW_PC \
     if (opcode & (1U<<15)) {                            \
-        CPUWriteMemory(address, reg[15].I+4);           \
+    	MMU::CPUWriteMemory(address, reg[15].I+4);           \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -1988,7 +1988,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     LDM_LOW;                                            \
     LDM_HIGH;                                           \
     if (opcode & (1U<<15)) {                            \
-        reg[15].I = CPUReadMemory(address);             \
+        reg[15].I = MMU::CPUReadMemory(address);             \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address);\
         } else {                                        \
@@ -2014,7 +2014,7 @@ static INSN_REGPARM void arm7F6(u32 opcode)
     LDM_LOW;                                            \
     if (opcode & (1U<<15)) {                            \
         LDM_HIGH;                                       \
-        reg[15].I = CPUReadMemory(address);             \
+        reg[15].I = MMU::CPUReadMemory(address);             \
         if (!count) {                                   \
             clockTicks += 1 + dataTicksAccess32(address); \
         } else {                                        \

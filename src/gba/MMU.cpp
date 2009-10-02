@@ -20,6 +20,9 @@ extern bool timer3On;
 extern int timer3Ticks;
 extern int timer3ClockReload;
 
+namespace MMU
+{
+
 static const u32 objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
 static bool ioReadable[0x400];
 
@@ -606,3 +609,5 @@ unwritable:
 		break;
 	}
 }
+
+} // namespace MMU
