@@ -6,11 +6,9 @@
 namespace GFX
 {
 
-typedef void (*LineRenderer)();
-extern LineRenderer renderLine;
-
 void newFrame();
 void chooseRenderer();
+void renderLine();
 void clearRenderBuffers(bool force);
 void updateBG2X();
 void updateBG2Y();

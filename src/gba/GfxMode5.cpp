@@ -9,15 +9,6 @@ namespace GFX
 
 void mode5RenderLine()
 {
-	if (DISPCNT & 0x0080)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
-
 	u16 *palette = (u16 *)paletteRAM;
 
 	if (layerEnable & 0x0400)
@@ -87,15 +78,6 @@ void mode5RenderLine()
 
 void mode5RenderLineNoWindow()
 {
-	if (DISPCNT & 0x0080)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
-
 	u16 *palette = (u16 *)paletteRAM;
 
 	if (layerEnable & 0x0400)
@@ -214,15 +196,6 @@ void mode5RenderLineNoWindow()
 
 void mode5RenderLineAll()
 {
-	if (DISPCNT & 0x0080)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
-
 	u16 *palette = (u16 *)paletteRAM;
 
 	if (layerEnable & 0x0400)

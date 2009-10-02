@@ -11,15 +11,6 @@ void mode3RenderLine()
 {
 	u16 *palette = (u16 *)paletteRAM;
 
-	if (DISPCNT & 0x80)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
-
 	if (layerEnable & 0x0400)
 	{
 		gfxDrawRotScreen16Bit(BG2CNT, BG2PA, BG2PB,
@@ -88,15 +79,6 @@ void mode3RenderLine()
 void mode3RenderLineNoWindow()
 {
 	u16 *palette = (u16 *)paletteRAM;
-
-	if (DISPCNT & 0x80)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
 
 	if (layerEnable & 0x0400)
 	{
@@ -215,15 +197,6 @@ void mode3RenderLineNoWindow()
 void mode3RenderLineAll()
 {
 	u16 *palette = (u16 *)paletteRAM;
-
-	if (DISPCNT & 0x80)
-	{
-		for (int x = 0; x < 240; x++)
-		{
-			lineMix[x] = 0x7fff;
-		}
-		return;
-	}
 
 	bool inWindow0 = false;
 	bool inWindow1 = false;
