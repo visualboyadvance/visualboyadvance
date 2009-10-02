@@ -53,4 +53,22 @@ static inline u32 swap32(u32 v)
   *((u32 *)x) = (v)
 #endif
 
+template <typename T>
+static inline T readLE(u8* x)
+{
+	return *((T *)x);
+}
+
+/*template <typename u16>
+static inline u16 readLE(u8* x)
+{
+	return *((u16 *)x);
+}*/
+
+/*template <typename u32>
+static inline u32 readLE(u8* x)
+{
+	return *((u32 *)x);
+}*/
+
 #endif // PORT_H

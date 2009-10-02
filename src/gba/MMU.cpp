@@ -5,6 +5,8 @@
 #include "GBA.h"
 #include "Globals.h"
 #include "Sound.h"
+#include <cstdio>
+
 
 extern bool stopState;
 extern bool timer0On;
@@ -23,11 +25,116 @@ extern int timer3ClockReload;
 namespace MMU
 {
 
-static const u32 objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
 static bool ioReadable[0x400];
 
-void MMUinit()
+template<class T>
+static T readGeneric(u32 address);
+ 
+template<class T, int mask>
+static T readBios(u32 address);
+
+template<class T>
+static T readVRAM(u32 address);
+
+static u8 readIo8(u32 address);
+static u16 readIo16(u32 address);
+static u32 readIo32(u32 address);
+
+static void OldCPUWriteMemory(u32 address, u32 value);
+static void OldCPUWriteHalfWord(u32 address, u16 value);
+static void OldCPUWriteByte(u32 address, u8 b);
+ 
+template<class T>
+static void unwritable(u32 address, T value)
 {
+	// TODO : log
+}
+
+template<class T>
+static T unreadable(u32 address)
+ {
+ #ifdef GBA_LOGGING
+		if (systemVerbose & VERBOSE_ILLEGAL_READ)
+ 		{
+			log("Illegal read: %08x at %08x\n", address, CPU::armMode ?
+ 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
+ 		}
+ #endif
+ 
+	return 0;
+}
+
+struct MemAccess
+{
+	u8 *mem;
+	u32 mask;
+	u8 (*read8)(u32);
+	u16 (*read16)(u32);
+	u32 (*read32)(u32);
+	void (*write8)(u32, u8);
+	void (*write16)(u32, u16);
+	void (*write32)(u32, u32);
+};
+
+static MemAccess memMap[] =
+{
+	{ 0, 0x00003FFF, readBios<u8, 0x03>, readBios<u16, 0x02>, readBios<u32, 0x0F>, unwritable<u8>,    unwritable<u16>,     unwritable<u32>    }, // 0 - bios - mask values are probably wrong
+	{ 0, 0x00000000, unreadable<u8>,     unreadable<u16>,     unreadable<u32>,     unwritable<u8>,    unwritable<u16>,     unwritable<u32>    }, // 1
+	{ 0, 0x0003FFFF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 2
+	{ 0, 0x00007FFF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 3
+	{ 0, 0x000003FF, readIo8,            readIo16,            readIo32,            OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 4
+	{ 0, 0x000003FF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 5
+	{ 0, 0x0001FFFF, readVRAM<u8>,       readVRAM<u16>,       readVRAM<u32>,       OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 6
+	{ 0, 0x000003FF, readGeneric<u8>,    readGeneric<u16>,    readGeneric<u32>,    OldCPUWriteByte,   OldCPUWriteHalfWord, OldCPUWriteMemory  }, // 7
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 8
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 9
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 10
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 11
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 12
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }, // 13
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16,  Cartridge::write32 }  // 14
+};
+
+static const u32 objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
+
+bool init()
+{
+	workRAM = new u8[0x40000];
+	if (!workRAM)
+		return false;
+
+	bios = new u8[0x4000];
+	if (!bios)
+		return false;
+
+	internalRAM = new u8[0x8000];
+	if (!internalRAM)
+		return false;
+
+	paletteRAM = new u8[0x400];
+	if (!paletteRAM)
+		return false;
+
+	vram = new u8[0x20000];
+	if (!vram)
+		return false;
+
+	oam = new u8[0x400];
+	if (!oam)
+		return false;
+
+	ioMem = new u8[0x400];
+	if (!ioMem)
+		return false;
+
+	memMap[0].mem = bios;
+	memMap[2].mem = workRAM;
+	memMap[3].mem = internalRAM;
+	memMap[4].mem = ioMem;
+	memMap[5].mem = paletteRAM;
+	memMap[6].mem = vram;
+	memMap[7].mem = oam;
+	
 	for (int i = 0; i < 0x400; i++)
 		ioReadable[i] = true;
 	for (int i = 0x10; i < 0x48; i++)
@@ -62,12 +169,84 @@ void MMUinit()
 		ioReadable[i] = false;
 	for (int i = 0x304; i < 0x400; i++)
 		ioReadable[i] = false;
+
+	return true;
 }
 
-u32 CPUReadMemory(u32 address)
+void uninit()
 {
-#ifdef GBA_LOGGING
+	if (vram)
+ 	{
+		delete vram;
+		vram = 0;
+	}
+ 
+	if (paletteRAM)
+	{
+		delete paletteRAM;
+		paletteRAM = 0;
+	}
+
+	if (internalRAM)
+	{
+		delete internalRAM;
+		internalRAM = 0;
+	}
+
+	if (workRAM)
+	{
+		delete workRAM;
+		workRAM = 0;
+	}
+
+	if (bios)
+	{
+		delete bios;
+		bios = 0;
+	}
+
+	if (oam)
+	{
+		delete oam;
+		oam = 0;
+	}
+
+	if (ioMem)
+	{
+		delete ioMem;
+		ioMem = 0;
+	}
+}
+
+u32 read32(u32 address)
+{
+ #ifdef GBA_LOGGING
 	if (address & 3)
+	{
+		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+ 		{
+			log("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
+ 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
+ 		}
+	}
+ #endif
+ 
+	// Reads must be 32 bits aligned
+	u32 value =  memMap[address >> 24].read32(address & 0xFFFFFFFC);
+ 
+ 	if (address & 3)
+ 	{
+ 		int shift = (address & 3) << 3;
+ 		value = (value >> shift) | (value << (32 - shift));
+ 	}
+
+ 	return value;
+ }
+ 
+u32 read16(u32 address)
+ {
+ #ifdef GBA_LOGGING
+ 	if (address & 1)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
 		{
@@ -77,195 +256,8 @@ u32 CPUReadMemory(u32 address)
 	}
 #endif
 
-	u32 value;
-	switch (address >> 24)
-	{
-	case 0:
-		if (CPU::reg[15].I >> 24)
-		{
-			if (address < 0x4000)
-			{
-#ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_ILLEGAL_READ)
-				{
-					log("Illegal word read: %08x at %08x\n", address, CPU::armMode ?
-					    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-				}
-#endif
-
-				value = READ32LE(((u32 *)&biosProtected));
-				log("bios protected read %d", value);
-			}
-			else goto unreadable;
-		}
-		else
-			value = READ32LE(((u32 *)&bios[address & 0x3FFC]));
-		break;
-	case 2:
-		value = READ32LE(((u32 *)&workRAM[address & 0x3FFFC]));
-		break;
-	case 3:
-		value = READ32LE(((u32 *)&internalRAM[address & 0x7ffC]));
-		break;
-	case 4:
-		if ((address < 0x4000400) && ioReadable[address & 0x3fc])
-		{
-			if (ioReadable[(address & 0x3fc) + 2])
-				value = READ32LE(((u32 *)&ioMem[address & 0x3fC]));
-			else
-				value = READ16LE(((u16 *)&ioMem[address & 0x3fc]));
-		}
-		else goto unreadable;
-		break;
-	case 5:
-		value = READ32LE(((u32 *)&paletteRAM[address & 0x3fC]));
-		break;
-	case 6:
-		address = (address & 0x1fffc);
-		if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
-		{
-			value = 0;
-			break;
-		}
-		if ((address & 0x18000) == 0x18000)
-			address &= 0x17fff;
-		value = READ32LE(((u32 *)&vram[address]));
-		break;
-	case 7:
-		value = READ32LE(((u32 *)&oam[address & 0x3FC]));
-		break;
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		value = Cartridge::readMemory32(address);
-		break;
-		// default
-	default:
-unreadable:
-#ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_READ)
-		{
-			log("Illegal word read: %08x at %08x\n", address, CPU::armMode ?
-			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-		}
-#endif
-
-		value = 0;
-	}
-
-	if (address & 3)
-	{
-		int shift = (address & 3) << 3;
-		value = (value >> shift) | (value << (32 - shift));
-	}
-	return value;
-}
-
-u32 CPUReadHalfWord(u32 address)
-{
-#ifdef GBA_LOGGING
-	if (address & 1)
-	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
-		{
-			log("Unaligned halfword read: %08x at %08x\n", address, CPU::armMode ?
-			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-		}
-	}
-#endif
-
-	u32 value;
-
-	switch (address >> 24)
-	{
-	case 0:
-		if (CPU::reg[15].I >> 24)
-		{
-			if (address < 0x4000)
-			{
-#ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_ILLEGAL_READ)
-				{
-					log("Illegal halfword read: %08x at %08x\n", address, CPU::armMode ?
-					    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-				}
-#endif
-				value = READ16LE(((u16 *)&biosProtected[address&2]));
-			}
-			else goto unreadable;
-		}
-		else
-			value = READ16LE(((u16 *)&bios[address & 0x3FFE]));
-		break;
-	case 2:
-		value = READ16LE(((u16 *)&workRAM[address & 0x3FFFE]));
-		break;
-	case 3:
-		value = READ16LE(((u16 *)&internalRAM[address & 0x7ffe]));
-		break;
-	case 4:
-		if ((address < 0x4000400) && ioReadable[address & 0x3fe])
-		{
-			value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
-			if (((address & 0x3fe)>0xFF) && ((address & 0x3fe)<0x10E))
-			{
-				if (((address & 0x3fe) == 0x100) && timer0On)
-					value = 0xFFFF - ((timer0Ticks-cpuTotalTicks) >> timer0ClockReload);
-				else
-					if (((address & 0x3fe) == 0x104) && timer1On && !(TM1CNT & 4))
-						value = 0xFFFF - ((timer1Ticks-cpuTotalTicks) >> timer1ClockReload);
-					else
-						if (((address & 0x3fe) == 0x108) && timer2On && !(TM2CNT & 4))
-							value = 0xFFFF - ((timer2Ticks-cpuTotalTicks) >> timer2ClockReload);
-						else
-							if (((address & 0x3fe) == 0x10C) && timer3On && !(TM3CNT & 4))
-								value = 0xFFFF - ((timer3Ticks-cpuTotalTicks) >> timer3ClockReload);
-			}
-		}
-		else goto unreadable;
-		break;
-	case 5:
-		value = READ16LE(((u16 *)&paletteRAM[address & 0x3fe]));
-		break;
-	case 6:
-		address = (address & 0x1fffe);
-		if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
-		{
-			value = 0;
-			break;
-		}
-		if ((address & 0x18000) == 0x18000)
-			address &= 0x17fff;
-		value = READ16LE(((u16 *)&vram[address]));
-		break;
-	case 7:
-		value = READ16LE(((u16 *)&oam[address & 0x3fe]));
-		break;
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		value = Cartridge::readMemory16(address);
-		break;
-	default:
-unreadable:
-#ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_READ)
-		{
-			log("Illegal halfword read: %08x at %08x\n", address, CPU::armMode ?
-			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-		}
-#endif
-		value = 0;
-		break;
-	}
+	// Reads must be 16 bits aligned
+	u16 value = memMap[address >> 24].read16(address & 0xFFFFFFFE);
 
 	if (address & 1)
 	{
@@ -275,78 +267,145 @@ unreadable:
 	return value;
 }
 
-u16 CPUReadHalfWordSigned(u32 address)
+u8 read8(u32 address)
 {
-	u16 value = CPUReadHalfWord(address);
+	return memMap[address >> 24].read8(address);
+}
+
+void write32(u32 address, u32 value)
+{
+	memMap[address >> 24].write32(address, value);
+}
+
+void write16(u32 address, u16 value)
+{
+	memMap[address >> 24].write16(address, value);
+}
+
+void write8(u32 address, u8 b)
+{
+	memMap[address >> 24].write8(address, b);
+}
+
+template<class T>
+static T readGeneric(u32 address)
+{
+	int segment = address >> 24;
+	u32 mask = memMap[segment].mask;
+
+	return readLE<T>(&memMap[segment].mem[address & mask]);
+}
+
+template<class T, int mask>
+static T readBios(u32 address)
+{
+	T value;
+
+	if (CPU::reg[15].I >> 24)
+	{
+		// TODO: proper handling of reading unreadable bios memory, without "biosProtected"
+		if (address < 0x4000)
+		{
+			value = readLE<T>(&biosProtected[address & mask]);
+		}
+		else
+		{
+			value = unreadable<T>(address);
+		}
+	}
+	else
+		value = readGeneric<T>(address);
+
+	return value;
+}
+
+static u8 readIo8(u32 address)
+{
+	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
+	{
+		return readGeneric<u8>(address);
+	}
+	else
+	{
+		return unreadable<u8>(address);
+	}
+}
+
+static u16 readIo16(u32 address)
+{
+	u16 value;
+
+	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
+	{
+		value = readGeneric<u16>(address);
+		if (((address & 0x3fe)>0xFF) && ((address & 0x3fe)<0x10E))
+		{
+			if (((address & 0x3fe) == 0x100) && timer0On)
+				value = 0xFFFF - ((timer0Ticks-cpuTotalTicks) >> timer0ClockReload);
+			else
+				if (((address & 0x3fe) == 0x104) && timer1On && !(TM1CNT & 4))
+					value = 0xFFFF - ((timer1Ticks-cpuTotalTicks) >> timer1ClockReload);
+				else
+					if (((address & 0x3fe) == 0x108) && timer2On && !(TM2CNT & 4))
+						value = 0xFFFF - ((timer2Ticks-cpuTotalTicks) >> timer2ClockReload);
+					else
+						if (((address & 0x3fe) == 0x10C) && timer3On && !(TM3CNT & 4))
+							value = 0xFFFF - ((timer3Ticks-cpuTotalTicks) >> timer3ClockReload);
+		}
+	}
+	else
+	{
+		value = unreadable<u16>(address);
+	}
+
+	return value;
+}
+
+static u32 readIo32(u32 address)
+{
+	u32 value;
+
+	if ((address < 0x4000400) && ioReadable[address & 0x3FF])
+	{
+		if (ioReadable[(address & 0x3FF) + 2])
+			value = readGeneric<u32>(address);
+		else
+			value = readGeneric<u16>(address);
+	}
+	else
+	{
+		value = unreadable<u32>(address);
+	}
+
+	return value;
+}
+
+template<class T>
+static T readVRAM(u32 address)
+{
+	address &= 0x1FFFF;
+
+	if (((DISPCNT & 7) > 2) && ((address & 0x1C000) == 0x18000))
+	{
+		return 0;
+	}
+	if ((address & 0x18000) == 0x18000)
+	{
+		address &= 0x17FFF;
+	}
+
+	return readGeneric<T>(6 << 24 | address);
+}
+
+u16 read16s(u32 address)
+{
+	u16 value = read16(address);
 	if ((address & 1))
 		value = (s8)value;
 	return value;
 }
 
-u8 CPUReadByte(u32 address)
-{
-	switch (address >> 24)
-	{
-	case 0:
-		if (CPU::reg[15].I >> 24)
-		{
-			if (address < 0x4000)
-			{
-#ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_ILLEGAL_READ)
-				{
-					log("Illegal byte read: %08x at %08x\n", address, CPU::armMode ?
-					    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-				}
-#endif
-				return biosProtected[address & 3];
-			}
-			else goto unreadable;
-		}
-		return bios[address & 0x3FFF];
-	case 2:
-		return workRAM[address & 0x3FFFF];
-	case 3:
-		return internalRAM[address & 0x7fff];
-	case 4:
-		if ((address < 0x4000400) && ioReadable[address & 0x3ff])
-			return ioMem[address & 0x3ff];
-		else goto unreadable;
-	case 5:
-		return paletteRAM[address & 0x3ff];
-	case 6:
-		address = (address & 0x1ffff);
-		if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
-			return 0;
-		if ((address & 0x18000) == 0x18000)
-			address &= 0x17fff;
-		return vram[address];
-	case 7:
-		return oam[address & 0x3ff];
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		return Cartridge::readMemory8(address);
-		// default
-	default:
-unreadable:
-#ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_READ)
-		{
-			log("Illegal byte read: %08x at %08x\n", address, CPU::armMode ?
-			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
-		}
-#endif
-		return 0;
-		break;
-	}
-}
-
-void CPUWriteMemory(u32 address, u32 value)
+static void OldCPUWriteMemory(u32 address, u32 value)
 {
 
 #ifdef GBA_LOGGING
@@ -392,15 +451,6 @@ void CPUWriteMemory(u32 address, u32 value)
 	case 0x07:
 		WRITE32LE(((u32 *)&oam[address & 0x3fc]), value);
 		break;
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		Cartridge::writeMemory32(address, value);
-		break;
 
 		// default
 	default:
@@ -418,7 +468,7 @@ unwritable:
 	}
 }
 
-void CPUWriteHalfWord(u32 address, u16 value)
+static void OldCPUWriteHalfWord(u32 address, u16 value)
 {
 #ifdef GBA_LOGGING
 	if (address & 1)
@@ -460,15 +510,6 @@ void CPUWriteHalfWord(u32 address, u16 value)
 	case 7:
 		WRITE16LE(((u16 *)&oam[address & 0x3fe]), value);
 		break;
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		Cartridge::writeMemory16(address, value);
-		break;
 	default:
 unwritable:
 #ifdef GBA_LOGGING
@@ -484,7 +525,7 @@ unwritable:
 	}
 }
 
-void CPUWriteByte(u32 address, u8 b)
+static void OldCPUWriteByte(u32 address, u8 b)
 {
 	switch (address >> 24)
 	{
@@ -584,15 +625,6 @@ void CPUWriteByte(u32 address, u8 b)
 		// no need to switch
 		// byte writes to OAM are ignored
 		//    *((u16 *)&oam[address & 0x3FE]) = (b << 8) | b;
-		break;
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-		Cartridge::writeMemory8(address, b);
 		break;
 		// default
 	default:

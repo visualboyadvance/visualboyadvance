@@ -88,24 +88,24 @@ void CPUSoftwareInterrupt(int comment);
 
 inline void ARM_PREFETCH()
 {
-	cpuPrefetch[0] = MMU::CPUReadMemory(armNextPC);
-	cpuPrefetch[1] = MMU::CPUReadMemory(armNextPC + 4);
+	cpuPrefetch[0] = MMU::read32(armNextPC);
+	cpuPrefetch[1] = MMU::read32(armNextPC + 4);
 }
 
 inline void THUMB_PREFETCH()
 {
-	cpuPrefetch[0] = MMU::CPUReadHalfWord(armNextPC);
-	cpuPrefetch[1] = MMU::CPUReadHalfWord(armNextPC + 2);
+	cpuPrefetch[0] = MMU::read16(armNextPC);
+	cpuPrefetch[1] = MMU::read16(armNextPC + 2);
 }
 
 inline void ARM_PREFETCH_NEXT()
 {
-	cpuPrefetch[1] = MMU::CPUReadMemory(armNextPC+4);
+	cpuPrefetch[1] = MMU::read32(armNextPC+4);
 }
 
 inline void THUMB_PREFETCH_NEXT()
 {
-	cpuPrefetch[1] = MMU::CPUReadHalfWord(armNextPC+2);
+	cpuPrefetch[1] = MMU::read16(armNextPC+2);
 }
 
 } // namespace CPU

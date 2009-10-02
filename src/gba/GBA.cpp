@@ -417,49 +417,9 @@ void CPUCleanUp()
 {
 	Cartridge::uninit();
 
-	if (vram != NULL)
-	{
-		free(vram);
-		vram = NULL;
-	}
-
-	if (paletteRAM != NULL)
-	{
-		free(paletteRAM);
-		paletteRAM = NULL;
-	}
-
-	if (internalRAM != NULL)
-	{
-		free(internalRAM);
-		internalRAM = NULL;
-	}
-
-	if (workRAM != NULL)
-	{
-		free(workRAM);
-		workRAM = NULL;
-	}
-
-	if (bios != NULL)
-	{
-		free(bios);
-		bios = NULL;
-	}
+	MMU::uninit();
 
 	Display::uninit();
-
-	if (oam != NULL)
-	{
-		free(oam);
-		oam = NULL;
-	}
-
-	if (ioMem != NULL)
-	{
-		free(ioMem);
-		ioMem = NULL;
-	}
 }
 
 bool CPUInitMemory()
@@ -469,45 +429,9 @@ bool CPUInitMemory()
 		CPUCleanUp();
 	}
 
-	workRAM = (u8 *)calloc(1, 0x40000);
-	if (workRAM == NULL)
+	if (!MMU::init())
 	{
-		systemMessage("Failed to allocate memory for %s", "WRAM");
-		return false;
-	}
-
-	bios = (u8 *)calloc(1,0x4000);
-	if (bios == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "BIOS");
-		CPUCleanUp();
-		return false;
-	}
-	internalRAM = (u8 *)calloc(1,0x8000);
-	if (internalRAM == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "IRAM");
-		CPUCleanUp();
-		return false;
-	}
-	paletteRAM = (u8 *)calloc(1,0x400);
-	if (paletteRAM == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "PRAM");
-		CPUCleanUp();
-		return false;
-	}
-	vram = (u8 *)calloc(1, 0x20000);
-	if (vram == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "VRAM");
-		CPUCleanUp();
-		return false;
-	}
-	oam = (u8 *)calloc(1, 0x400);
-	if (oam == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "OAM");
+		systemMessage("Failed to allocate memory for %s", "MMU");
 		CPUCleanUp();
 		return false;
 	}
@@ -515,13 +439,6 @@ bool CPUInitMemory()
 	if (!Display::init())
 	{
 		systemMessage("Failed to allocate memory for %s", "PIX");
-		CPUCleanUp();
-		return false;
-	}
-	ioMem = (u8 *)calloc(1, 0x400);
-	if (ioMem == NULL)
-	{
-		systemMessage("Failed to allocate memory for %s", "IO");
 		CPUCleanUp();
 		return false;
 	}
@@ -589,7 +506,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				MMU::CPUWriteMemory(d, 0);
+				MMU::write32(d, 0);
 				d += di;
 				c--;
 			}
@@ -598,8 +515,8 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				cpuDmaLast = MMU::CPUReadMemory(s);
-				MMU::CPUWriteMemory(d, cpuDmaLast);
+				cpuDmaLast = MMU::read32(s);
+				MMU::write32(d, cpuDmaLast);
 				d += di;
 				s += si;
 				c--;
@@ -615,7 +532,7 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				MMU::CPUWriteHalfWord(d, 0);
+				MMU::write16(d, 0);
 				d += di;
 				c--;
 			}
@@ -624,8 +541,8 @@ static void doDMA(u32 &s, u32 &d, u32 si, u32 di, u32 c, int transfer32)
 		{
 			while (c != 0)
 			{
-				cpuDmaLast = MMU::CPUReadHalfWord(s);
-				MMU::CPUWriteHalfWord(d, cpuDmaLast);
+				cpuDmaLast = MMU::read16(s);
+				MMU::write16(d, cpuDmaLast);
 				cpuDmaLast |= (cpuDmaLast<<16);
 				d += di;
 				s += si;
@@ -1564,7 +1481,6 @@ void CPUInit()
 	biosProtected[3] = 0xe1;
 
 	CPU::init();
-	MMU::MMUinit();
 }
 
 void CPUReset()

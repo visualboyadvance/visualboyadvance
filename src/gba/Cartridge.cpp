@@ -155,7 +155,7 @@ bool readBatteryFromFile(const char *fileName)
 	return res;
 }
 
-u32 readMemory32(const u32 address)
+u32 read32(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -183,7 +183,7 @@ u32 readMemory32(const u32 address)
 	return 0;
 }
 
-u16 readMemory16(const u32 address)
+u16 read16(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -214,7 +214,7 @@ u16 readMemory16(const u32 address)
 	return 0;
 }
 
-u8 readMemory8(const u32 address)
+u8 read8(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -257,7 +257,7 @@ u8 readMemory8(const u32 address)
 	return 0;
 }
 
-void writeMemory32(const u32 address, const u32 value)
+void write32(const u32 address, const u32 value)
 {
 	switch (address >> 24)
 	{
@@ -282,7 +282,7 @@ void writeMemory32(const u32 address, const u32 value)
 	}
 }
 
-void writeMemory16(const u32 address, const u16 value)
+void write16(const u32 address, const u16 value)
 {
 	switch (address >> 24)
 	{
@@ -313,7 +313,7 @@ void writeMemory16(const u32 address, const u16 value)
 	}
 }
 
-void writeMemory8(const u32 address, const u8 value)
+void write8(const u32 address, const u8 value)
 {
 	switch (address >> 24)
 	{

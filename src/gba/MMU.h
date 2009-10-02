@@ -6,7 +6,17 @@
 namespace MMU
 {
 
-void MMUinit();
+bool init();
+void uninit();
+ 
+u32 read32(u32 address);
+u32 read16(u32 address);
+u16 read16s(u32 address);
+u8 read8(u32 address);
+ 
+void write32(u32 address, u32 value);
+void write16(u32 address, u16 value);
+void write8(u32 address, u8 b);
 
 u32 CPUReadMemory(u32 address);
 u32 CPUReadHalfWord(u32 address);
