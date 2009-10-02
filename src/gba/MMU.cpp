@@ -48,9 +48,10 @@ static u32 readIo32(u32 address);
 template<typename T>
 static void unwritable(u32 address, T value);
  
-template<typename T>
+template<int s, typename T>
 static void writeGeneric(u32 address, T value);
 
+template<int s>
 static void writeVideo8(u32 address, u8 value);
 
 template<typename T>
@@ -78,21 +79,21 @@ struct MemAccess
 
 static MemAccess memMap[] =
 {
-	{ 0, 0x00003FFF, readBios<u8, 0x03>, readBios<u16, 0x02>, readBios<u32, 0x0F>, unwritable<u8>,    unwritable<u16>,    unwritable<u32>    }, // 0 - bios - mask values are probably wrong
-	{ 0, 0x00000000, unreadable<u8>,     unreadable<u16>,     unreadable<u32>,     unwritable<u8>,    unwritable<u16>,    unwritable<u32>    }, // 1
-	{ 0, 0x0003FFFF, readGeneric<2, u8>, readGeneric<2, u16>, readGeneric<2, u32>, writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 2
-	{ 0, 0x00007FFF, readGeneric<3, u8>, readGeneric<3, u16>, readGeneric<3, u32>, writeGeneric<u8>,  writeGeneric<u16>,  writeGeneric<u32>  }, // 3
-	{ 0, 0x000003FF, readIo8,            readIo16,            readIo32,            writeIo8,          writeIo16,          writeIo32          }, // 4
-	{ 0, 0x000003FF, readGeneric<5, u8>, readGeneric<5, u16>, readGeneric<5, u32>, writeVideo8,       writeGeneric<u16>,  writeGeneric<u32>  }, // 5
-	{ 0, 0x0001FFFF, readVRAM<u8>,       readVRAM<u16>,       readVRAM<u32>,       writeVRAM<u8>,     writeVRAM<u16>,     writeVRAM<u32>     }, // 6
-	{ 0, 0x000003FF, readGeneric<7, u8>, readGeneric<7, u16>, readGeneric<7, u32>, unwritable<u8>,    writeGeneric<u16>,  writeGeneric<u32>  }, // 7
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 8
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 9
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 10
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 11
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 12
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }, // 13
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8, Cartridge::write16, Cartridge::write32 }  // 14
+	{ 0, 0x00003FFF, readBios<u8, 0x03>, readBios<u16, 0x02>, readBios<u32, 0x0F>, unwritable<u8>,      unwritable<u16>,      unwritable<u32>      }, // 0 - bios - mask values are probably wrong
+	{ 0, 0x00000000, unreadable<u8>,     unreadable<u16>,     unreadable<u32>,     unwritable<u8>,      unwritable<u16>,      unwritable<u32>      }, // 1
+	{ 0, 0x0003FFFF, readGeneric<2, u8>, readGeneric<2, u16>, readGeneric<2, u32>, writeGeneric<2, u8>, writeGeneric<2, u16>, writeGeneric<2, u32> }, // 2
+	{ 0, 0x00007FFF, readGeneric<3, u8>, readGeneric<3, u16>, readGeneric<3, u32>, writeGeneric<3, u8>, writeGeneric<3, u16>, writeGeneric<3, u32> }, // 3
+	{ 0, 0x000003FF, readIo8,            readIo16,            readIo32,            writeIo8,            writeIo16,            writeIo32            }, // 4
+	{ 0, 0x000003FF, readGeneric<5, u8>, readGeneric<5, u16>, readGeneric<5, u32>, writeVideo8<5>,      writeGeneric<5, u16>, writeGeneric<5, u32> }, // 5
+	{ 0, 0x0001FFFF, readVRAM<u8>,       readVRAM<u16>,       readVRAM<u32>,       writeVRAM<u8>,       writeVRAM<u16>,       writeVRAM<u32>       }, // 6
+	{ 0, 0x000003FF, readGeneric<7, u8>, readGeneric<7, u16>, readGeneric<7, u32>, unwritable<u8>,      writeGeneric<7, u16>, writeGeneric<7, u32> }, // 7
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 8
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 9
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 10
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 11
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 12
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 13
+	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }  // 14
 };
 
 // MMU public functions
@@ -405,18 +406,18 @@ static void unwritable(u32 address, T value)
 #endif
 }
 
-template<typename T>
+template<int s, typename T>
 static void writeGeneric(u32 address, T value)
 {
-	int segment = address >> 24;
-	u32 mask = memMap[segment].mask;
+	u32 mask = memMap[s].mask;
 
-	writeLE<T>(&memMap[segment].mem[address & mask], value);
+	writeLE<T>(&memMap[s].mem[address & mask], value);
 }
 
+template<int s>
 static void writeVideo8(u32 address, u8 value)
 {
-	writeGeneric<u16>(address & 0xFFFFFFFE, (value << 8) | value);
+	writeGeneric<s, u16>(address & 0xFFFFFFFE, (value << 8) | value);
 }
 
 template<typename T>
@@ -428,7 +429,7 @@ static void writeVRAM(u32 address, T value)
 	if ((address & 0x18000) == 0x18000)
 		address &= 0x17FFF;
 
-	writeGeneric<T>(6 << 24 | address, value);
+	writeGeneric<6, T>(address, value);
 }
 
 template<>
@@ -445,7 +446,7 @@ void writeVRAM<u8>(u32 address, u8 value)
 	// byte writes to OBJ VRAM are ignored
 	if (address < objTilesAddress[((DISPCNT&7)+1)>>2])
 	{
-		writeVideo8(address, value);
+		writeVideo8<6>(address, value);
 	}
 }
 
