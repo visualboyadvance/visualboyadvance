@@ -140,11 +140,23 @@ bool ScreenArea::bOnCursorTimeout()
 	return false;
 }
 
-void ScreenArea::vDrawPixels(u8 * _puiData)
+void ScreenArea::vDrawPixels(u32 * _puiData)
 {
 	const int iSrcPitch = m_iWidth * sizeof(u32);
 
 	memcpy(m_puiPixels, _puiData, m_iHeight * iSrcPitch);
+
+	queue_draw();
+}
+
+void ScreenArea::vDrawBlackScreen()
+{
+	if (m_puiPixels && is_realized())
+	{
+		memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
+
+		queue_draw();
+	}
 }
 
 void ScreenArea::vUpdateSize()

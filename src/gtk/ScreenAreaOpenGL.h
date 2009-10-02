@@ -31,8 +31,6 @@ class ScreenAreaGl : public ScreenArea,
 {
 public:
 	ScreenAreaGl(int _iWidth, int _iHeight, int _iScale = 1);
-	void vDrawPixels(u8 * _puiData);
-	void vDrawBlackScreen();
 
 protected:
 	void on_realize();

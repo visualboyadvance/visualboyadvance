@@ -37,8 +37,8 @@ public:
 	void vSetSize(int _iWidth, int _iHeight);
 	void vSetScale(int _iScale);
 	void vSetEnableRender(bool _bEnable);
-	virtual void vDrawPixels(u8 * _puiData);
-	virtual void vDrawBlackScreen() = 0;
+	void vDrawPixels(u32 * _puiData);
+	void vDrawBlackScreen();
 
 protected:
 	virtual bool on_motion_notify_event(GdkEventMotion * _pstEvent);

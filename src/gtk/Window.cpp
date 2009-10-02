@@ -657,8 +657,7 @@ void Window::vPopupErrorV(const char * _csFormat, va_list _args)
 
 void Window::vDrawScreen(u32 *pix)
 {
-	// TODO:Remove the cast
-	m_poScreenArea->vDrawPixels((u8 *)pix);
+	m_poScreenArea->vDrawPixels(pix);
 }
 
 void Window::vDrawDefaultScreen()

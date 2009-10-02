@@ -29,8 +29,6 @@ class ScreenAreaCairo : public ScreenArea
 {
 public:
 	ScreenAreaCairo(int _iWidth, int _iHeight, int _iScale = 1);
-	void vDrawPixels(u8 * _puiData);
-	void vDrawBlackScreen();
 
 protected:
 	bool on_expose_event(GdkEventExpose * _pstEvent);

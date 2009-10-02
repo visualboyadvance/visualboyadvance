@@ -36,13 +36,6 @@ ScreenAreaCairo::ScreenAreaCairo(int _iWidth, int _iHeight, int _iScale) :
 	vUpdateSize();
 }
 
-void ScreenAreaCairo::vDrawPixels(u8 * _puiData)
-{
-	ScreenArea::vDrawPixels(_puiData);
-
-	queue_draw();
-}
-
 bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
 {
 	DrawingArea::on_expose_event(_pstEvent);
@@ -71,15 +64,6 @@ bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
 	poContext->paint();
 
 	return true;
-}
-
-void ScreenAreaCairo::vDrawBlackScreen()
-{
-	if (m_puiPixels && is_realized())
-	{
-		memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
-		queue_draw_area(0, 0, get_width(), get_height());
-	}
 }
 
 void ScreenAreaCairo::vOnWidgetResize()

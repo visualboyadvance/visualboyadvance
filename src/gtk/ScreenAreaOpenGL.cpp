@@ -87,22 +87,6 @@ void ScreenAreaGl::on_realize()
 	glwindow->gl_end();
 }
 
-void ScreenAreaGl::vDrawPixels(u8 * _puiData)
-{
-	ScreenArea::vDrawPixels(_puiData);
-
-	queue_draw_area(0, 0, get_width(), get_height());
-}
-
-void ScreenAreaGl::vDrawBlackScreen()
-{
-	if (m_puiPixels && is_realized())
-	{
-		memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
-		queue_draw_area(0, 0, get_width(), get_height());
-	}
-}
-
 void ScreenAreaGl::vOnWidgetResize()
 {
 	Glib::RefPtr<Gdk::GL::Window> glwindow = get_gl_window();
