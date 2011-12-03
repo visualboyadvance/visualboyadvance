@@ -13,16 +13,16 @@ bool linkenable = true;
 //static int linktime = 0;
 static u8 transfer=0;
 //static int linkid = 0;
-static int savedlinktime=0;
+//static int savedlinktime=0;
 static bool linklog = true;
 static FILE *linklogfile = stderr;
-static u16 linkdata[4];
+//static u16 linkdata[4];
 static bool oncewait = false;
 //static bool adapter = false;
 //static int rfu_state, rfu_polarity, linktime2;
 //static int transferend;
 
-static int GetSioMode(u16, u16);
+//static int GetSioMode(u16, u16);
 //static u16 StartRFU(u16);
 
 void linkUpdateSIOCNT(u16 value)
@@ -242,7 +242,7 @@ void LinkUpdate(int ticks)
 	return;
 }
 
-static int GetSioMode(u16 reg1, u16 reg2)
+/*static int GetSioMode(u16 reg1, u16 reg2)
 {
 	if (!(reg2&0x8000))
 	{
@@ -260,7 +260,7 @@ static int GetSioMode(u16 reg1, u16 reg2)
 	}
 	if (reg2&0x4000) return JOYBUS;
 	return GP;
-}
+}*/
 
 /*static u16 StartRFU(u16 value){
 	switch(GetSioMode(value, READ16LE(&ioMem[0x134]))){
