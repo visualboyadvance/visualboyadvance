@@ -53,13 +53,11 @@ private:
 	Gtk::ComboBox *           m_poRateComboBox;
 
 	// Display
-	void vOnOutputChanged();
 	void vOnScaleChanged();
 	void vOnShowSpeedChanged();
 
 	Config::Section *         m_poDisplayConfig;
 	Gtk::ComboBox *           m_poDefaultScaleComboBox;
-	Gtk::CheckButton *        m_poUseOpenGLCheckButton;
 	Gtk::CheckButton *        m_poShowSpeedCheckButton;
 
 	// Paths

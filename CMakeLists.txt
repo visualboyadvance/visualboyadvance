@@ -16,7 +16,6 @@ ENDIF( NOT VERSION )
 
 # Look for some dependencies using builtin CMake scripts
 FIND_PACKAGE ( ZLIB REQUIRED )
-FIND_PACKAGE ( OpenGL REQUIRED )
 FIND_PACKAGE ( SDL REQUIRED )
 FIND_PACKAGE ( PkgConfig REQUIRED )
 
@@ -24,7 +23,6 @@ FIND_PACKAGE ( PkgConfig REQUIRED )
 PKG_CHECK_MODULES ( GTKMM gtkmm-2.4 )
 PKG_CHECK_MODULES ( GLIBMM glibmm-2.4 )
 PKG_CHECK_MODULES ( GIOMM giomm-2.4 )
-PKG_CHECK_MODULES ( GTKGLMM gtkglextmm-x11-1.2 )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
@@ -92,7 +90,6 @@ SET(SRC_GTK
 	src/gtk/SettingsDialog.cpp
 	src/gtk/ScreenArea.cpp
 	src/gtk/ScreenAreaCairo.cpp
-	src/gtk/ScreenAreaOpenGL.cpp
 	src/gtk/Tools.cpp
 	src/gtk/Window.cpp
 	src/gtk/InputSDL.cpp
@@ -110,14 +107,12 @@ INCLUDE_DIRECTORIES(
 	${GLIBMM_INCLUDE_DIRS}
 	${GIOMM_INCLUDE_DIRS}
 	${GTKMM_INCLUDE_DIRS}
-	${GTKGLMM_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(
 	${GLIBMM_LIBRARY_DIRS}
 	${GIOMM_LIBRARY_DIRS}
 	${GTKMM_LIBRARY_DIRS}
-	${GTKGLMM_LIBRARY_DIRS}
 )
 
 ADD_LIBRARY (
@@ -141,7 +136,7 @@ TARGET_LINK_LIBRARIES (
 	${ZLIB_LIBRARY}
 	${PNG_LIBRARY}
 	${SDL_LIBRARY}
-	${GTKGLMM_LIBRARIES}
+	${GTKMM_LIBRARIES}
 )
 
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)

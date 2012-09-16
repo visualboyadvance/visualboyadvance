@@ -16,8 +16,6 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <gtkmm/gl/init.h>
-
 #include "Window.h"
 #include "Intl.h"
 
@@ -36,8 +34,6 @@ int main(int argc, char * argv[])
 	Glib::set_application_name(_("VBA-M"));
 
 	Gtk::Main oKit(argc, argv);
-
-	Gtk::GL::init(argc, argv);
 
 	Glib::OptionContext oContext;
 	Glib::OptionGroup oGroup("main_group", _("Main VBA-M options"));

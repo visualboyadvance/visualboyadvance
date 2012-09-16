@@ -30,7 +30,6 @@
 #include "Tools.h"
 #include "Intl.h"
 #include "ScreenAreaCairo.h"
-#include "ScreenAreaOpenGL.h"
 #include "GameXml.h"
 
 extern int emulating;
@@ -280,32 +279,14 @@ void Window::vInitColors(EColorFormat _eColorFormat)
 
 void Window::vApplyConfigScreenArea()
 {
-	bool bUseOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
-
 	Gtk::Alignment * poC;
 
 	m_poBuilder->get_widget("ScreenContainer", poC);
 	poC->remove();
 	poC->set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 1.0, 1.0);
 
-	try
-	{
-		if (bUseOpenGL)
-		{
-			vInitColors(ColorFormatBGR);
-			m_poScreenArea = Gtk::manage(new ScreenAreaGl(m_iScreenWidth, m_iScreenHeight));
-		}
-		else
-		{
-			vInitColors(ColorFormatRGB);
-			m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
-		}
-	}
-	catch (std::exception e)
-	{
-		fprintf(stderr, "Unable to initialize output, falling back to Cairo\n");
-		m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
-	}
+	vInitColors(ColorFormatRGB);
+	m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
 
 	poC->add(*m_poScreenArea);
 	vDrawDefaultScreen();
@@ -393,7 +374,6 @@ void Window::vInitConfig()
 	m_poDisplayConfig->vSetKey("scale",               1              );
 	m_poDisplayConfig->vSetKey("show_speed",          true           );
 	m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
-	m_poDisplayConfig->vSetKey("use_opengl",          true           );
 
 
 	// Sound section

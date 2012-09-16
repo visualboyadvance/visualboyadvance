@@ -32,7 +32,6 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 	refBuilder->get_widget("VolumeComboBox", m_poVolumeComboBox);
 	refBuilder->get_widget("RateComboBox", m_poRateComboBox);
 	refBuilder->get_widget("DefaultScaleComboBox", m_poDefaultScaleComboBox);
-	refBuilder->get_widget("OpenGLCheckButton", m_poUseOpenGLCheckButton);
 	refBuilder->get_widget("ShowSpeedCheckButton", m_poShowSpeedCheckButton);
 	refBuilder->get_widget("BiosFileChooserButton", m_poBiosFileChooserButton);
 	refBuilder->get_widget("RomsFileChooserButton", m_poRomsFileChooserButton);
@@ -43,7 +42,6 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 	m_poVolumeComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnVolumeChanged));
 	m_poRateComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRateChanged));
 	m_poDefaultScaleComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnScaleChanged));
-	m_poUseOpenGLCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnOutputChanged));
 	m_poShowSpeedCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnShowSpeedChanged));
 	m_poBiosFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBiosChanged));
 	m_poRomsFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRomsChanged));
@@ -115,9 +113,6 @@ void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Sectio
 	int iDefaultScale = m_poDisplayConfig->oGetKey<int>("scale");
 	m_poDefaultScaleComboBox->set_active(iDefaultScale - 1);
 
-	bool bOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
-	m_poUseOpenGLCheckButton->set_active(bOpenGL);
-
 	bool bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
 	m_poShowSpeedCheckButton->set_active(bShowSpeed);
 
@@ -181,19 +176,6 @@ void SettingsDialog::vOnRateChanged()
 	}
 
 	m_poWindow->vApplyConfigSoundSampleRate();
-}
-
-void SettingsDialog::vOnOutputChanged()
-{
-	bool bOldOpenGL = m_poDisplayConfig->oGetKey<bool>("use_opengl");
-	bool bNewOpenGL = m_poUseOpenGLCheckButton->get_active();
-
-	m_poDisplayConfig->vSetKey("use_opengl", bNewOpenGL);
-
-	if (bNewOpenGL != bOldOpenGL)
-	{
-		m_poWindow->vApplyConfigScreenArea();
-	}
 }
 
 void SettingsDialog::vOnScaleChanged()
