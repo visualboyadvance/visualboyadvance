@@ -56,15 +56,15 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 		"*.[bB][iI][oO][sS]", "*.[zZ][iI][pP]", "*.[zZ]", "*.[gG][zZ]"
 	};
 
-	Gtk::FileFilter oAllFilter;
-	oAllFilter.set_name(_("All files"));
-	oAllFilter.add_pattern("*");
+	const Glib::RefPtr<Gtk::FileFilter> oAllFilter = Gtk::FileFilter::create();
+	oAllFilter->set_name(_("All files"));
+	oAllFilter->add_pattern("*");
 
-	Gtk::FileFilter oBiosFilter;
-	oBiosFilter.set_name(_("Gameboy Advance BIOS"));
+	const Glib::RefPtr<Gtk::FileFilter> oBiosFilter = Gtk::FileFilter::create();
+	oBiosFilter->set_name(_("Gameboy Advance BIOS"));
 	for (guint i = 0; i < G_N_ELEMENTS(acsPattern); i++)
 	{
-		oBiosFilter.add_pattern(acsPattern[i]);
+		oBiosFilter->add_pattern(acsPattern[i]);
 	}
 
 	m_poBiosFileChooserButton->add_filter(oAllFilter);

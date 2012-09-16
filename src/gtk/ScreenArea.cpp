@@ -38,16 +38,7 @@ ScreenArea::ScreenArea(int _iWidth, int _iHeight, int _iScale) :
 	           | Gdk::ENTER_NOTIFY_MASK
 	           | Gdk::LEAVE_NOTIFY_MASK);
 
-	char aiEmptyData[8];
-	memset(aiEmptyData, 0, sizeof(aiEmptyData));
-	Glib::RefPtr<Gdk::Bitmap> poSource = Gdk::Bitmap::create(aiEmptyData, 8, 8);
-	Glib::RefPtr<Gdk::Bitmap> poMask = Gdk::Bitmap::create(aiEmptyData, 8, 8);
-	Gdk::Color oFg;
-	Gdk::Color oBg;
-	oFg.set_rgb(0, 0, 0);
-	oBg.set_rgb(0, 0, 0);
-
-	m_poEmptyCursor = new Gdk::Cursor(poSource, poMask, oFg, oBg, 0, 0);
+	m_poEmptyCursor = Gdk::Cursor::create(Gdk::BLANK_CURSOR);
 }
 
 ScreenArea::~ScreenArea()
@@ -57,10 +48,7 @@ ScreenArea::~ScreenArea()
 		delete[] m_puiPixels;
 	}
 
-	if (m_poEmptyCursor != NULL)
-	{
-		delete m_poEmptyCursor;
-	}
+	m_poEmptyCursor.reset();
 }
 
 void ScreenArea::vSetSize(int _iWidth, int _iHeight)
@@ -98,7 +86,7 @@ void ScreenArea::vStopCursorTimeout()
 
 void ScreenArea::vHideCursor()
 {
-	get_window()->set_cursor(*m_poEmptyCursor);
+	get_window()->set_cursor(m_poEmptyCursor);
 	m_bShowCursor = false;
 }
 
@@ -151,7 +139,7 @@ void ScreenArea::vDrawPixels(u32 * _puiData)
 
 void ScreenArea::vDrawBlackScreen()
 {
-	if (m_puiPixels && is_realized())
+	if (m_puiPixels && get_realized())
 	{
 		memset(m_puiPixels, 0, m_iHeight * m_iWidth * sizeof(u32));
 

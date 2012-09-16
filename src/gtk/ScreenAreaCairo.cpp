@@ -36,16 +36,14 @@ ScreenAreaCairo::ScreenAreaCairo(int _iWidth, int _iHeight, int _iScale) :
 	vUpdateSize();
 }
 
-bool ScreenAreaCairo::on_expose_event(GdkEventExpose * _pstEvent)
+bool ScreenAreaCairo::on_draw(const Cairo::RefPtr<Cairo::Context> &poContext)
 {
-	DrawingArea::on_expose_event(_pstEvent);
+	DrawingArea::on_draw(poContext);
+
 	Cairo::RefPtr< Cairo::ImageSurface >   poImage;
 	Cairo::RefPtr< Cairo::SurfacePattern > poPattern;
-	Cairo::RefPtr< Cairo::Context >        poContext;
 	Cairo::Matrix oMatrix;
 	const int iScaledPitch = m_iWidth * sizeof(u32);
-
-	poContext = get_window()->create_cairo_context();
 
 	poContext->set_identity_matrix();
 	poContext->scale(m_dScaleFactor, m_dScaleFactor);

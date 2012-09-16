@@ -90,9 +90,9 @@ void Window::vOnFileLoad()
 		oDialog.add_shortcut_folder(sSaveDir);
 	}
 
-	Gtk::FileFilter oSaveFilter;
-	oSaveFilter.set_name(_("VisualBoyAdvance save game"));
-	oSaveFilter.add_pattern("*.[sS][gG][mM]");
+	const Glib::RefPtr<Gtk::FileFilter> oSaveFilter = Gtk::FileFilter::create();
+	oSaveFilter->set_name(_("VisualBoyAdvance save game"));
+	oSaveFilter->add_pattern("*.[sS][gG][mM]");
 
 	oDialog.add_filter(oSaveFilter);
 
@@ -125,9 +125,9 @@ void Window::vOnFileSave()
 	}
 	oDialog.set_current_name(sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())));
 
-	Gtk::FileFilter oSaveFilter;
-	oSaveFilter.set_name(_("VisualBoyAdvance save game"));
-	oSaveFilter.add_pattern("*.[sS][gG][mM]");
+	const Glib::RefPtr<Gtk::FileFilter> oSaveFilter = Gtk::FileFilter::create();
+	oSaveFilter->set_name(_("VisualBoyAdvance save game"));
+	oSaveFilter->add_pattern("*.[sS][gG][mM]");
 
 	oDialog.add_filter(oSaveFilter);
 
@@ -351,7 +351,7 @@ void Window::vOnHelpAbout()
 
 	oAboutDialog.set_website("http://vba-m.ngemu.com/");
 
-	std::list<Glib::ustring> list_authors;
+	std::vector<Glib::ustring> list_authors;
 	list_authors.push_back("Forgotten");
 	list_authors.push_back("kxu");
 	list_authors.push_back("Pokemonhacker");
@@ -362,7 +362,7 @@ void Window::vOnHelpAbout()
 	list_authors.push_back("bgK");
 	oAboutDialog.set_authors(list_authors);
 
-	std::list<Glib::ustring> list_artists;
+	std::vector<Glib::ustring> list_artists;
 	list_artists.push_back("Matteo Drera");
 	list_artists.push_back("Jakub Steiner");
 	list_artists.push_back("Jones Lee");
@@ -406,7 +406,7 @@ bool Window::on_focus_out_event(GdkEventFocus * _pstEvent)
 bool Window::on_key_press_event(GdkEventKey * _pstEvent)
 {
 	// The menu accelerators are disabled when it is hidden
-	if (_pstEvent->keyval == GDK_F11 && !m_poMenuBar->is_visible())
+	if (_pstEvent->keyval == GDK_KEY_F11 && !m_poMenuBar->get_visible())
 	{
 		vToggleFullscreen();
 		return true;

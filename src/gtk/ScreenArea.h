@@ -53,9 +53,9 @@ protected:
 	u32 *    m_puiPixels;
 	bool     m_bEnableRender;
 
-	bool             m_bShowCursor;
-	Gdk::Cursor *    m_poEmptyCursor;
-	sigc::connection m_oCursorSig;
+	bool                      m_bShowCursor;
+	Glib::RefPtr<Gdk::Cursor> m_poEmptyCursor;
+	sigc::connection          m_oCursorSig;
 
 	void vUpdateSize();
 	virtual void vOnWidgetResize() = 0;
