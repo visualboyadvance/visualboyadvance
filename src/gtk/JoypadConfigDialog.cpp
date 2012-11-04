@@ -44,7 +44,8 @@ JoypadConfigDialog::JoypadConfigDialog(Config::Section * _poConfig) :
 		Gtk::Dialog("Joypad config", true),
 		m_oTable(G_N_ELEMENTS(m_astKeys), 2, false),
 		m_bUpdating(false),
-		m_poConfig(_poConfig)
+		m_poConfig(_poConfig),
+		m_iCurrentEntry(-1)
 {
 	// Joypad buttons
 	for (guint i = 0; i < G_N_ELEMENTS(m_astKeys); i++)
@@ -89,7 +90,7 @@ void JoypadConfigDialog::vUpdateEntries()
 
 	for (guint i = 0; i < m_oEntries.size(); i++)
 	{
-		const char * csName = 0;
+		std::string csName;
 
 		guint uiKeyval = inputGetKeymap(PAD_MAIN, m_astKeys[i].m_eKeyFlag);
 		int dev = uiKeyval >> 16;
@@ -124,10 +125,10 @@ void JoypadConfigDialog::vUpdateEntries()
 				os << " Hat " << what;
 			}
 
-			csName = os.str().c_str();
+			csName = os.str();
 		}
 
-		if (csName == 0)
+		if (csName.empty())
 		{
 			m_oEntries[i]->set_text(_("<Undefined>"));
 		}
