@@ -28,7 +28,6 @@ ScreenArea::ScreenArea(int _iWidth, int _iHeight, int _iScale) :
 		m_iHeight(_iHeight),
 		m_iScale(_iScale),
 		m_puiPixels(NULL),
-		m_bEnableRender(true),
 		m_bShowCursor(true)
 {
 	g_assert(_iWidth >= 1 && _iHeight >= 1 && _iScale >= 1);
@@ -165,11 +164,6 @@ bool ScreenArea::on_configure_event(GdkEventConfigure * event)
 	vOnWidgetResize();
 
 	return true;
-}
-
-void ScreenArea::vSetEnableRender(bool _bEnable)
-{
-	m_bEnableRender = _bEnable;
 }
 
 } // namespace VBA

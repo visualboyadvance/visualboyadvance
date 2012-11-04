@@ -36,7 +36,6 @@ public:
 
 	void vSetSize(int _iWidth, int _iHeight);
 	void vSetScale(int _iScale);
-	void vSetEnableRender(bool _bEnable);
 	void vDrawPixels(u32 * _puiData);
 	void vDrawBlackScreen();
 
@@ -51,7 +50,6 @@ protected:
 	int      m_iHeight;
 	int      m_iScale;
 	u32 *    m_puiPixels;
-	bool     m_bEnableRender;
 
 	bool                      m_bShowCursor;
 	Glib::RefPtr<Gdk::Cursor> m_poEmptyCursor;

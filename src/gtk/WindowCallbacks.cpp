@@ -40,7 +40,6 @@ void Window::vOnMenuEnter()
 {
 	if (emulating && !m_bPaused)
 	{
-		m_poScreenArea->vSetEnableRender(false);
 		vStopEmu();
 		soundPause();
 	}
@@ -50,7 +49,6 @@ void Window::vOnMenuExit()
 {
 	if (emulating && !m_bPaused)
 	{
-		m_poScreenArea->vSetEnableRender(true);
 		vStartEmu();
 		soundResume();
 	}
@@ -317,9 +315,7 @@ void Window::vOnSettings()
 	poBuilder->get_widget_derived("SettingsDialog", poDialog);
 	poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, m_poCoreConfig, m_poDirConfig, this);
 	poDialog->set_transient_for(*this);
-	m_poScreenArea->vSetEnableRender(false);
 	poDialog->run();
-	m_poScreenArea->vSetEnableRender(true);
 	poDialog->hide();
 }
 
