@@ -120,9 +120,17 @@ void JoypadConfigDialog::vUpdateEntries()
 			else if (what < 0x30)
 			{
 				// joystick hat
+				int dir = (what & 3);
 				what = (what & 15);
 				what >>= 2;
-				os << " Hat " << what;
+				os << " Hat " << what << " ";
+				switch (dir)
+				{
+					case 0: os << "Up"; break;
+					case 1: os << "Down"; break;
+					case 2: os << "Right"; break;
+					case 3: os << "Left"; break;
+				}
 			}
 
 			csName = os.str();
@@ -180,6 +188,9 @@ void JoypadConfigDialog::vOnInputEvent(const SDL_Event &event)
 	}
 
 	int code = inputGetEventCode(event);
+	
+	if (!code) return;
+	
 	inputSetKeymap(PAD_MAIN, m_astKeys[m_iCurrentEntry].m_eKeyFlag, code);
 	vUpdateEntries();
 
