@@ -17,6 +17,7 @@ ENDIF( NOT VERSION )
 # Look for some dependencies using builtin CMake scripts
 FIND_PACKAGE ( ZLIB REQUIRED )
 FIND_PACKAGE ( SDL REQUIRED )
+FIND_PACKAGE ( LibArchive REQUIRED )
 FIND_PACKAGE ( PkgConfig REQUIRED )
 
 # These dependencies require pkg-config to be found
@@ -40,7 +41,6 @@ ADD_DEFINITIONS (-DGBA_LOGGING)
 # Source files definition
 SET(SRC_MAIN
 	src/common/GameDB.cpp
-	src/common/fex_mini.cpp
 	src/common/Util.cpp
 )
 
@@ -95,8 +95,8 @@ SET(SRC_GTK
 )
 
 INCLUDE_DIRECTORIES(
+	${LibArchive_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
-	${PNG_INCLUDE_DIR}
 	${SDL_INCLUDE_DIR}
 )
 
@@ -130,8 +130,8 @@ ADD_EXECUTABLE (
 TARGET_LINK_LIBRARIES (
 	gvbam
 	vbamcore
+	${LibArchive_LIBRARY}
 	${ZLIB_LIBRARY}
-	${PNG_LIBRARY}
 	${SDL_LIBRARY}
 	${GTKMM_LIBRARIES}
 )

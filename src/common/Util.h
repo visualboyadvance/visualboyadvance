@@ -11,8 +11,7 @@ typedef struct {
 } variable_desc;
 
 bool utilIsGBAImage(const char *);
-bool utilIsUsableGBAImage(const char *);
-u8 *utilLoad(const char *, bool (*)(const char*), u8 *, int &);
+bool utilLoad(const char *, bool (*)(const char*), u8 *, int &);
 
 void utilPutDword(u8 *, u32);
 void utilPutWord(u8 *, u16);

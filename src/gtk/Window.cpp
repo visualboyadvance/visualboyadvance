@@ -688,7 +688,12 @@ void Window::vCreateFileOpenDialog()
 	oGBAFilter->set_name(_("Gameboy Advance files"));
 	oGBAFilter->add_pattern("*.[gG][bB][aA]");
 
+	const Glib::RefPtr<Gtk::FileFilter> oAllFilter = Gtk::FileFilter::create();
+	oAllFilter->set_name(_("All files"));
+	oAllFilter->add_pattern("*.*");
+
 	poDialog->add_filter(oGBAFilter);
+	poDialog->add_filter(oAllFilter);
 
 	m_poFileOpenDialog = poDialog;
 }
