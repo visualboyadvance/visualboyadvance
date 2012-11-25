@@ -39,6 +39,7 @@ ADD_DEFINITIONS (-DGBA_LOGGING)
 
 # Source files definition
 SET(SRC_MAIN
+	src/common/GameXml.cpp
 	src/common/fex_mini.cpp
 	src/common/Util.cpp
 )
@@ -90,7 +91,6 @@ SET(SRC_GTK
 	src/gtk/Tools.cpp
 	src/gtk/Window.cpp
 	src/gtk/InputSDL.cpp
-	src/gtk/GameXml.cpp
 	src/common/SoundSDL.cpp
 )
 

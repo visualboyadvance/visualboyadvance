@@ -5,6 +5,9 @@ void GameXml::on_start_element(Glib::Markup::ParseContext& context, const Glib::
 	if (element_name == "game")
 	{
 		m_bIsInGameTag = true;
+		
+		// Reset our cartridge data
+		reset();
 	}
 	else if (element_name == "title")
 	{
@@ -70,12 +73,14 @@ void GameXml::on_text(Glib::Markup::ParseContext& context, const Glib::ustring& 
 	}
 }
 
-void GameXml::parseFile(const std::string &_sFileName)
+Cartridge::GameInfos GameXml::parseFile(const std::string &_sFileName)
 {
 	m_bIsPresent = true;
 	m_sBasePath = Glib::path_get_dirname(_sFileName) + "/";
 	
 	Glib::Markup::ParseContext oContext(*this);
 	std::string sXmlData = Glib::file_get_contents(_sFileName);
-    oContext.parse(sXmlData);
+	oContext.parse(sXmlData);
+	
+	return Cartridge::GameInfos(*this);
 }

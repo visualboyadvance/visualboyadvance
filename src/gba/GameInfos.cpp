@@ -20,18 +20,21 @@
 namespace Cartridge
 {
 
-GameInfos::GameInfos():
-	m_bHasSRAM(false),
-	m_bHasEEPROM(false),
-	m_bHasFlash(false),
-	m_bHasRTC(false),
-	m_iEEPROMSize(0x2000),
-	m_iFlashSize(0x10000),
-	m_bIsPresent(false)
+GameInfos::GameInfos()
 {
-
+    reset();
 }
 
+void GameInfos::reset()
+{
+	m_bHasSRAM = false;
+	m_bHasEEPROM = false;
+	m_bHasFlash = false;
+	m_bHasRTC = false;
+	m_iEEPROMSize = 0x2000;
+	m_iFlashSize = 0x10000;
+	m_bIsPresent = false;
+}
 
 const std::string& GameInfos::getTitle() const
 {

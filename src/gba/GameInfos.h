@@ -39,6 +39,8 @@ protected:
 
 	bool m_bIsPresent;
 
+	void reset();
+
 public:
 	GameInfos();
 

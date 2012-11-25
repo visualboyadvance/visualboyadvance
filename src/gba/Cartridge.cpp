@@ -4,6 +4,7 @@
 #include "CartridgeFlash.h"
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
+#include "../common/GameXml.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
 #include "../System.h"
@@ -20,9 +21,11 @@ namespace Cartridge
 static GameInfos game;
 static u8 *rom = 0;
 
-bool loadGame(const GameInfos &_game)
+bool loadRom(const std::string &_sFileName)
 {
-	game = _game;
+	GameXml oGame;
+	game = oGame.parseFile(_sFileName);
+	
 	std::string file = game.getBasePath() + game.getRomDump();
 	
 	int romSize = 0x2000000;

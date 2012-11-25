@@ -13,5 +13,6 @@ protected:
     virtual void on_text(Glib::Markup::ParseContext& context, const Glib::ustring& text);
 	
 public:
-	void parseFile(const std::string &_sFileName);
+	Cartridge::GameInfos parseFile(const std::string &_sFileName);
 };
+

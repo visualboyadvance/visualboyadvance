@@ -30,7 +30,6 @@
 #include "Tools.h"
 #include "Intl.h"
 #include "ScreenAreaCairo.h"
-#include "GameXml.h"
 
 extern int emulating;
 
@@ -550,13 +549,10 @@ bool Window::bLoadROM(const std::string & _rsFile)
 {
 	vOnFileClose();
 
-	GameXml oGame;
-	oGame.parseFile(_rsFile);
-
 	if (!CPUInitMemory())
 		return false;
 
-	if (!Cartridge::loadGame(oGame))
+	if (!Cartridge::loadRom(_rsFile))
 	{
 		CPUCleanUp();
 		return false;

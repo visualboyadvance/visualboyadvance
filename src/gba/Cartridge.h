@@ -10,7 +10,7 @@ namespace Cartridge
 bool init();
 void reset();
 void uninit();
-bool loadGame(const GameInfos &_game);
+bool loadRom(const std::string &_sFileName);
 void unloadGame();
 void getGameName(u8 *romname);
 const GameInfos &getGame();
