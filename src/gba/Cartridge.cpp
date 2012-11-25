@@ -4,7 +4,7 @@
 #include "CartridgeFlash.h"
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
-#include "../common/GameXml.h"
+#include "../common/GameDB.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
 #include "../System.h"
@@ -21,16 +21,18 @@ namespace Cartridge
 static GameInfos game;
 static u8 *rom = 0;
 
+std::string getRomCode()
+{
+	return std::string(reinterpret_cast< char const* >(&rom[0xac]), 4);
+}
+
 bool loadRom(const std::string &_sFileName)
 {
-	GameXml oGame;
-	game = oGame.parseFile(_sFileName);
-	
-	std::string file = game.getBasePath() + game.getRomDump();
-	
 	int romSize = 0x2000000;
-
-	return utilLoad(file.c_str(), utilIsGBAImage, rom, romSize);
+	
+	if (!utilLoad(_sFileName.c_str(), utilIsGBAImage, rom, romSize)) {
+		return false;
+	}
 
 	// What does this do ?
 	/*u16 *temp = (u16 *)(rom+((romSize+1)&~1));
@@ -39,6 +41,17 @@ bool loadRom(const std::string &_sFileName)
 		WRITE16LE(temp, (i >> 1) & 0xFFFF);
 		temp++;
 	}*/
+	
+	std::string code = getRomCode();
+
+	GameDB oDB;
+	if (!oDB.lookUpCode(code)) {
+		return false;
+	}
+	
+	game = oDB.getGame();
+
+	return true;
 }
 
 void unloadGame()
@@ -55,6 +68,10 @@ const GameInfos &getGame()
 void getGameName(u8 *romname)
 {
 	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
+}
+
+bool isPresent() {
+	return game.getTitle() != "";
 }
 
 bool init()

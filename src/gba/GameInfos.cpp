@@ -33,22 +33,11 @@ void GameInfos::reset()
 	m_bHasRTC = false;
 	m_iEEPROMSize = 0x2000;
 	m_iFlashSize = 0x10000;
-	m_bIsPresent = false;
 }
 
 const std::string& GameInfos::getTitle() const
 {
 	return m_sTitle;
-}
-
-const std::string& GameInfos::getRomDump() const
-{
-	return m_sRomDump;
-}
-
-const std::string& GameInfos::getBasePath() const
-{
-	return m_sBasePath;
 }
 
 bool GameInfos::hasSRAM() const
@@ -79,11 +68,6 @@ int GameInfos::getEEPROMSize() const
 int GameInfos::getFlashSize() const
 {
 	return m_iFlashSize;
-}
-
-bool GameInfos::isPresent() const
-{
-	return m_bIsPresent;
 }
 
 }

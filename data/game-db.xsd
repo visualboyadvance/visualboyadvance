@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified"
+	elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://game-db.vba-ttb.org/" xmlns="http://game-db.vba-ttb.org/">
+
+	<!-- List of games -->
+	<xs:element name="games">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element type="game" name="game" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute type="xs:int" name="version" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Game type -->
+	<xs:complexType name="game">
+		<xs:sequence>
+			<xs:element type="xs:string" name="title" />
+			<xs:element type="xs:string" name="publisher" />
+			<xs:element type="xs:string" name="region" maxOccurs="unbounded" />
+			<xs:element type="xs:string" name="languages" />
+			<xs:element type="cartridge" name="cartridge" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Cartridge type -->
+	<xs:complexType name="cartridge">
+		<xs:sequence>
+			<xs:element type="code" name="code" />
+			<xs:element type="save" name="sram" minOccurs="0" />
+			<xs:element type="save" name="eeprom" minOccurs="0" />
+			<xs:element type="save" name="flash" minOccurs="0" />
+			<xs:element type="empty" name="hasRTC" minOccurs="0" />
+			<xs:element type="empty" name="hasMotionSensor" minOccurs="0" />
+			<xs:element type="empty" name="isMirrored" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Code type -->
+	<xs:complexType name="code">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute type="xs:string" name="cloneOf" use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<!-- Save type -->
+	<xs:complexType name="save">
+		<xs:attribute type="xs:int" name="size" use="required" />
+	</xs:complexType>
+
+	<!-- Empty type -->
+	<xs:complexType name="empty" />
+
+</xs:schema>

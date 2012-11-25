@@ -27,8 +27,7 @@ class GameInfos
 {
 protected:
 	std::string m_sTitle;
-	std::string m_sRomDump;
-	std::string m_sBasePath;
+	std::string m_sCode;
 
 	bool m_bHasSRAM;
 	bool m_bHasEEPROM;
@@ -37,23 +36,18 @@ protected:
 	int m_iEEPROMSize;
 	int m_iFlashSize;
 
-	bool m_bIsPresent;
-
 	void reset();
 
 public:
 	GameInfos();
 
 	const std::string& getTitle() const;
-	const std::string& getRomDump() const;
-	const std::string& getBasePath() const;
 	bool hasSRAM() const;
 	bool hasFlash() const;
 	bool hasEEPROM() const;
 	bool hasRTC() const;
 	int getEEPROMSize() const;
 	int getFlashSize() const;
-	bool isPresent() const;
 };
 
 }

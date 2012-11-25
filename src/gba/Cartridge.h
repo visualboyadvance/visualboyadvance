@@ -14,6 +14,7 @@ bool loadRom(const std::string &_sFileName);
 void unloadGame();
 void getGameName(u8 *romname);
 const GameInfos &getGame();
+bool isPresent();
 
 bool readBatteryFromFile(const char *fileName);
 bool writeBatteryToFile(const char *fileName);

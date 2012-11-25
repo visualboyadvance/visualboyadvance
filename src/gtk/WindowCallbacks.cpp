@@ -78,11 +78,7 @@ void Window::vOnFileLoad()
 	oDialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	oDialog.add_button(Gtk::Stock::OPEN,   Gtk::RESPONSE_OK);
 
-	if (sSaveDir == "")
-	{
-		oDialog.set_current_folder(Cartridge::getGame().getBasePath());
-	}
-	else
+	if (sSaveDir != "")
 	{
 		oDialog.set_current_folder(sSaveDir);
 		oDialog.add_shortcut_folder(sSaveDir);
@@ -112,16 +108,13 @@ void Window::vOnFileSave()
 	oDialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	oDialog.add_button(Gtk::Stock::SAVE,   Gtk::RESPONSE_OK);
 
-	if (sSaveDir == "")
-	{
-		oDialog.set_current_folder(Glib::path_get_dirname(Cartridge::getGame().getBasePath()));
-	}
-	else
+	if (sSaveDir != "")
 	{
 		oDialog.set_current_folder(sSaveDir);
 		oDialog.add_shortcut_folder(sSaveDir);
 	}
-	oDialog.set_current_name(sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())));
+
+	oDialog.set_current_name(Cartridge::getGame().getTitle());
 
 	const Glib::RefPtr<Gtk::FileFilter> oSaveFilter = Gtk::FileFilter::create();
 	oSaveFilter->set_name(_("VisualBoyAdvance save game"));
@@ -265,7 +258,7 @@ void Window::vOnRecentFile()
 
 void Window::vOnFileClose()
 {
-	if (Cartridge::getGame().isPresent())
+	if (Cartridge::isPresent())
 	{
 		soundPause();
 		vStopEmu();

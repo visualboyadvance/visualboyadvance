@@ -686,7 +686,7 @@ void Window::vCreateFileOpenDialog()
 
 	const Glib::RefPtr<Gtk::FileFilter> oGBAFilter = Gtk::FileFilter::create();
 	oGBAFilter->set_name(_("Gameboy Advance files"));
-	oGBAFilter->add_pattern("*.[xX][mM][lL]");
+	oGBAFilter->add_pattern("*.[gG][bB][aA]");
 
 	poDialog->add_filter(oGBAFilter);
 
@@ -702,7 +702,7 @@ void Window::vLoadBattery()
 		sDir = m_sUserDataDir;
 	}
 
-	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())) + ".sav";
+	sBattery = Glib::build_filename(sDir, Cartridge::getGame().getTitle() + ".sav");
 
 	if (Cartridge::readBatteryFromFile(sBattery.c_str()))
 	{
@@ -719,7 +719,7 @@ void Window::vSaveBattery()
 		sDir = m_sUserDataDir;
 	}
 
-	sBattery = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump())) + ".sav";
+	sBattery = Glib::build_filename(sDir, Cartridge::getGame().getTitle() + ".sav");
 
 	if (Cartridge::writeBatteryToFile(sBattery.c_str()))
 	{
@@ -746,7 +746,7 @@ void Window::vStopEmu()
 
 void Window::vUpdateGameSlots()
 {
-	if (!Cartridge::getGame().isPresent())
+	if (!Cartridge::isPresent())
 	{
 		std::string sDateTime = _("----/--/-- --:--:--");
 
@@ -776,7 +776,7 @@ void Window::vUpdateGameSlots()
 			sDir = m_sUserDataDir;
 		}
 
-		sFileBase = sDir + "/" + sCutSuffix(Glib::path_get_basename(Cartridge::getGame().getRomDump()));
+		sFileBase = Glib::build_filename(sDir, Cartridge::getGame().getTitle());
 
 		const char * csDateFormat = _("%Y/%m/%d %H:%M:%S");
 
