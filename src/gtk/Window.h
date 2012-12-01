@@ -44,8 +44,8 @@ public:
 	static std::string sGetUiFilePath(const std::string &_sFileName);
 
 	// GBA screen size
-	const int m_iGBAScreenWidth;
-	const int m_iGBAScreenHeight;
+	static const int m_iGBAScreenWidth = 240;
+	static const int m_iGBAScreenHeight = 160;
 
 	bool bLoadROM(const std::string & _rsFile);
 	void vPopupError(const char * _csFormat, ...);
@@ -62,12 +62,6 @@ public:
 protected:
 	Window(GtkWindow * _pstWindow,
 	       const Glib::RefPtr<Gtk::Builder> & _poBuilder);
-
-	enum EColorFormat
-	{
-		ColorFormatRGB,
-		ColorFormatBGR
-	};
 
 	virtual void vOnMenuEnter();
 	virtual void vOnMenuExit();
@@ -98,12 +92,12 @@ protected:
 
 private:
 	// Config limits
-	const int m_iScaleMin;
-	const int m_iScaleMax;
-	const int m_iSoundSampleRateMin;
-	const int m_iSoundSampleRateMax;
-	const float m_fSoundVolumeMin;
-	const float m_fSoundVolumeMax;
+	static const int m_iScaleMin = 1;
+	static const int m_iScaleMax = 6;
+	static const int m_iSoundSampleRateMin = 11025;
+	static const int m_iSoundSampleRateMax = 48000;
+	static const float m_fSoundVolumeMin = 0.50f;
+	static const float m_fSoundVolumeMax = 2.00f;
 
 	static Window * m_poInstance;
 
@@ -152,20 +146,16 @@ private:
 
 	sigc::connection m_oEmuSig;
 
-	int m_bFullscreen;
-	int m_iScreenWidth;
-	int m_iScreenHeight;
-
-	bool           m_bPaused;
-	bool           m_bWasEmulating;
-	bool           m_bShowSpeed;
+	bool m_bFullscreen;
+	bool m_bPaused;
+	bool m_bShowSpeed;
 
 	void vInitSystem();
 	void vUnInitSystem();
 	void vInitSDL();
 	void vInitConfig();
 	void vCheckConfig();
-	void vInitColors(EColorFormat _eColorFormat);
+	void vInitColors();
 	void vLoadConfig(const std::string & _rsFile);
 	void vSaveConfig(const std::string & _rsFile);
 	void vHistoryAdd(const std::string & _rsFile);

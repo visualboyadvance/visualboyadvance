@@ -57,20 +57,10 @@ const Window::SJoypadKey Window::m_astJoypad[] =
 
 Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBuilder) :
 		Gtk::Window       (_pstWindow),
-		m_iGBAScreenWidth (240),
-		m_iGBAScreenHeight(160),
-		m_iScaleMin       (1),
-		m_iScaleMax       (6),
-		m_iSoundSampleRateMin(11025),
-		m_iSoundSampleRateMax(48000),
-		m_fSoundVolumeMin (0.50f),
-		m_fSoundVolumeMax (2.00f),
 		m_bFullscreen     (false)
 {
 	m_poBuilder        = _poBuilder;
 	m_poFileOpenDialog = NULL;
-	m_iScreenWidth     = m_iGBAScreenWidth;
-	m_iScreenHeight    = m_iGBAScreenHeight;
 
 	vInitSDL();
 	vInitSystem();
@@ -255,25 +245,14 @@ Window::~Window()
 	m_poInstance = NULL;
 }
 
-void Window::vInitColors(EColorFormat _eColorFormat)
+void Window::vInitColors()
 {
-	switch (_eColorFormat)
-	{
-	case ColorFormatBGR:
+	// RGB color order
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-		Display::initColorMap(3, 11, 19);
+	Display::initColorMap(19, 11, 3);
 #else
-		Display::initColorMap(27, 19, 11);
+	Display::initColorMap(11, 19, 27);
 #endif
-		break;
-	default:
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-		Display::initColorMap(19, 11, 3);
-#else
-		Display::initColorMap(11, 19, 27);
-#endif
-		break;
-	}
 }
 
 void Window::vApplyConfigScreenArea()
@@ -284,8 +263,8 @@ void Window::vApplyConfigScreenArea()
 	poC->remove();
 	poC->set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 1.0, 1.0);
 
-	vInitColors(ColorFormatRGB);
-	m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iScreenWidth, m_iScreenHeight));
+	vInitColors();
+	m_poScreenArea = Gtk::manage(new ScreenAreaCairo(m_iGBAScreenWidth, m_iGBAScreenHeight));
 
 	poC->add(*m_poScreenArea);
 	vDrawDefaultScreen();
@@ -524,13 +503,7 @@ void Window::vSaveJoypadsToConfig()
 
 void Window::vUpdateScreen()
 {
-
-	m_iScreenWidth  = m_iGBAScreenWidth;
-	m_iScreenHeight = m_iGBAScreenHeight;
-
-	g_return_if_fail(m_iScreenWidth >= 1 && m_iScreenHeight >= 1);
-
-	m_poScreenArea->vSetSize(m_iScreenWidth, m_iScreenHeight);
+	m_poScreenArea->vSetSize(m_iGBAScreenWidth, m_iGBAScreenHeight);
 	m_poScreenArea->vSetScale(m_poDisplayConfig->oGetKey<int>("scale"));
 
 	resize(1, 1);
@@ -576,7 +549,6 @@ bool Window::bLoadROM(const std::string & _rsFile)
 	vUpdateScreen();
 
 	emulating = 1;
-	m_bWasEmulating = false;
 
 	vApplyConfigSoundSampleRate();
 
@@ -744,7 +716,6 @@ void Window::vStartEmu()
 void Window::vStopEmu()
 {
 	m_oEmuSig.disconnect();
-	m_bWasEmulating = false;
 }
 
 void Window::vUpdateGameSlots()
