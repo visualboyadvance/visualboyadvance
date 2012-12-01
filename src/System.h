@@ -5,21 +5,6 @@
 
 class SoundDriver;
 
-struct EmulatedSystem {
-  // main emulation function
-  void (*emuMain)(int);
-  // reset emulator
-  void (*emuReset)();
-  // clean up memory
-  void (*emuCleanUp)();
-  // load state
-  bool (*emuReadState)(const char *);
-  // save state
-  bool (*emuWriteState)(const char *);
-  // clock ticks to emulate
-  int emuCount;
-};
-
 extern void log(const char *,...);
 
 extern void systemDrawScreen(u32 *pix);

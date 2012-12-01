@@ -286,7 +286,7 @@ static bool CPUWriteState(gzFile gzFile)
 	return true;
 }
 
-static bool CPUWriteState(const char *file)
+bool CPUWriteState(const char *file)
 {
 	gzFile gzFile = utilGzOpen(file, "wb");
 
@@ -375,7 +375,7 @@ static bool CPUReadState(gzFile gzFile)
 	return true;
 }
 
-static bool CPUReadState(const char * file)
+bool CPUReadState(const char * file)
 {
 	gzFile gzFile = utilGzOpen(file, "rb");
 
@@ -2056,20 +2056,3 @@ updateLoop:
 	}
 }
 
-
-
-struct EmulatedSystem GBASystem =
-{
-	// emuMain
-	CPULoop,
-	// emuReset
-	CPUReset,
-	// emuCleanUp
-	CPUCleanUp,
-	// emuReadState
-	CPUReadState,
-	// emuWriteState
-	CPUWriteState,
-	// emuCount
-	250000
-};

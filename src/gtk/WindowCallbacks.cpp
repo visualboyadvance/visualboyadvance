@@ -92,7 +92,7 @@ void Window::vOnFileLoad()
 
 	while (oDialog.run() == Gtk::RESPONSE_OK)
 	{
-		if (m_stEmulator.emuReadState(oDialog.get_filename().c_str()))
+		if (CPUReadState(oDialog.get_filename().c_str()))
 		{
 			break;
 		}
@@ -143,7 +143,7 @@ void Window::vOnFileSave()
 			}
 		}
 
-		if (m_stEmulator.emuWriteState(sFile.c_str()))
+		if (CPUWriteState(sFile.c_str()))
 		{
 			break;
 		}
@@ -181,7 +181,7 @@ void Window::vOnLoadGame(int _iSlot)
 	int i = _iSlot - 1;
 	if (! m_astGameSlot[i].m_bEmpty)
 	{
-		m_stEmulator.emuReadState(m_astGameSlot[i].m_sFile.c_str());
+		CPUReadState(m_astGameSlot[i].m_sFile.c_str());
 		m_poFilePauseItem->set_active(false);
 	}
 }
@@ -214,7 +214,7 @@ void Window::vOnSaveGameOldest()
 void Window::vOnSaveGame(int _iSlot)
 {
 	int i = _iSlot - 1;
-	m_stEmulator.emuWriteState(m_astGameSlot[i].m_sFile.c_str());
+	CPUWriteState(m_astGameSlot[i].m_sFile.c_str());
 	vUpdateGameSlots();
 }
 
@@ -240,7 +240,7 @@ void Window::vOnFileReset()
 {
 	if (emulating)
 	{
-		m_stEmulator.emuReset();
+		CPUReset();
 		m_poFilePauseItem->set_active(false);
 	}
 }
@@ -266,7 +266,7 @@ void Window::vOnFileClose()
 		vDrawDefaultScreen();
 		vSaveBattery();
 		Cartridge::unloadGame();
-		m_stEmulator.emuCleanUp();
+		CPUCleanUp();
 		emulating = 0;
 
 		vUpdateGameSlots();
@@ -364,7 +364,7 @@ bool Window::bOnEmuIdle()
 {
 	vSDLPollEvents();
 
-	m_stEmulator.emuMain(m_stEmulator.emuCount);
+	CPULoop();
 	return true;
 }
 

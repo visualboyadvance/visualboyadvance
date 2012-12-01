@@ -156,7 +156,6 @@ private:
 	int m_iScreenWidth;
 	int m_iScreenHeight;
 
-	EmulatedSystem m_stEmulator;
 	bool           m_bPaused;
 	bool           m_bWasEmulating;
 	bool           m_bShowSpeed;

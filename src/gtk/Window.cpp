@@ -558,8 +558,6 @@ bool Window::bLoadROM(const std::string & _rsFile)
 		return false;
 	}
 
-	m_stEmulator = GBASystem;
-
 	if (m_poCoreConfig->sGetKey("bios_file") == "")
 	{
 		vPopupError(_("Please choose a bios file in the preferences dialog."));

@@ -22,10 +22,10 @@ bool CPUInitMemory();
 bool CPULoadBios(const char *biosFileName);
 void CPUCleanUp();
 extern void CPUReset();
-extern void CPULoop(int);
+extern void CPULoop(int ticks = 250000);
 extern void CPUCheckDMA(int,int);
-
-extern struct EmulatedSystem GBASystem;
+bool CPUReadState(const char * file);
+bool CPUWriteState(const char *file);
 
 #define R13_IRQ  18
 #define R14_IRQ  19
