@@ -81,7 +81,7 @@ bool utilLoad(const char *file,
 			size_t buffSize = size;
 			size = 0;
 			for (;;) {
-				size_t readSize = archive_read_data(a, data, buffSize);
+				ssize_t readSize = archive_read_data(a, data, buffSize);
 				
 				if (readSize < 0) {
 					systemMessage("Error uncompressing %s from %s", archive_entry_pathname(entry), file);

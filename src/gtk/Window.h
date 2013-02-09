@@ -96,8 +96,8 @@ private:
 	static const int m_iScaleMax = 6;
 	static const int m_iSoundSampleRateMin = 11025;
 	static const int m_iSoundSampleRateMax = 48000;
-	static const float m_fSoundVolumeMin = 0.50f;
-	static const float m_fSoundVolumeMax = 2.00f;
+	static const float m_fSoundVolumeMin;
+	static const float m_fSoundVolumeMax;
 
 	static Window * m_poInstance;
 

@@ -55,6 +55,9 @@ const Window::SJoypadKey Window::m_astJoypad[] =
 	{ "autoB",   KEY_BUTTON_AUTO_B  }
 };
 
+const float Window::m_fSoundVolumeMin = 0.50f;
+const float Window::m_fSoundVolumeMax = 2.00f;
+
 Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBuilder) :
 		Gtk::Window       (_pstWindow),
 		m_bFullscreen     (false)
