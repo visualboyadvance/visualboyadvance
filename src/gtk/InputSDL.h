@@ -37,15 +37,6 @@ enum EKey {
 	KEY_BUTTON_AUTO_B
 };
 
-enum EPad {
-	PAD_MAIN,
-	PAD_1 = PAD_MAIN,
-	PAD_2,
-	PAD_3,
-	PAD_4,
-	PAD_DEFAULT
-};
-
 /**
  * Init the joysticks needed by the keymap. Verify that the keymap is compatible
  * with the joysticks. If it's not the case, revert to the default keymap.
@@ -58,7 +49,7 @@ void inputInitJoysticks();
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
-void inputSetKeymap(EPad pad, EKey key, uint32_t code);
+void inputSetKeymap(EKey key, uint32_t code);
 
 /**
  * Get which key is associated to which emulated joypad button
@@ -66,7 +57,7 @@ void inputSetKeymap(EPad pad, EKey key, uint32_t code);
  * @param key Emulated joypad button
  * @retunr Code defining an actual joypad / keyboard button
  */
-uint32_t inputGetKeymap(EPad pad, EKey key);
+uint32_t inputGetKeymap(EKey key);
 
 /**
  * Define which keys control motion detection emulation
@@ -107,7 +98,7 @@ uint32_t inputGetEventCode(const SDL_Event &event);
  * @param which Emulated joypad index
  * @return Joypad state
  */
-uint32_t inputReadJoypad(int which);
+uint32_t inputReadJoypad();
 
 /**
  * Compute the motion sensor X and Y values
@@ -126,16 +117,5 @@ int inputGetSensorX();
  */
 int inputGetSensorY();
 
-/**
- * Set which joypad configuration use when the core doesn't ask for a specific
- * @param pad Default pad
- */
-void inputSetDefaultJoypad(EPad pad);
-
-/**
- * Get the default joypad
- * pad
- */
-EPad inputGetDefaultJoypad();
 
 #endif // VBAM_SDL_INPUT_H

@@ -92,7 +92,7 @@ void JoypadConfigDialog::vUpdateEntries()
 	{
 		std::string csName;
 
-		guint uiKeyval = inputGetKeymap(PAD_MAIN, m_astKeys[i].m_eKeyFlag);
+		guint uiKeyval = inputGetKeymap(m_astKeys[i].m_eKeyFlag);
 		int dev = uiKeyval >> 16;
 		if (dev == 0)
 		{
@@ -191,7 +191,7 @@ void JoypadConfigDialog::vOnInputEvent(const SDL_Event &event)
 	
 	if (!code) return;
 	
-	inputSetKeymap(PAD_MAIN, m_astKeys[m_iCurrentEntry].m_eKeyFlag, code);
+	inputSetKeymap(m_astKeys[m_iCurrentEntry].m_eKeyFlag, code);
 	vUpdateEntries();
 
 	if (m_iCurrentEntry + 1 < (gint)m_oEntries.size())

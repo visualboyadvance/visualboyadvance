@@ -51,7 +51,7 @@ void systemDrawScreen(u32 *pix)
 
 u32 systemReadJoypad()
 {
-	return inputReadJoypad(-1);
+	return inputReadJoypad();
 }
 
 void systemShowSpeed(int _iSpeed)
@@ -68,16 +68,17 @@ u32 systemGetClock()
 
 void systemUpdateMotionSensor()
 {
+	inputUpdateMotionSensor();
 }
 
 int systemGetSensorX()
 {
-	return 0;
+	return inputGetSensorX();
 }
 
 int systemGetSensorY()
 {
-	return 0;
+	return inputGetSensorY();
 }
 
 void systemScreenMessage(const char * _csMsg)

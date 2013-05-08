@@ -97,7 +97,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 	vApplyConfigVolume();
 	vApplyConfigShowSpeed();
 	vUpdateScreen();
-	inputSetDefaultJoypad(PAD_MAIN);
 
 	Gtk::MenuItem *      poMI;
 	Gtk::CheckMenuItem * poCMI;
@@ -307,20 +306,20 @@ void Window::vInitSDL()
 		abort();
 	}
 
-	inputSetKeymap(PAD_DEFAULT, KEY_LEFT, GDK_KEY_Left);
-	inputSetKeymap(PAD_DEFAULT, KEY_RIGHT, GDK_KEY_Right);
-	inputSetKeymap(PAD_DEFAULT, KEY_UP, GDK_KEY_Up);
-	inputSetKeymap(PAD_DEFAULT, KEY_DOWN, GDK_KEY_Down);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_A, GDK_KEY_z);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_B, GDK_KEY_x);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_START, GDK_KEY_Return);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SELECT, GDK_KEY_BackSpace);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_L, GDK_KEY_a);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_R, GDK_KEY_s);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_SPEED, GDK_KEY_space);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_CAPTURE, GDK_KEY_F12);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_A, GDK_KEY_q);
-	inputSetKeymap(PAD_DEFAULT, KEY_BUTTON_AUTO_B, GDK_KEY_w);
+	inputSetKeymap(KEY_LEFT, GDK_KEY_Left);
+	inputSetKeymap(KEY_RIGHT, GDK_KEY_Right);
+	inputSetKeymap(KEY_UP, GDK_KEY_Up);
+	inputSetKeymap(KEY_DOWN, GDK_KEY_Down);
+	inputSetKeymap(KEY_BUTTON_A, GDK_KEY_z);
+	inputSetKeymap(KEY_BUTTON_B, GDK_KEY_x);
+	inputSetKeymap(KEY_BUTTON_START, GDK_KEY_Return);
+	inputSetKeymap(KEY_BUTTON_SELECT, GDK_KEY_BackSpace);
+	inputSetKeymap(KEY_BUTTON_L, GDK_KEY_a);
+	inputSetKeymap(KEY_BUTTON_R, GDK_KEY_s);
+	inputSetKeymap(KEY_BUTTON_SPEED, GDK_KEY_space);
+	inputSetKeymap(KEY_BUTTON_CAPTURE, GDK_KEY_F12);
+	inputSetKeymap(KEY_BUTTON_AUTO_A, GDK_KEY_q);
+	inputSetKeymap(KEY_BUTTON_AUTO_B, GDK_KEY_w);
 
 	// TODO : remove
 	int sdlNumDevices = SDL_NumJoysticks();
@@ -369,7 +368,7 @@ void Window::vInitConfig()
 	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
 	{
 		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-		                         inputGetKeymap(PAD_DEFAULT, m_astJoypad[j].m_eKeyFlag));
+		                         inputGetKeymap(m_astJoypad[j].m_eKeyFlag));
 	}
 }
 
@@ -490,7 +489,7 @@ void Window::vApplyConfigJoypads()
 {
 	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
 	{
-		inputSetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag,
+		inputSetKeymap(m_astJoypad[j].m_eKeyFlag,
 		               m_poInputConfig->oGetKey<guint>(std::string("joypadSDL_") + m_astJoypad[j].m_csKey));
 	}
 }
@@ -500,7 +499,7 @@ void Window::vSaveJoypadsToConfig()
 	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
 	{
 		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-		                         inputGetKeymap(PAD_MAIN, m_astJoypad[j].m_eKeyFlag));
+		                         inputGetKeymap(m_astJoypad[j].m_eKeyFlag));
 	}
 }
 
