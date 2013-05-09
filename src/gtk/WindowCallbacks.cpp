@@ -72,7 +72,7 @@ void Window::vOnFileOpen()
 
 void Window::vOnFileLoad()
 {
-	std::string sSaveDir = m_poDirConfig->sGetKey("saves");
+	std::string sSaveDir = m_sUserDataDir;
 
 	Gtk::FileChooserDialog oDialog(*this, _("Load game"));
 	oDialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -101,7 +101,7 @@ void Window::vOnFileLoad()
 
 void Window::vOnFileSave()
 {
-	Glib::ustring sSaveDir = m_poDirConfig->sGetKey("saves");
+	Glib::ustring sSaveDir = m_sUserDataDir;
 
 	Gtk::FileChooserDialog oDialog(*this, _("Save game"),
 	                               Gtk::FILE_CHOOSER_ACTION_SAVE);
@@ -169,11 +169,6 @@ void Window::vOnLoadGameMostRecent()
 	{
 		vOnLoadGame(iMostRecent + 1);
 	}
-}
-
-void Window::vOnLoadGameAutoToggled(Gtk::CheckMenuItem * _poCMI)
-{
-	m_poCoreConfig->vSetKey("load_game_auto", _poCMI->get_active());
 }
 
 void Window::vOnLoadGame(int _iSlot)
@@ -294,9 +289,10 @@ void Window::vOnVideoFullscreen()
 
 void Window::vOnJoypadConfigure()
 {
-	JoypadConfigDialog oDialog(m_poInputConfig);
+	JoypadConfigDialog oDialog;
 	oDialog.set_transient_for(*this);
 	oDialog.run();
+	vSaveJoypadsToConfig();
 }
 
 void Window::vOnSettings()
@@ -306,7 +302,6 @@ void Window::vOnSettings()
 
 	SettingsDialog * poDialog = 0;
 	poBuilder->get_widget_derived("SettingsDialog", poDialog);
-	poDialog->vSetConfig(m_poSoundConfig, m_poDisplayConfig, m_poCoreConfig, m_poDirConfig, this);
 	poDialog->set_transient_for(*this);
 	poDialog->run();
 	poDialog->hide();
@@ -368,6 +363,18 @@ bool Window::bOnEmuIdle()
 	return true;
 }
 
+void Window::vOnSettingsChanged(const Glib::ustring &key)
+{
+	if (key == "sound-volume")
+		vApplyConfigVolume();
+	else if (key == "sound-sample-rate")
+		vApplyConfigSoundSampleRate();
+	else if (key == "display-scale")
+		vUpdateScreen();
+	else if (key == "show-speed")
+		vApplyConfigShowSpeed();
+}
+
 bool Window::on_focus_in_event(GdkEventFocus * _pstEvent)
 {
 	if (emulating && !m_bPaused)
@@ -382,7 +389,7 @@ bool Window::on_focus_out_event(GdkEventFocus * _pstEvent)
 {
 	if (emulating
 	        && ! m_bPaused
-	        && m_poDisplayConfig->oGetKey<bool>("pause_when_inactive"))
+	        && m_poSettings->get_boolean("pause-when-inactive"))
 	{
 		vStopEmu();
 		soundPause();

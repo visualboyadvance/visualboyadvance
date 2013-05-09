@@ -18,36 +18,40 @@
 
 #include "SettingsDialog.h"
 #include "Intl.h"
+#include <giomm.h>
 
 namespace VBA
 {
 
 SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder) :
-		Gtk::Dialog(_pstDialog),
-		m_poCoreConfig(0),
-		m_poSoundConfig(0),
-		m_poDisplayConfig(0),
-		m_poDirConfig(0)
+		Gtk::Dialog(_pstDialog)
 {
-	refBuilder->get_widget("VolumeComboBox", m_poVolumeComboBox);
-	refBuilder->get_widget("RateComboBox", m_poRateComboBox);
-	refBuilder->get_widget("DefaultScaleComboBox", m_poDefaultScaleComboBox);
-	refBuilder->get_widget("ShowSpeedCheckButton", m_poShowSpeedCheckButton);
+	Gtk::ComboBox *poVolumeComboBox = 0;
+	Gtk::ComboBox *poRateComboBox = 0;
+	Gtk::ComboBox *poDefaultScaleComboBox = 0;
+	Gtk::CheckButton *poShowSpeedCheckButton = 0;
+	Gtk::CheckButton *poPauseOnInactiveCheckButton = 0;
+
+	refBuilder->get_widget("VolumeComboBox", poVolumeComboBox);
+	refBuilder->get_widget("RateComboBox", poRateComboBox);
+	refBuilder->get_widget("DefaultScaleComboBox", poDefaultScaleComboBox);
+	refBuilder->get_widget("ShowSpeedCheckButton", poShowSpeedCheckButton);
 	refBuilder->get_widget("BiosFileChooserButton", m_poBiosFileChooserButton);
 	refBuilder->get_widget("RomsFileChooserButton", m_poRomsFileChooserButton);
-	refBuilder->get_widget("BatteriesFileChooserButton", m_poBatteriesFileChooserButton);
-	refBuilder->get_widget("SavesFileChooserButton", m_poSavesFileChooserButton);
-	refBuilder->get_widget("PauseOnInactiveCheckButton", m_poPauseOnInactiveCheckButton);
+	refBuilder->get_widget("PauseOnInactiveCheckButton", poPauseOnInactiveCheckButton);
 
-	m_poVolumeComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnVolumeChanged));
-	m_poRateComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRateChanged));
-	m_poDefaultScaleComboBox->signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::vOnScaleChanged));
-	m_poShowSpeedCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnShowSpeedChanged));
+	m_oSettings = Gio::Settings::create("org.vba.ttb.preferences");
+
+	m_oSettings->bind("sound-volume", poVolumeComboBox->property_active_id(), Gio::SETTINGS_BIND_DEFAULT);
+	m_oSettings->bind("sound-sample-rate", poRateComboBox->property_active_id(), Gio::SETTINGS_BIND_DEFAULT);
+	m_oSettings->bind("display-scale", poDefaultScaleComboBox->property_active_id(), Gio::SETTINGS_BIND_DEFAULT);
+
+	m_oSettings->bind("show-speed", poShowSpeedCheckButton->property_active(), Gio::SETTINGS_BIND_DEFAULT);
+	m_oSettings->bind("pause-when-inactive", poPauseOnInactiveCheckButton->property_active(), Gio::SETTINGS_BIND_DEFAULT);
+
+	// Can't use bind with FileChooserButton
 	m_poBiosFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBiosChanged));
 	m_poRomsFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnRomsChanged));
-	m_poBatteriesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnBatteriesChanged));
-	m_poSavesFileChooserButton->signal_file_set().connect(sigc::mem_fun(*this, &SettingsDialog::vOnSavesChanged));
-	m_poPauseOnInactiveCheckButton->signal_toggled().connect(sigc::mem_fun(*this, &SettingsDialog::vOnPauseChanged));
 
 	// Bios FileChooserButton
 	const char * acsPattern[] =
@@ -70,163 +74,25 @@ SettingsDialog::SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Bu
 	m_poBiosFileChooserButton->add_filter(oAllFilter);
 	m_poBiosFileChooserButton->add_filter(oBiosFilter);
 	m_poBiosFileChooserButton->set_filter(oBiosFilter);
-}
 
-void SettingsDialog::vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig,
-                                Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow)
-{
-	m_poSoundConfig = _poSoundConfig;
-	m_poDisplayConfig = _poDisplayConfig;
-	m_poCoreConfig = _poCoreConfig;
-	m_poDirConfig = _poDirConfig;
-	m_poWindow = _poWindow;
-
-	float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
-
-	if (0.0f <= fSoundVolume && fSoundVolume <= 0.25f)
-		m_poVolumeComboBox->set_active(1);
-	else if (0.25f < fSoundVolume && fSoundVolume <= 0.50f)
-		m_poVolumeComboBox->set_active(2);
-	else if (1.0f < fSoundVolume && fSoundVolume <= 2.0f)
-		m_poVolumeComboBox->set_active(4);
-	else
-		m_poVolumeComboBox->set_active(3);
-
-	long iSoundSampleRate = m_poSoundConfig->oGetKey<long>("sample_rate");
-	switch (iSoundSampleRate)
-	{
-	case 11025:
-		m_poRateComboBox->set_active(0);
-		break;
-	case 22050:
-		m_poRateComboBox->set_active(1);
-		break;
-	default:
-	case 44100:
-		m_poRateComboBox->set_active(2);
-		break;
-	case 48000:
-		m_poRateComboBox->set_active(3);
-		break;
-	}
-
-	int iDefaultScale = m_poDisplayConfig->oGetKey<int>("scale");
-	m_poDefaultScaleComboBox->set_active(iDefaultScale - 1);
-
-	bool bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
-	m_poShowSpeedCheckButton->set_active(bShowSpeed);
-
-	std::string sBios = m_poCoreConfig->sGetKey("bios_file");
+	Glib::ustring sBios = m_oSettings->get_string("gba-bios-path");
 	m_poBiosFileChooserButton->set_filename(sBios);
 
-	std::string sRoms = m_poDirConfig->sGetKey("gba_roms");
+	// Roms FileChooserButton
+	Glib::ustring sRoms = m_oSettings->get_string("gba-roms-dir");
 	m_poRomsFileChooserButton->set_current_folder(sRoms);
-
-	std::string sBatteries = m_poDirConfig->sGetKey("batteries");
-	m_poBatteriesFileChooserButton->set_current_folder(sBatteries);
-
-	std::string sSaves = m_poDirConfig->sGetKey("saves");
-	m_poSavesFileChooserButton->set_current_folder(sSaves);
-
-	bool bPauseWhenInactive = m_poDisplayConfig->oGetKey<bool>("pause_when_inactive");
-	m_poPauseOnInactiveCheckButton->set_active(bPauseWhenInactive);
-}
-
-void SettingsDialog::vOnVolumeChanged()
-{
-	int iVolume = m_poVolumeComboBox->get_active_row_number();
-	switch (iVolume)
-	{
-	case 1: // 25 %
-		m_poSoundConfig->vSetKey("volume", 0.25f);
-		break;
-	case 2: // 50 %
-		m_poSoundConfig->vSetKey("volume", 0.50f);
-		break;
-	case 4: // 200 %
-		m_poSoundConfig->vSetKey("volume", 2.00f);
-		break;
-	case 3: // 100 %
-	default:
-		m_poSoundConfig->vSetKey("volume", 1.00f);
-		break;
-	}
-
-	m_poWindow->vApplyConfigVolume();
-}
-
-void SettingsDialog::vOnRateChanged()
-{
-	int iRate = m_poRateComboBox->get_active_row_number();
-	switch (iRate)
-	{
-	case 0: // 11 KHz
-		m_poSoundConfig->vSetKey("sample_rate", 11025);
-		break;
-	case 1: // 22 KHz
-		m_poSoundConfig->vSetKey("sample_rate", 22050);
-		break;
-	case 2: // 44 KHz
-	default:
-		m_poSoundConfig->vSetKey("sample_rate", 44100);
-		break;
-	case 3: // 48 KHz
-		m_poSoundConfig->vSetKey("sample_rate", 48000);
-		break;
-	}
-
-	m_poWindow->vApplyConfigSoundSampleRate();
-}
-
-void SettingsDialog::vOnScaleChanged()
-{
-	int iScale = m_poDefaultScaleComboBox->get_active_row_number() + 1;
-	if (iScale > 0)
-	{
-		m_poDisplayConfig->vSetKey("scale", iScale);
-		m_poWindow->vUpdateScreen();
-	}
-}
-
-void SettingsDialog::vOnShowSpeedChanged()
-{
-	bool bShowSpeed = m_poShowSpeedCheckButton->get_active();
-
-	m_poDisplayConfig->vSetKey("show_speed", bShowSpeed);
-	m_poWindow->vApplyConfigShowSpeed();
 }
 
 void SettingsDialog::vOnBiosChanged()
 {
-	std::string sBios = m_poBiosFileChooserButton->get_filename();
-	m_poCoreConfig->vSetKey("bios_file", sBios);
+	Glib::ustring sBios = m_poBiosFileChooserButton->get_filename();
+	m_oSettings->set_string("gba-bios-path", sBios);
 }
 
 void SettingsDialog::vOnRomsChanged()
 {
-	std::string sRoms = m_poRomsFileChooserButton->get_current_folder();
-	m_poDirConfig->vSetKey("gba_roms", sRoms);
-}
-
-void SettingsDialog::vOnBatteriesChanged()
-{
-	std::string sBatteries = m_poBatteriesFileChooserButton->get_current_folder();
-	m_poDirConfig->vSetKey("batteries", sBatteries);
-}
-
-void SettingsDialog::vOnSavesChanged()
-{
-	std::string sSaves = m_poSavesFileChooserButton->get_current_folder();
-	m_poDirConfig->vSetKey("saves", sSaves);
-
-	// Needed if saves dir changed
-	m_poWindow->vUpdateGameSlots();
-}
-
-void SettingsDialog::vOnPauseChanged()
-{
-	bool bPauseWhenInactive = m_poPauseOnInactiveCheckButton->get_active();
-	m_poDisplayConfig->vSetKey("pause_when_inactive", bPauseWhenInactive);
+	Glib::ustring sRoms = m_poRomsFileChooserButton->get_current_folder();
+	m_oSettings->set_string("gba-roms-dir", sRoms);
 }
 
 } // namespace VBA

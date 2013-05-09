@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <enum id="sound-rates">
+    <value nick="11khz" value="11000"/>
+    <value nick="22khz" value="22000"/>
+    <value nick="44.1khz" value="44100"/>
+    <value nick="48khz" value="48000"/>
+  </enum>
+
+  <enum id="sound-volumes">
+    <value nick="mute" value="0"/>
+    <value nick="25-percent" value="25"/>
+    <value nick="50-percent" value="50"/>
+    <value nick="100-percent" value="100"/>
+    <value nick="200-percent" value="200"/>
+  </enum>
+
+  <enum id="display-scales">
+    <value nick="1x" value="1"/>
+    <value nick="2x" value="2"/>
+	<value nick="3x" value="3"/>
+	<value nick="4x" value="4"/>
+	<value nick="5x" value="5"/>
+	<value nick="6x" value="6"/>
+  </enum>
+
+  <schema path="/org/vba/ttb/" id="org.vba.ttb">
+    <child schema="org.vba.ttb.preferences" name="preferences"/>
+    <child schema="org.vba.ttb.joypad" name="joypad"/>
+  </schema>
+
+  <schema path="/org/vba/ttb/preferences/" id="org.vba.ttb.preferences">
+    <key type="s" name="gba-roms-dir">
+      <default>''</default>
+      <summary>Default GBA roms path</summary>
+      <description>Default path used in the open dialog.</description>
+    </key>
+    <key type="s" name="gba-bios-path">
+      <default>''</default>
+      <summary>Path to the GBA bios</summary>
+      <description>Path the GBA bios is loaded from.</description>
+    </key>
+    <key enum="display-scales" name="display-scale">
+      <default>'1x'</default>
+      <summary>Display scale</summary>
+      <description>Default display scale compared to the original device.</description>
+    </key>
+    <key type="b" name="show-speed">
+      <default>true</default>
+      <summary>Show emulation speed</summary>
+      <description>If set to true, then the emulation speed will be displayed.</description>
+    </key>
+    <key type="b" name="pause-when-inactive">
+      <default>true</default>
+      <summary>Pause when inactive</summary>
+      <description>If set to true, then the emulation will stop when the window becomes inactive.</description>
+    </key>
+    <key enum="sound-rates" name="sound-sample-rate">
+      <default>'44.1khz'</default>
+      <summary>Sample rate</summary>
+      <description>Sample rate of the output sound stream. Higher values mean higher quality.</description>
+    </key>
+    <key enum="sound-volumes" name="sound-volume">
+      <default>'100-percent'</default>
+      <summary>Volume</summary>
+      <description>Output sound volume.</description>
+    </key>
+  </schema>
+
+  <schema path="/org/vba/ttb/joypad/" id="org.vba.ttb.joypad">
+    <key type="i" name="dpad-left">
+      <default>65361</default>
+      <summary>D-Pad left key mapping</summary>
+    </key>
+    <key type="i" name="dpad-right">
+      <default>65363</default>
+      <summary>D-Pad right key mapping</summary>
+    </key>
+    <key type="i" name="dpad-up">
+      <default>65362</default>
+      <summary>D-Pad up key mapping</summary>
+    </key>
+    <key type="i" name="dpad-down">
+      <default>65364</default>
+      <summary>D-Pad down key mapping</summary>
+    </key>
+    <key type="i" name="button-a">
+      <default>119</default>
+      <summary>Button A key mapping</summary>
+    </key>
+    <key type="i" name="button-b">
+      <default>120</default>
+      <summary>Button B key mapping</summary>
+    </key>
+    <key type="i" name="button-select">
+      <default>65288</default>
+      <summary>Select button key mapping</summary>
+    </key>
+    <key type="i" name="button-start">
+      <default>65293</default>
+      <summary>Start button key mapping</summary>
+    </key>
+    <key type="i" name="trigger-left">
+      <default>113</default>
+      <summary>Left trigger key mapping</summary>
+    </key>
+    <key type="i" name="trigger-right">
+      <default>115</default>
+      <summary>Right trigger key mapping</summary>
+    </key>
+    <key type="i" name="shortcut-speed">
+      <default>32</default>
+      <summary>Speed shortcut mapping</summary>
+    </key>
+    <key type="i" name="autofire-a">
+      <default>97</default>
+      <summary>Autofire button A key mapping</summary>
+    </key>
+    <key type="i" name="autofire-b">
+      <default>122</default>
+      <summary>Autofire button B key mapping</summary>
+    </key>
+  </schema>
+</schemalist>

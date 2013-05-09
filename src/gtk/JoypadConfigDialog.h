@@ -25,7 +25,6 @@
 #include <gtkmm.h>
 
 #include "InputSDL.h"
-#include "ConfigFile.h"
 
 namespace VBA
 {
@@ -33,7 +32,7 @@ namespace VBA
 class JoypadConfigDialog : public Gtk::Dialog
 {
 public:
-	JoypadConfigDialog(Config::Section * _poConfig);
+	JoypadConfigDialog();
 	virtual ~JoypadConfigDialog();
 
 protected:
@@ -58,7 +57,6 @@ private:
 	static const SJoypadKey   m_astKeys[];
 	sigc::connection          m_oConfigSig;
 	SDL_Event                 m_oPreviousEvent;
-	Config::Section *         m_poConfig;
 
 	bool bOnConfigIdle();
 	void vUpdateEntries();

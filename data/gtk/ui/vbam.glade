@@ -117,13 +117,6 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="LoadGameAuto">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Auto load most recent</property>
-                                <property name="use_underline">True</property>
-                              </object>
-                            </child>
-                            <child>
                               <object class="GtkSeparatorMenuItem" id="separator28">
                                 <property name="visible">True</property>
                               </object>

@@ -31,6 +31,10 @@ int main(int argc, char * argv[])
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 #endif // ENABLE_NLS
 
+	// Tell GSettings it can use the schemas from the build dir if they
+	// have not been installed yet
+	Glib::setenv("GSETTINGS_SCHEMA_DIR", "gsettings/");
+
 	Glib::set_application_name(_("VBA-M"));
 
 	Gtk::Main oKit(argc, argv);

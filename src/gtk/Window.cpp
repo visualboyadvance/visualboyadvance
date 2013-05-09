@@ -40,19 +40,19 @@ Window * Window::m_poInstance = NULL;
 
 const Window::SJoypadKey Window::m_astJoypad[] =
 {
-	{ "left",    KEY_LEFT           },
-	{ "right",   KEY_RIGHT          },
-	{ "up",      KEY_UP             },
-	{ "down",    KEY_DOWN           },
-	{ "A",       KEY_BUTTON_A       },
-	{ "B",       KEY_BUTTON_B       },
-	{ "select",  KEY_BUTTON_SELECT  },
-	{ "start",   KEY_BUTTON_START   },
-	{ "L",       KEY_BUTTON_L       },
-	{ "R",       KEY_BUTTON_R       },
-	{ "speed",   KEY_BUTTON_SPEED   },
-	{ "autoA",   KEY_BUTTON_AUTO_A  },
-	{ "autoB",   KEY_BUTTON_AUTO_B  }
+	{ "dpad-left",      KEY_LEFT           },
+	{ "dpad-right",     KEY_RIGHT          },
+	{ "dpad-up",        KEY_UP             },
+	{ "dpad-down",      KEY_DOWN           },
+	{ "button-a",       KEY_BUTTON_A       },
+	{ "button-b",       KEY_BUTTON_B       },
+	{ "button-select",  KEY_BUTTON_SELECT  },
+	{ "button-start",   KEY_BUTTON_START   },
+	{ "trigger-left",   KEY_BUTTON_L       },
+	{ "trigger-right",  KEY_BUTTON_R       },
+	{ "shortcut-speed", KEY_BUTTON_SPEED   },
+	{ "autofire-a",     KEY_BUTTON_AUTO_A  },
+	{ "autofire-b",     KEY_BUTTON_AUTO_B  }
 };
 
 const float Window::m_fSoundVolumeMin = 0.50f;
@@ -70,33 +70,27 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 
 	vSetDefaultTitle();
 
-	// Get config
-	//
-	m_sUserDataDir = Glib::get_user_config_dir() + "/gvbam";
-	m_sConfigFile  = m_sUserDataDir + "/config";
-
-	vInitConfig();
+	// Path where the batteries and saves are stored
+	m_sUserDataDir = Glib::get_user_data_dir() + "/gvbam";
 
 	if (! Glib::file_test(m_sUserDataDir, Glib::FILE_TEST_EXISTS))
 	{
 		mkdir(m_sUserDataDir.c_str(), 0777);
 	}
-	if (Glib::file_test(m_sConfigFile, Glib::FILE_TEST_EXISTS))
-	{
-		vLoadConfig(m_sConfigFile);
-		vCheckConfig();
-	}
-	else
-	{
-		vSaveConfig(m_sConfigFile);
-	}
 
-	vCreateFileOpenDialog();
+	m_poSettings = Gio::Settings::create("org.vba.ttb.preferences");
+	m_poSettings->signal_changed().connect(sigc::mem_fun(*this, &Window::vOnSettingsChanged));
+
+	m_poJoypadMapping = Gio::Settings::create("org.vba.ttb.joypad");
+
+	vCheckConfig();
 	vApplyConfigJoypads();
 	vApplyConfigScreenArea();
 	vApplyConfigVolume();
 	vApplyConfigShowSpeed();
 	vUpdateScreen();
+
+	vCreateFileOpenDialog();
 
 	Gtk::MenuItem *      poMI;
 	Gtk::CheckMenuItem * poCMI;
@@ -145,13 +139,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 	_poBuilder->get_widget("LoadGameMostRecent", poMI);
 	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnLoadGameMostRecent));
 	m_listSensitiveWhenPlaying.push_back(poMI);
-
-	_poBuilder->get_widget("LoadGameAuto", poCMI);
-	poCMI->set_active(m_poCoreConfig->oGetKey<bool>("load_game_auto"));
-	vOnLoadGameAutoToggled(poCMI);
-	poCMI->signal_toggled().connect(sigc::bind(
-	                                    sigc::mem_fun(*this, &Window::vOnLoadGameAutoToggled),
-	                                    poCMI));
 
 	_poBuilder->get_widget("SaveGameOldest", poMI);
 	poMI->signal_activate().connect(sigc::mem_fun(*this, &Window::vOnSaveGameOldest));
@@ -236,8 +223,6 @@ Window::~Window()
 {
 	vOnFileClose();
 	vUnInitSystem();
-	vSaveJoypadsToConfig();
-	vSaveConfig(m_sConfigFile);
 
 	if (m_poFileOpenDialog != NULL)
 	{
@@ -306,21 +291,6 @@ void Window::vInitSDL()
 		abort();
 	}
 
-	inputSetKeymap(KEY_LEFT, GDK_KEY_Left);
-	inputSetKeymap(KEY_RIGHT, GDK_KEY_Right);
-	inputSetKeymap(KEY_UP, GDK_KEY_Up);
-	inputSetKeymap(KEY_DOWN, GDK_KEY_Down);
-	inputSetKeymap(KEY_BUTTON_A, GDK_KEY_z);
-	inputSetKeymap(KEY_BUTTON_B, GDK_KEY_x);
-	inputSetKeymap(KEY_BUTTON_START, GDK_KEY_Return);
-	inputSetKeymap(KEY_BUTTON_SELECT, GDK_KEY_BackSpace);
-	inputSetKeymap(KEY_BUTTON_L, GDK_KEY_a);
-	inputSetKeymap(KEY_BUTTON_R, GDK_KEY_s);
-	inputSetKeymap(KEY_BUTTON_SPEED, GDK_KEY_space);
-	inputSetKeymap(KEY_BUTTON_CAPTURE, GDK_KEY_F12);
-	inputSetKeymap(KEY_BUTTON_AUTO_A, GDK_KEY_q);
-	inputSetKeymap(KEY_BUTTON_AUTO_B, GDK_KEY_w);
-
 	// TODO : remove
 	int sdlNumDevices = SDL_NumJoysticks();
 	for (int i = 0; i < sdlNumDevices; i++)
@@ -331,146 +301,42 @@ void Window::vInitSDL()
 	bDone = true;
 }
 
-void Window::vInitConfig()
-{
-	m_oConfig.vClear();
-
-	// Directories section
-	//
-	m_poDirConfig = m_oConfig.poAddSection("Directories");
-	m_poDirConfig->vSetKey("gba_roms",  Glib::get_home_dir());
-	m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
-	m_poDirConfig->vSetKey("saves",     m_sUserDataDir);
-
-	// Core section
-	//
-	m_poCoreConfig = m_oConfig.poAddSection("Core");
-	m_poCoreConfig->vSetKey("load_game_auto",    false        );
-	m_poCoreConfig->vSetKey("bios_file",         ""           );
-
-	// Display section
-	//
-	m_poDisplayConfig = m_oConfig.poAddSection("Display");
-	m_poDisplayConfig->vSetKey("scale",               1              );
-	m_poDisplayConfig->vSetKey("show_speed",          true           );
-	m_poDisplayConfig->vSetKey("pause_when_inactive", true           );
-
-
-	// Sound section
-	//
-	m_poSoundConfig = m_oConfig.poAddSection("Sound");
-	m_poSoundConfig->vSetKey("sample_rate",    44100 );
-	m_poSoundConfig->vSetKey("volume",         1.00f );
-
-	// Input section
-	//
-	m_poInputConfig = m_oConfig.poAddSection("Input");
-	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
-	{
-		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-		                         inputGetKeymap(m_astJoypad[j].m_eKeyFlag));
-	}
-}
-
 void Window::vCheckConfig()
 {
-	int iValue;
-	int iAdjusted;
-	float fValue;
-	float fAdjusted;
 	std::string sValue;
 
 	// Directories section
 	//
-	sValue = m_poDirConfig->sGetKey("gba_roms");
-	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
+	sValue = m_poSettings->get_string("gba-roms-dir");
+	if (sValue != "" && !Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
 	{
-		m_poDirConfig->vSetKey("gba_roms", Glib::get_home_dir());
-	}
-	sValue = m_poDirConfig->sGetKey("batteries");
-	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-	{
-		m_poDirConfig->vSetKey("batteries", m_sUserDataDir);
-	}
-	sValue = m_poDirConfig->sGetKey("saves");
-	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_DIR))
-	{
-		m_poDirConfig->vSetKey("saves", m_sUserDataDir);
+		m_poSettings->set_string("gba-roms-dir", Glib::get_home_dir());
 	}
 
 	// Core section
 	//
-	sValue = m_poCoreConfig->sGetKey("bios_file");
-	if (sValue != "" && ! Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
+	sValue = m_poSettings->get_string("gba-bios-path");
+	if (sValue != "" && !Glib::file_test(sValue, Glib::FILE_TEST_IS_REGULAR))
 	{
-		m_poCoreConfig->vSetKey("bios_file", "");
-	}
-
-	// Display section
-	//
-	iValue = m_poDisplayConfig->oGetKey<int>("scale");
-	iAdjusted = CLAMP(iValue, m_iScaleMin, m_iScaleMax);
-	if (iValue != iAdjusted)
-	{
-		m_poDisplayConfig->vSetKey("scale", iAdjusted);
-	}
-
-	// Sound section
-	//
-	iValue = m_poSoundConfig->oGetKey<int>("sample_rate");
-	iAdjusted = CLAMP(iValue, m_iSoundSampleRateMin, m_iSoundSampleRateMax);
-	if (iValue != iAdjusted)
-	{
-		m_poSoundConfig->vSetKey("sample_rate", iAdjusted);
-	}
-
-	fValue = m_poSoundConfig->oGetKey<float>("volume");
-	fAdjusted = CLAMP(fValue, m_fSoundVolumeMin, m_fSoundVolumeMax);
-	if (fValue != fAdjusted)
-	{
-		m_poSoundConfig->vSetKey("volume", fAdjusted);
-	}
-}
-
-void Window::vLoadConfig(const std::string & _rsFile)
-{
-	try
-	{
-		m_oConfig.vLoad(_rsFile, false, false);
-	}
-	catch (const Glib::Error & e)
-	{
-		vPopupError(e.what().c_str());
-	}
-}
-
-void Window::vSaveConfig(const std::string & _rsFile)
-{
-	try
-	{
-		m_oConfig.vSave(_rsFile);
-	}
-	catch (const Glib::Error & e)
-	{
-		vPopupError(e.what().c_str());
+		m_poSettings->set_string("gba-bios-path", "");
 	}
 }
 
 void Window::vApplyConfigVolume()
 {
-	float fSoundVolume = m_poSoundConfig->oGetKey<float>("volume");
-	soundSetVolume(fSoundVolume);
+	int iSoundVolume = m_poSettings->get_enum("sound-volume");
+	soundSetVolume(static_cast<float>(iSoundVolume) / 100.0);
 }
 
 void Window::vApplyConfigSoundSampleRate()
 {
-	long iSoundSampleRate = m_poSoundConfig->oGetKey<int>("sample_rate");
+	int iSoundSampleRate = m_poSettings->get_enum("sound-sample-rate");
 	soundSetSampleRate(iSoundSampleRate);
 }
 
 void Window::vApplyConfigShowSpeed()
 {
-	m_bShowSpeed = m_poDisplayConfig->oGetKey<bool>("show_speed");
+	m_bShowSpeed = m_poSettings->get_boolean("show-speed");
 
 	if (!m_bShowSpeed)
 	{
@@ -489,8 +355,8 @@ void Window::vApplyConfigJoypads()
 {
 	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
 	{
-		inputSetKeymap(m_astJoypad[j].m_eKeyFlag,
-		               m_poInputConfig->oGetKey<guint>(std::string("joypadSDL_") + m_astJoypad[j].m_csKey));
+		int iKeyMap = m_poJoypadMapping->get_int(m_astJoypad[j].m_csKey);
+		inputSetKeymap(m_astJoypad[j].m_eKeyFlag, iKeyMap);
 	}
 }
 
@@ -498,15 +364,15 @@ void Window::vSaveJoypadsToConfig()
 {
 	for (guint j = 0; j < G_N_ELEMENTS(m_astJoypad); j++)
 	{
-		m_poInputConfig->vSetKey(std::string("joypadSDL_") + m_astJoypad[j].m_csKey,
-		                         inputGetKeymap(m_astJoypad[j].m_eKeyFlag));
+		int iKeyMap = inputGetKeymap(m_astJoypad[j].m_eKeyFlag);
+		m_poJoypadMapping->set_int(m_astJoypad[j].m_csKey, iKeyMap);
 	}
 }
 
 void Window::vUpdateScreen()
 {
 	m_poScreenArea->vSetSize(m_iGBAScreenWidth, m_iGBAScreenHeight);
-	m_poScreenArea->vSetScale(m_poDisplayConfig->oGetKey<int>("scale"));
+	m_poScreenArea->vSetScale(m_poSettings->get_enum("display-scale"));
 
 	resize(1, 1);
 
@@ -533,13 +399,13 @@ bool Window::bLoadROM(const std::string & _rsFile)
 		return false;
 	}
 
-	if (m_poCoreConfig->sGetKey("bios_file") == "")
+	if (m_poSettings->get_string("gba-bios-path") == "")
 	{
 		vPopupError(_("Please choose a bios file in the preferences dialog."));
 		return false;
 	}
 
-	if (!CPULoadBios(m_poCoreConfig->sGetKey("bios_file").c_str()))
+	if (!CPULoadBios(m_poSettings->get_string("gba-bios-path").c_str()))
 	{
 		return false;
 	}
@@ -562,11 +428,6 @@ bool Window::bLoadROM(const std::string & _rsFile)
 	        it++)
 	{
 		(*it)->set_sensitive();
-	}
-
-	if (m_poCoreConfig->oGetKey<bool>("load_game_auto"))
-	{
-		vOnLoadGameMostRecent();
 	}
 
 	vStartEmu();
@@ -637,7 +498,7 @@ void Window::vCreateFileOpenDialog()
 		return;
 	}
 
-	std::string sGBADir = m_poDirConfig->sGetKey("gba_roms");
+	std::string sGBADir = m_poSettings->get_string("gba-roms-dir");
 
 	Gtk::FileChooserDialog * poDialog = new Gtk::FileChooserDialog(*this, _("Open"));
 	poDialog->add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -672,14 +533,7 @@ void Window::vCreateFileOpenDialog()
 
 void Window::vLoadBattery()
 {
-	std::string sBattery;
-	std::string sDir = m_poDirConfig->sGetKey("batteries");
-	if (sDir == "")
-	{
-		sDir = m_sUserDataDir;
-	}
-
-	sBattery = Glib::build_filename(sDir, Cartridge::getGame().getTitle() + ".sav");
+	std::string sBattery = Glib::build_filename(m_sUserDataDir, Cartridge::getGame().getTitle() + ".sav");
 
 	if (Cartridge::readBatteryFromFile(sBattery.c_str()))
 	{
@@ -689,14 +543,7 @@ void Window::vLoadBattery()
 
 void Window::vSaveBattery()
 {
-	std::string sBattery;
-	std::string sDir = m_poDirConfig->sGetKey("batteries");
-	if (sDir == "")
-	{
-		sDir = m_sUserDataDir;
-	}
-
-	sBattery = Glib::build_filename(sDir, Cartridge::getGame().getTitle() + ".sav");
+	std::string sBattery = Glib::build_filename(m_sUserDataDir, Cartridge::getGame().getTitle() + ".sav");
 
 	if (Cartridge::writeBatteryToFile(sBattery.c_str()))
 	{
@@ -745,14 +592,7 @@ void Window::vUpdateGameSlots()
 	}
 	else
 	{
-		std::string sFileBase;
-		std::string sDir = m_poDirConfig->sGetKey("saves");
-		if (sDir == "")
-		{
-			sDir = m_sUserDataDir;
-		}
-
-		sFileBase = Glib::build_filename(sDir, Cartridge::getGame().getTitle());
+		std::string sFileBase = Glib::build_filename(m_sUserDataDir, Cartridge::getGame().getTitle());
 
 		const char * csDateFormat = _("%Y/%m/%d %H:%M:%S");
 

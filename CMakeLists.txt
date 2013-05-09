@@ -1,11 +1,11 @@
-cmake_minimum_required( VERSION 2.4.6 )
-if( COMMAND cmake_policy )
-	cmake_policy( SET CMP0003 NEW )
-	cmake_policy( SET CMP0005 OLD )
-endif( COMMAND cmake_policy )
+cmake_minimum_required(VERSION 2.8)
+cmake_policy(VERSION 2.8)
 
 # The project's name is VBA-M it uses C++ code
 PROJECT(VBA-M C CXX)
+
+# CMake include path
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
 
 # Set the version number with -DVERSION=X.X.X-uber
 
@@ -34,7 +34,7 @@ SET( PKGDATADIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR} )
 
 # C defines
 ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H)
-ADD_DEFINITIONS (-DVERSION='"${VERSION}"' -DPKGDATADIR='"${PKGDATADIR}"')
+ADD_DEFINITIONS (-DVERSION="${VERSION}" -DPKGDATADIR="${PKGDATADIR}")
 ADD_DEFINITIONS (-DGBA_LOGGING)
 #ADD_DEFINITIONS (-DLINK_EMULATION)
 
@@ -80,7 +80,6 @@ SET(SRC_APU
 )
 
 SET(SRC_GTK
-	src/gtk/ConfigFile.cpp
 	src/gtk/Main.cpp
 	src/gtk/System.cpp
 	src/gtk/WindowCallbacks.cpp
@@ -136,6 +135,11 @@ TARGET_LINK_LIBRARIES (
 	${GTKMM_LIBRARIES}
 )
 
+# GSettings
+include(GSettings)
+add_schemas(gvbam ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/)
+
+# Installation
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/gvbam.desktop DESTINATION share/applications)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xml DESTINATION ${DATA_INSTALL_DIR})

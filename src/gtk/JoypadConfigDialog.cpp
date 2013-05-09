@@ -40,11 +40,10 @@ const JoypadConfigDialog::SJoypadKey JoypadConfigDialog::m_astKeys[] =
 	{ KEY_BUTTON_AUTO_B,  "Autofire B :" }
 };
 
-JoypadConfigDialog::JoypadConfigDialog(Config::Section * _poConfig) :
+JoypadConfigDialog::JoypadConfigDialog() :
 		Gtk::Dialog("Joypad config", true),
 		m_oTable(G_N_ELEMENTS(m_astKeys), 2, false),
 		m_bUpdating(false),
-		m_poConfig(_poConfig),
 		m_iCurrentEntry(-1)
 {
 	// Joypad buttons

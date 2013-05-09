@@ -21,7 +21,6 @@
 
 #include <gtkmm.h>
 
-#include "ConfigFile.h"
 #include "Window.h"
 
 namespace VBA
@@ -32,45 +31,15 @@ class SettingsDialog : public Gtk::Dialog
 public:
 	SettingsDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder);
 
-	void vSetConfig(Config::Section * _poSoundConfig, Config::Section * _poDisplayConfig,
-	                Config::Section * _poCoreConfig, Config::Section * _poDirConfig, VBA::Window * _poWindow);
-
 private:
-	VBA::Window *             m_poWindow;
-
-	// General
-	void vOnPauseChanged();
-
-	Config::Section *         m_poCoreConfig;
-	Gtk::CheckButton *        m_poPauseOnInactiveCheckButton;
-
-	// Sound
-	void vOnVolumeChanged();
-	void vOnRateChanged();
-
-	Config::Section *         m_poSoundConfig;
-	Gtk::ComboBox *           m_poVolumeComboBox;
-	Gtk::ComboBox *           m_poRateComboBox;
-
-	// Display
-	void vOnScaleChanged();
-	void vOnShowSpeedChanged();
-
-	Config::Section *         m_poDisplayConfig;
-	Gtk::ComboBox *           m_poDefaultScaleComboBox;
-	Gtk::CheckButton *        m_poShowSpeedCheckButton;
+	Glib::RefPtr<Gio::Settings> m_oSettings;
 
 	// Paths
 	void vOnBiosChanged();
 	void vOnRomsChanged();
-	void vOnBatteriesChanged();
-	void vOnSavesChanged();
 
-	Config::Section *         m_poDirConfig;
 	Gtk::FileChooserButton *  m_poBiosFileChooserButton;
 	Gtk::FileChooserButton *  m_poRomsFileChooserButton;
-	Gtk::FileChooserButton *  m_poBatteriesFileChooserButton;
-	Gtk::FileChooserButton *  m_poSavesFileChooserButton;
 };
 
 } // namespace VBA

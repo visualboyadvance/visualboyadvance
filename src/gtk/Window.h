@@ -25,7 +25,6 @@
 #include "../System.h"
 #include "InputSDL.h"
 
-#include "ConfigFile.h"
 #include "ScreenArea.h"
 
 namespace VBA
@@ -52,6 +51,11 @@ public:
 	void vPopupErrorV(const char * _csFormat, va_list _args);
 	void vDrawScreen(u32 *pix);
 	void vShowSpeed(int _iSpeed);
+
+protected:
+	Window(GtkWindow * _pstWindow,
+	       const Glib::RefPtr<Gtk::Builder> & _poBuilder);
+
 	void vApplyConfigScreenArea();
 	void vApplyConfigVolume();
 	void vApplyConfigSoundSampleRate();
@@ -59,30 +63,26 @@ public:
 	void vUpdateScreen();
 	void vUpdateGameSlots();
 
-protected:
-	Window(GtkWindow * _pstWindow,
-	       const Glib::RefPtr<Gtk::Builder> & _poBuilder);
-
-	virtual void vOnMenuEnter();
-	virtual void vOnMenuExit();
-	virtual void vOnFileOpen();
-	virtual void vOnFileLoad();
-	virtual void vOnFileSave();
-	virtual void vOnLoadGameMostRecent();
-	virtual void vOnLoadGameAutoToggled(Gtk::CheckMenuItem * _poCMI);
+	void vOnMenuEnter();
+	void vOnMenuExit();
+	void vOnFileOpen();
+	void vOnFileLoad();
+	void vOnFileSave();
+	void vOnLoadGameMostRecent();
 	void vOnLoadGame(int _iSlot);
-	virtual void vOnSaveGameOldest();
+	void vOnSaveGameOldest();
 	void vOnSaveGame(int _iSlot);
-	virtual void vOnFilePauseToggled(Gtk::CheckMenuItem * _poCMI);
-	virtual void vOnFileReset();
-	virtual void vOnRecentFile();
-	virtual void vOnFileClose();
-	virtual void vOnFileExit();
-	virtual void vOnVideoFullscreen();
-	virtual void vOnJoypadConfigure();
-	virtual void vOnSettings();
-	virtual void vOnHelpAbout();
-	virtual bool bOnEmuIdle();
+	void vOnFilePauseToggled(Gtk::CheckMenuItem * _poCMI);
+	void vOnFileReset();
+	void vOnRecentFile();
+	void vOnFileClose();
+	void vOnFileExit();
+	void vOnVideoFullscreen();
+	void vOnJoypadConfigure();
+	void vOnSettings();
+	void vOnHelpAbout();
+	void vOnSettingsChanged(const Glib::ustring &key);
+	bool bOnEmuIdle();
 
 	virtual bool on_focus_in_event(GdkEventFocus * _pstEvent);
 	virtual bool on_focus_out_event(GdkEventFocus * _pstEvent);
@@ -104,13 +104,9 @@ private:
 	Glib::RefPtr<Gtk::Builder> m_poBuilder;
 
 	std::string       m_sUserDataDir;
-	std::string       m_sConfigFile;
-	Config::File      m_oConfig;
-	Config::Section * m_poDirConfig;
-	Config::Section * m_poCoreConfig;
-	Config::Section * m_poDisplayConfig;
-	Config::Section * m_poSoundConfig;
-	Config::Section * m_poInputConfig;
+
+	Glib::RefPtr<Gio::Settings> m_poSettings;
+	Glib::RefPtr<Gio::Settings> m_poJoypadMapping;
 
 	Gtk::FileChooserDialog * m_poFileOpenDialog;
 
@@ -153,11 +149,8 @@ private:
 	void vInitSystem();
 	void vUnInitSystem();
 	void vInitSDL();
-	void vInitConfig();
 	void vCheckConfig();
 	void vInitColors();
-	void vLoadConfig(const std::string & _rsFile);
-	void vSaveConfig(const std::string & _rsFile);
 	void vHistoryAdd(const std::string & _rsFile);
 	void vApplyConfigJoypads();
 	void vSaveJoypadsToConfig();
