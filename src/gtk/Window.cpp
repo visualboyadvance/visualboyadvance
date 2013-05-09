@@ -27,7 +27,6 @@
 #include "../gba/Sound.h"
 #include "../gba/Display.h"
 
-#include "Tools.h"
 #include "Intl.h"
 #include "ScreenAreaCairo.h"
 
@@ -93,7 +92,6 @@ Window::Window(GtkWindow * _pstWindow, const Glib::RefPtr<Gtk::Builder> & _poBui
 	vCreateFileOpenDialog();
 
 	Gtk::MenuItem *      poMI;
-	Gtk::CheckMenuItem * poCMI;
 
 	// Menu bar
 	_poBuilder->get_widget("MenuBar", m_poMenuBar);
@@ -481,10 +479,10 @@ void Window::vSetDefaultTitle()
 
 void Window::vShowSpeed(int _iSpeed)
 {
-	char csTitle[50];
-
 	if (m_bShowSpeed)
 	{
+		char csTitle[50];
+
 		snprintf(csTitle, 50, "VBA-M - %d%%",
 		         _iSpeed);
 		set_title(csTitle);
