@@ -77,7 +77,7 @@ int main(int argc, char * argv[])
 
 	Gtk::Window::set_default_icon_name("vbam");
 
-	std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.glade");
+	std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.ui");
 
 	Glib::RefPtr<Gtk::Builder> poBuilder;
 	try

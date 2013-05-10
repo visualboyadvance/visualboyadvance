@@ -289,7 +289,7 @@ void Window::vOnVideoFullscreen()
 
 void Window::vOnJoypadConfigure()
 {
-	std::string sUiFile = sGetUiFilePath("joypad.glade");
+	std::string sUiFile = sGetUiFilePath("joypad.ui");
 	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
 
 	JoypadConfigDialog * poDialog = 0;
@@ -303,7 +303,7 @@ void Window::vOnJoypadConfigure()
 
 void Window::vOnSettings()
 {
-	std::string sUiFile = sGetUiFilePath("settings.glade");
+	std::string sUiFile = sGetUiFilePath("settings.ui");
 	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
 
 	SettingsDialog * poDialog = 0;
