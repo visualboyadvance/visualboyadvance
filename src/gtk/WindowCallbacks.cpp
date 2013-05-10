@@ -289,9 +289,15 @@ void Window::vOnVideoFullscreen()
 
 void Window::vOnJoypadConfigure()
 {
-	JoypadConfigDialog oDialog;
-	oDialog.set_transient_for(*this);
-	oDialog.run();
+	std::string sUiFile = sGetUiFilePath("joypad.glade");
+	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
+
+	JoypadConfigDialog * poDialog = 0;
+	poBuilder->get_widget_derived("JoypadDialog", poDialog);
+	poDialog->set_transient_for(*this);
+	poDialog->run();
+	poDialog->hide();
+
 	vSaveJoypadsToConfig();
 }
 

@@ -25,57 +25,47 @@ namespace VBA
 
 const JoypadConfigDialog::SJoypadKey JoypadConfigDialog::m_astKeys[] =
 {
-	{ KEY_UP,             "Up :"         },
-	{ KEY_DOWN,           "Down :"       },
-	{ KEY_LEFT,           "Left :"       },
-	{ KEY_RIGHT,          "Right :"      },
-	{ KEY_BUTTON_A,       "Button A :"   },
-	{ KEY_BUTTON_B,       "Button B :"   },
-	{ KEY_BUTTON_L,       "Button L :"   },
-	{ KEY_BUTTON_R,       "Button R :"   },
-	{ KEY_BUTTON_SELECT,  "Select :"     },
-	{ KEY_BUTTON_START,   "Start :"      },
-	{ KEY_BUTTON_SPEED,   "Speed :"      },
-	{ KEY_BUTTON_AUTO_A,  "Autofire A :" },
-	{ KEY_BUTTON_AUTO_B,  "Autofire B :" }
+	{ KEY_UP,             "UpEntry"           },
+	{ KEY_DOWN,           "DownEntry"         },
+	{ KEY_LEFT,           "LeftEntry"         },
+	{ KEY_RIGHT,          "RightEntry"        },
+	{ KEY_BUTTON_A,       "ButtonAEntry"      },
+	{ KEY_BUTTON_B,       "ButtonBEntry"      },
+	{ KEY_BUTTON_L,       "LeftTriggerEntry"  },
+	{ KEY_BUTTON_R,       "RightTriggerEntry" },
+	{ KEY_BUTTON_SELECT,  "SelectEntry"       },
+	{ KEY_BUTTON_START,   "StartEntry"        },
+	{ KEY_BUTTON_SPEED,   "SpeedEntry"        },
+	{ KEY_BUTTON_AUTO_A,  "AutofireAEntry"    },
+	{ KEY_BUTTON_AUTO_B,  "AutofireBEntry"    }
 };
 
-JoypadConfigDialog::JoypadConfigDialog() :
-		Gtk::Dialog("Joypad config", true),
-		m_oTable(G_N_ELEMENTS(m_astKeys), 2, false),
+JoypadConfigDialog::JoypadConfigDialog(GtkDialog* _pstDialog, const Glib::RefPtr<Gtk::Builder>& refBuilder) :
+		Gtk::Dialog(_pstDialog),
 		m_bUpdating(false),
 		m_iCurrentEntry(-1)
 {
 	// Joypad buttons
 	for (guint i = 0; i < G_N_ELEMENTS(m_astKeys); i++)
 	{
-		Gtk::Label * poLabel = Gtk::manage( new Gtk::Label(m_astKeys[i].m_csKeyName, Gtk::ALIGN_END) );
-		Gtk::Entry * poEntry = Gtk::manage( new Gtk::Entry() );
-		m_oTable.attach(* poLabel, 0, 1, i, i + 1);
-		m_oTable.attach(* poEntry, 1, 2, i, i + 1);
-		m_oEntries.push_back(poEntry);
+		Gtk::Entry * poEntry = 0;
+		refBuilder->get_widget(m_astKeys[i].m_csEntryName, poEntry);
 
 		poEntry->signal_focus_in_event().connect(sigc::bind(
 		            sigc::mem_fun(*this, &JoypadConfigDialog::bOnEntryFocusIn), i));
 		poEntry->signal_focus_out_event().connect(sigc::mem_fun(*this, &JoypadConfigDialog::bOnEntryFocusOut));
+
+		m_oEntries.push_back(poEntry);
 	}
 
 	// Dialog validation button
-	m_poOkButton = add_button(Gtk::Stock::CLOSE, Gtk::RESPONSE_CLOSE);
-
-	// Layout
-	m_oTable.set_border_width(5);
-	m_oTable.set_spacings(5);
-	get_vbox()->set_spacing(5);
-	get_vbox()->pack_start(m_oTable);
+	refBuilder->get_widget("CloseButton", m_poCloseButton);
 
 	// Signals and default values
 	m_oConfigSig = Glib::signal_timeout().connect(sigc::mem_fun(*this, &JoypadConfigDialog::bOnConfigIdle),
 	               50);
 
 	vUpdateEntries();
-
-	show_all_children();
 }
 
 JoypadConfigDialog::~JoypadConfigDialog()
@@ -199,7 +189,7 @@ void JoypadConfigDialog::vOnInputEvent(const SDL_Event &event)
 	}
 	else
 	{
-		m_poOkButton->grab_focus();
+		m_poCloseButton->grab_focus();
 	}
 }
 
