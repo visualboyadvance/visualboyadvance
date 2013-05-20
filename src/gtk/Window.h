@@ -40,7 +40,6 @@ public:
 	inline static Window * poGetInstance() {
 		return m_poInstance;
 	}
-	static std::string sGetUiFilePath(const std::string &_sFileName);
 
 	// GBA screen size
 	static const int m_iGBAScreenWidth = 240;

@@ -38,6 +38,15 @@ ADD_DEFINITIONS (-DVERSION="${VERSION}" -DPKGDATADIR="${PKGDATADIR}")
 ADD_DEFINITIONS (-DGBA_LOGGING)
 #ADD_DEFINITIONS (-DLINK_EMULATION)
 
+# GSettings
+include(GSettings)
+add_schemas(gvbam ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/)
+
+# GResource
+include(GResource)
+gresource(${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/ org.vba.ttb.gresource.xml
+	${CMAKE_BINARY_DIR}/src/gtk/ RESOURCE_FILE)
+
 # Source files definition
 SET(SRC_MAIN
 	src/common/GameDB.cpp
@@ -80,6 +89,7 @@ SET(SRC_APU
 )
 
 SET(SRC_GTK
+	${RESOURCE_FILE}
 	src/gtk/Main.cpp
 	src/gtk/System.cpp
 	src/gtk/WindowCallbacks.cpp
@@ -135,14 +145,9 @@ TARGET_LINK_LIBRARIES (
 	${GTKMM_LIBRARIES}
 )
 
-# GSettings
-include(GSettings)
-add_schemas(gvbam ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/)
-
 # Installation
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/gvbam.desktop DESTINATION share/applications)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xml DESTINATION ${DATA_INSTALL_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xsd DESTINATION ${DATA_INSTALL_DIR})
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/icons/ DESTINATION share/icons/hicolor)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/ui DESTINATION ${DATA_INSTALL_DIR})

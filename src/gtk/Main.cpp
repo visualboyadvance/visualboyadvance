@@ -77,14 +77,12 @@ int main(int argc, char * argv[])
 
 	Gtk::Window::set_default_icon_name("vbam");
 
-	std::string sGladeFile = VBA::Window::sGetUiFilePath("vbam.ui");
-
 	Glib::RefPtr<Gtk::Builder> poBuilder;
 	try
 	{
-		poBuilder = Gtk::Builder::create_from_file(sGladeFile);
+		poBuilder = Gtk::Builder::create_from_resource("/org/vba/ttb/ui/vbam.ui");
 	}
-	catch (const Glib::FileError & e)
+	catch (const Gio::ResourceError & e)
 	{
 		Gtk::MessageDialog oDialog(e.what(),
 		                           false,

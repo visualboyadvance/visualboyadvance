@@ -9,3 +9,4 @@ cmake_install.cmake
 .project
 libvbamcore.a
 install_manifest.txt
+/src/gtk/Resources.c

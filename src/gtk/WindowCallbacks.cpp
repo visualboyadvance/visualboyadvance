@@ -289,8 +289,7 @@ void Window::vOnVideoFullscreen()
 
 void Window::vOnJoypadConfigure()
 {
-	std::string sUiFile = sGetUiFilePath("joypad.ui");
-	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
+	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_resource("/org/vba/ttb/ui/joypad.ui");
 
 	JoypadConfigDialog * poDialog = 0;
 	poBuilder->get_widget_derived("JoypadDialog", poDialog);
@@ -303,8 +302,7 @@ void Window::vOnJoypadConfigure()
 
 void Window::vOnSettings()
 {
-	std::string sUiFile = sGetUiFilePath("settings.ui");
-	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_file(sUiFile);
+	Glib::RefPtr<Gtk::Builder> poBuilder = Gtk::Builder::create_from_resource("/org/vba/ttb/ui/settings.ui");
 
 	SettingsDialog * poDialog = 0;
 	poBuilder->get_widget_derived("SettingsDialog", poDialog);
