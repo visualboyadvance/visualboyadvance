@@ -98,27 +98,31 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 // OP Rd,Rb,Rm LSL Rs
 #ifndef VALUE_LSL_REG_C
 #define VALUE_LSL_REG_C \
-    unsigned int shift = reg[(opcode >> 8)&15].B.B0;    \
-    if (LIKELY(shift)) {                                \
-        if (shift == 32) {                              \
-            value = 0;                                  \
-            C_OUT = (reg[opcode & 0x0F].I & 1 ? true : false);\
-        } else if (LIKELY(shift < 32)) {                \
-            u32 v = reg[opcode & 0x0F].I;               \
-            C_OUT = (v >> (32 - shift)) & 1 ? true : false;\
-            value = v << shift;                         \
-        } else {                                        \
-            value = 0;                                  \
-            C_OUT = false;                              \
-        }                                               \
-    } else {                                            \
-        value = reg[opcode & 0x0F].I;                   \
+    u32 shift = reg[(opcode >> 8) & 15].B.B0;                \
+    u32 rm = reg[opcode & 0x0F].I;                           \
+    if ((opcode & 0x0F) == 15) {                             \
+        rm += 4;                                             \
+    }                                                        \
+    if (LIKELY(shift)) {                                     \
+        if (shift == 32) {                                   \
+            value = 0;                                       \
+            C_OUT = (rm & 1 ? true : false);                 \
+        } else if (LIKELY(shift < 32)) {                     \
+            u32 v = rm;                                      \
+            C_OUT = (v >> (32 - shift)) & 1 ? true : false;  \
+            value = v << shift;                              \
+        } else {                                             \
+            value = 0;                                       \
+            C_OUT = false;                                   \
+        }                                                    \
+    } else {                                                 \
+        value = rm;                                          \
     }
 #endif
 // OP Rd,Rb,Rm LSR #
 #ifndef VALUE_LSR_IMM_C
 #define VALUE_LSR_IMM_C \
-    unsigned int shift = (opcode >> 7) & 0x1F;          \
+    u32 shift = (opcode >> 7) & 0x1F;                   \
     if (LIKELY(shift)) {                                \
         u32 v = reg[opcode & 0x0F].I;                   \
         C_OUT = (v >> (shift - 1)) & 1 ? true : false;  \
@@ -131,13 +135,17 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 // OP Rd,Rb,Rm LSR Rs
 #ifndef VALUE_LSR_REG_C
 #define VALUE_LSR_REG_C \
-    unsigned int shift = reg[(opcode >> 8)&15].B.B0;    \
+    unsigned int shift = reg[(opcode >> 8) & 15].B.B0;  \
+    u32 rm = reg[opcode & 0x0F].I;                      \
+    if ((opcode & 0x0F) == 15) {                        \
+        rm += 4;                                        \
+    }                                                   \
     if (LIKELY(shift)) {                                \
         if (shift == 32) {                              \
             value = 0;                                  \
-            C_OUT = (reg[opcode & 0x0F].I & 0x80000000 ? true : false);\
+            C_OUT = (rm & 0x80000000 ? true : false);   \
         } else if (LIKELY(shift < 32)) {                \
-            u32 v = reg[opcode & 0x0F].I;               \
+            u32 v = rm;                                 \
             C_OUT = (v >> (shift - 1)) & 1 ? true : false;\
             value = v >> shift;                         \
         } else {                                        \
@@ -145,7 +153,7 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
             C_OUT = false;                              \
         }                                               \
     } else {                                            \
-        value = reg[opcode & 0x0F].I;                   \
+        value = rm;                                     \
     }
 #endif
 // OP Rd,Rb,Rm ASR #
@@ -171,13 +179,17 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 #ifndef VALUE_ASR_REG_C
 #define VALUE_ASR_REG_C \
     unsigned int shift = reg[(opcode >> 8)&15].B.B0;    \
+    u32 rm = reg[opcode & 0x0F].I;                      \
+    if ((opcode & 0x0F) == 15) {                        \
+        rm += 4;                                        \
+    }                                                   \
     if (LIKELY(shift < 32)) {                           \
         if (LIKELY(shift)) {                            \
-            s32 v = reg[opcode & 0x0F].I;               \
+            s32 v = rm;                                 \
             C_OUT = (v >> (int)(shift - 1)) & 1 ? true : false;\
             value = v >> (int)shift;                    \
         } else {                                        \
-            value = reg[opcode & 0x0F].I;               \
+            value = rm;                                 \
         }                                               \
     } else {                                            \
         if (reg[opcode & 0x0F].I & 0x80000000) {        \
@@ -209,13 +221,17 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 #ifndef VALUE_ROR_REG_C
 #define VALUE_ROR_REG_C \
     unsigned int shift = reg[(opcode >> 8)&15].B.B0;    \
+    u32 rm = reg[opcode & 0x0F].I;                      \
+    if ((opcode & 0x0F) == 15) {                        \
+        rm += 4;                                        \
+    }                                                   \
     if (LIKELY(shift & 0x1F)) {                         \
-        u32 v = reg[opcode & 0x0F].I;                   \
+        u32 v = rm;                                     \
         C_OUT = (v >> (shift - 1)) & 1 ? true : false;  \
         value = ((v << (32 - shift)) |                  \
                  (v >> shift));                         \
     } else {                                            \
-        value = reg[opcode & 0x0F].I;                   \
+        value = rm;                                     \
         if (shift)                                      \
             C_OUT = (value & 0x80000000 ? true : false);\
     }
@@ -296,9 +312,9 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 #endif
 #ifndef OP_RSB
 #define OP_RSB \
-    u32 lhs = reg[(opcode>>16)&15].I;                   \
-    u32 rhs = value;                                    \
-    u32 res = rhs - lhs;                                \
+    u32 lhs = value;                                    \
+    u32 rhs = reg[(opcode>>16)&15].I;                   \
+    u32 res = lhs - rhs;                                \
     reg[dest].I = res;
 #endif
 #ifndef OP_RSBS
@@ -336,9 +352,9 @@ static INSN_REGPARM void armUnknownInsn(u32 opcode)
 #endif
 #ifndef OP_RSC
 #define OP_RSC \
-    u32 lhs = reg[(opcode>>16)&15].I;                   \
-    u32 rhs = value;                                    \
-    u32 res = rhs - lhs - !((u32)C_FLAG);               \
+    u32 lhs = value;                                    \
+    u32 rhs = reg[(opcode>>16)&15].I;                   \
+    u32 res = lhs - rhs - !((u32)C_FLAG);               \
     reg[dest].I = res;
 #endif
 #ifndef OP_RSCS
@@ -2509,8 +2525,7 @@ static INSN_REGPARM void armA00(u32 opcode)
 	reg[15].I += 4;
 	ARM_PREFETCH();
 	clockTicks = codeTicksAccessSeq32(armNextPC) + 1;
-	clockTicks += 2 + codeTicksAccess32(armNextPC)
-	              + codeTicksAccessSeq32(armNextPC);
+	clockTicks = (clockTicks * 2) + codeTicksAccess32(armNextPC) + 1;
 	busPrefetchCount = 0;
 }
 
@@ -2526,8 +2541,7 @@ static INSN_REGPARM void armB00(u32 opcode)
 	reg[15].I += 4;
 	ARM_PREFETCH();
 	clockTicks = codeTicksAccessSeq32(armNextPC) + 1;
-	clockTicks += 2 + codeTicksAccess32(armNextPC)
-	              + codeTicksAccessSeq32(armNextPC);
+	clockTicks = (clockTicks * 2) + codeTicksAccess32(armNextPC) + 1;
 	busPrefetchCount = 0;
 }
 
@@ -2546,8 +2560,7 @@ static INSN_REGPARM void armE01(u32 opcode)
 static INSN_REGPARM void armF00(u32 opcode)
 {
 	clockTicks = codeTicksAccessSeq32(armNextPC) + 1;
-	clockTicks += 2 + codeTicksAccess32(armNextPC)
-	              + codeTicksAccessSeq32(armNextPC);
+	clockTicks = (clockTicks * 2) + codeTicksAccess32(armNextPC) + 1;
 	busPrefetchCount = 0;
 	CPUSoftwareInterrupt(opcode & 0x00FFFFFF);
 }
@@ -2596,9 +2609,9 @@ static insnfunc_t armInsnTable[4096] =
 	arm0D0,arm0D1,arm0D2,arm0D3,arm0D4,arm0D5,arm0D6,arm0D7,  // 0D0
 	arm0D0,arm0D9,arm0D2,arm0DB,arm0D4,arm0DD,arm0D6,arm0DF,  // 0D8
 	arm0E0,arm0E1,arm0E2,arm0E3,arm0E4,arm0E5,arm0E6,arm0E7,  // 0E0
-	arm0E0,arm0E9,arm0E2,arm_UI,arm0E4,arm_UI,arm0E6,arm_UI,  // 0E8
+	arm0E0,arm0E9,arm0E2,arm0CB,arm0E4,arm_UI,arm0E6,arm_UI,  // 0E8
 	arm0F0,arm0F1,arm0F2,arm0F3,arm0F4,arm0F5,arm0F6,arm0F7,  // 0F0
-	arm0F0,arm0F9,arm0F2,arm_UI,arm0F4,arm0DD,arm0F6,arm0DF,  // 0F8
+	arm0F0,arm0F9,arm0F2,arm0DB,arm0F4,arm0DD,arm0F6,arm0DF,  // 0F8
 
 	arm100,arm_UI,arm_UI,arm_UI,arm_UI,arm_UI,arm_UI,arm_UI,  // 100
 	arm_UI,arm109,arm_UI,arm10B,arm_UI,arm_UI,arm_UI,arm_UI,  // 108
