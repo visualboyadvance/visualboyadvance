@@ -21,9 +21,7 @@ FIND_PACKAGE ( LibArchive REQUIRED )
 FIND_PACKAGE ( PkgConfig REQUIRED )
 
 # These dependencies require pkg-config to be found
-PKG_CHECK_MODULES ( GTKMM gtkmm-3.0 )
 PKG_CHECK_MODULES ( GLIBMM glibmm-2.4 )
-PKG_CHECK_MODULES ( GIOMM giomm-2.4 )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
@@ -37,15 +35,6 @@ ADD_DEFINITIONS (-DHAVE_NETINET_IN_H -DHAVE_ARPA_INET_H -DHAVE_ZLIB_H)
 ADD_DEFINITIONS (-DVERSION="${VERSION}" -DPKGDATADIR="${PKGDATADIR}")
 ADD_DEFINITIONS (-DGBA_LOGGING)
 #ADD_DEFINITIONS (-DLINK_EMULATION)
-
-# GSettings
-include(GSettings)
-add_schemas(gvbam ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/)
-
-# GResource
-include(GResource)
-gresource(${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/ org.vba.ttb.gresource.xml
-	${CMAKE_BINARY_DIR}/src/gtk/ RESOURCE_FILE)
 
 # Source files definition
 SET(SRC_MAIN
@@ -88,18 +77,13 @@ SET(SRC_APU
 	src/apu/Multi_Buffer.cpp
 )
 
-SET(SRC_GTK
+SET(SRC_SDL
 	${RESOURCE_FILE}
-	src/gtk/Main.cpp
-	src/gtk/System.cpp
-	src/gtk/WindowCallbacks.cpp
-	src/gtk/JoypadConfigDialog.cpp
-	src/gtk/SettingsDialog.cpp
-	src/gtk/ScreenArea.cpp
-	src/gtk/ScreenAreaCairo.cpp
-	src/gtk/Tools.cpp
-	src/gtk/Window.cpp
-	src/gtk/InputSDL.cpp
+	src/sdl/getopt.c
+	src/sdl/getopt1.c
+	src/sdl/InputSDL.cpp
+	src/sdl/SDL.cpp
+	src/sdl/text.cpp
 	src/common/SoundSDL.cpp
 )
 
@@ -111,14 +95,10 @@ INCLUDE_DIRECTORIES(
 
 INCLUDE_DIRECTORIES(
 	${GLIBMM_INCLUDE_DIRS}
-	${GIOMM_INCLUDE_DIRS}
-	${GTKMM_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(
 	${GLIBMM_LIBRARY_DIRS}
-	${GIOMM_LIBRARY_DIRS}
-	${GTKMM_LIBRARY_DIRS}
 )
 
 ADD_LIBRARY (
@@ -130,24 +110,22 @@ ADD_LIBRARY (
 )
 
 ADD_EXECUTABLE (
-	gvbam
+	vbam
 	WIN32
 	MACOSX_BUNDLE
-	${SRC_GTK}
+	${SRC_SDL}
 )
 
 TARGET_LINK_LIBRARIES (
-	gvbam
+	vbam
 	vbamcore
 	${LibArchive_LIBRARY}
 	${ZLIB_LIBRARY}
 	${SDL_LIBRARY}
-	${GTKMM_LIBRARIES}
+	${GLIBMM_LIBRARIES}
 )
 
 # Installation
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/gvbam DESTINATION bin)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/gvbam.desktop DESTINATION share/applications)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/vbam DESTINATION bin)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xml DESTINATION ${DATA_INSTALL_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xsd DESTINATION ${DATA_INSTALL_DIR})
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/gtk/icons/ DESTINATION share/icons/hicolor)
