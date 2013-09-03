@@ -40,22 +40,7 @@
 #include "InputSDL.h"
 #include "../common/SoundSDL.h"
 
-#ifndef _WIN32
-# include <unistd.h>
-# define GETCWD getcwd
-#else // _WIN32
-# include <direct.h>
-# define GETCWD _getcwd
-#endif // _WIN32
-
-#ifndef __GNUC__
-# define HAVE_DECL_GETOPT 0
-# define __STDC__ 1
-# include "getopt.h"
-#else // ! __GNUC__
-# define HAVE_DECL_GETOPT 1
-# include <getopt.h>
-#endif // ! __GNUC__
+#include <glib.h>
 
 SDL_Surface *surface = NULL;
 
@@ -65,22 +50,18 @@ int systemVerbose = 0;
 static int srcWidth = 0;
 static int srcHeight = 0;
 
-static int sdlPrintUsage = 0;
-
 static int pauseWhenInactive = 0;
 int emulating = 0;
-static char filename[2048];
-static char biosFileName[2048];
-static char saveDir[2048];
-static char batteryDir[2048];
-static char* homeDir = NULL;
+static gchar **filename = NULL;
+static gchar *biosFileName = NULL;
+static gchar *configFileName = NULL;
+static gchar *saveDir = NULL;
+static gchar *batteryDir = NULL;
 
-// Directory within homedir to use for default save location.
-#define DOT_DIR ".vbam"
+// Directory within confdir to use for default save location.
+#define CONF_DIR "vbam"
 
 #define SYSMSG_BUFFER_SIZE 1024
-
-#define _stricmp strcasecmp
 
 static int showSpeed = 1;
 static bool disableStatusMessages = false;
@@ -96,20 +77,16 @@ static bool screenMessage = false;
 static char screenMessageBuffer[21];
 static u32  screenMessageTime = 0;
 
-static char *arg0;
-
 #define SDL_SOUND_MAX_VOLUME 2.0
 
-struct option sdlOptions[] = {
-  { "bios", required_argument, 0, 'b' },
-  { "config", required_argument, 0, 'c' },
-  { "fullscreen", no_argument, &fullscreen, 1 },
-  { "help", no_argument, &sdlPrintUsage, 1 },
-  { "no-pause-when-inactive", no_argument, &pauseWhenInactive, 0 },
-  { "no-show-speed", no_argument, &showSpeed, 0 },
-  { "pause-when-inactive", no_argument, &pauseWhenInactive, 1 },
-  { "show-speed-normal", no_argument, &showSpeed, 1 },
-  { NULL, no_argument, NULL, 0 }
+static GOptionEntry sdlOptions[] = {
+  { "bios", 'b', 0, G_OPTION_ARG_FILENAME, &biosFileName, "Use given bios file", NULL },
+  { "config", 'c', 0, G_OPTION_ARG_FILENAME, &configFileName, "Read the given configuration file", NULL },
+  { "fullscreen", 0, 0, G_OPTION_ARG_NONE, &fullscreen, "Full screen", NULL },
+  { "pause-when-inactive", 0, 0, G_OPTION_ARG_NONE, &pauseWhenInactive, "Pause when inactive", NULL },
+  { "show-speed", 0, 0, G_OPTION_ARG_NONE, &showSpeed, "Show emulation speed", NULL },
+  { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &filename, NULL, "[GBA ROM file]" },
+  { NULL }
 };
 
 static void sdlChangeVolume(float d)
@@ -142,108 +119,44 @@ u32 sdlFromDec(char *s)
   return value;
 }
 
-#ifdef __MSC__
-#define stat _stat
-#define S_IFDIR _S_IFDIR
-#endif
-
-void sdlCheckDirectory(char *dir)
+static bool sdlCheckDirectory(char *dir)
 {
-  struct stat buf;
-
-  int len = strlen(dir);
-
-  char *p = dir + len - 1;
-
-  if(*p == '/' ||
-     *p == '\\')
-    *p = 0;
-
-  if(stat(dir, &buf) == 0) {
-    if(!(buf.st_mode & S_IFDIR)) {
+  if (g_file_test(dir, G_FILE_TEST_EXISTS)) {
+    if(!g_file_test(dir, G_FILE_TEST_IS_DIR)) {
       fprintf(stderr, "Error: %s is not a directory\n", dir);
-      dir[0] = 0;
+      return false;
     }
   } else {
     fprintf(stderr, "Error: %s does not exist\n", dir);
-    dir[0] = 0;
-  }
-}
-
-char *sdlGetFilename(char *name)
-{
-  static char filebuffer[2048];
-
-  int len = strlen(name);
-
-  char *p = name + len - 1;
-
-  while(true) {
-    if(*p == '/' ||
-       *p == '\\') {
-      p++;
-      break;
-    }
-    len--;
-    p--;
-    if(len == 0)
-      break;
+    return false;
   }
 
-  if(len == 0)
-    strcpy(filebuffer, name);
-  else
-    strcpy(filebuffer, p);
-  return filebuffer;
+  return true;
 }
 
 FILE *sdlFindFile(const char *name)
 {
-  char buffer[4096];
-  char path[2048];
+  const gchar *configDir = g_get_user_config_dir();
+  gchar *currentDir = g_get_current_dir();
+  gchar *filename = NULL;
+  FILE *f = NULL;
 
-#ifdef _WIN32
-#define PATH_SEP ";"
-#define FILE_SEP '\\'
-#define EXE_NAME "vbam.exe"
-#else // ! _WIN32
-#define PATH_SEP ":"
-#define FILE_SEP '/'
-#define EXE_NAME "vbam"
-#endif // ! _WIN32
-
-  fprintf(stdout, "Searching for file %s\n", name);
-
-  if(GETCWD(buffer, 2048)) {
-    fprintf(stdout, "Searching current directory: %s\n", buffer);
+  if (f == NULL&& currentDir != NULL) {
+    filename = g_build_filename(currentDir, name, NULL);
+    g_print("Searching current directory: %s\n", filename);
+    f = fopen(filename, "r");
+    g_free(filename);
   }
 
-  FILE *f = fopen(name, "r");
-  if(f != NULL) {
-    return f;
+  if (f == NULL && configDir) {
+    filename = g_build_filename(configDir, CONF_DIR, name, NULL);
+    g_print("Searching user config directory: %s\n", filename);
+    f = fopen(filename, "r");
+    g_free(filename);
   }
 
-  if(homeDir) {
-    fprintf(stdout, "Searching home directory: %s%c%s\n", homeDir, FILE_SEP, DOT_DIR);
-    sprintf(path, "%s%c%s%c%s", homeDir, FILE_SEP, DOT_DIR, FILE_SEP, name);
-    f = fopen(path, "r");
-    if(f != NULL)
-      return f;
-  }
-
-  fprintf(stdout, "Searching data directory: %s\n", PKGDATADIR);
-  sprintf(path, "%s%c%s", PKGDATADIR, FILE_SEP, name);
-  f = fopen(path, "r");
-  if(f != NULL)
-    return f;
-
-//  fprintf(stdout, "Searching system config directory: %s\n", SYSCONFDIR);
-//  sprintf(path, "%s%c%s", SYSCONFDIR, FILE_SEP, name);
-//  f = fopen(path, "r");
-//  if(f != NULL)
-//    return f;
-
-  return NULL;
+  g_free(currentDir);
+  return f;
 }
 
 void sdlReadPreferences(FILE *f)
@@ -316,15 +229,20 @@ void sdlReadPreferences(FILE *f)
     } else if(!strcmp(key, "fullScreen")) {
       fullscreen = sdlFromHex(value) ? 1 : 0;
     } else if(!strcmp(key, "biosFile")) {
-      strcpy(biosFileName, value);
+      g_free(biosFileName);
+      biosFileName = g_strdup(value);
     } else if(!strcmp(key, "disableStatus")) {
       disableStatusMessages = sdlFromHex(value) ? true : false;
     } else if(!strcmp(key, "saveDir")) {
-      sdlCheckDirectory(value);
-      strcpy(saveDir, value);
+      if (sdlCheckDirectory(value)) {
+        g_free(saveDir);
+        saveDir = g_strdup(value);
+      }
     } else if(!strcmp(key, "batteryDir")) {
-      sdlCheckDirectory(value);
-      strcpy(batteryDir, value);
+      if (sdlCheckDirectory(value)) {
+        g_free(batteryDir);
+        batteryDir = g_strdup(value);
+      }
     } else if(!strcmp(key, "soundQuality")) {
       int soundQuality = sdlFromHex(value);
       switch(soundQuality) {
@@ -358,6 +276,7 @@ void sdlReadPreferences(FILE *f)
 
 void sdlReadPreferences()
 {
+  g_print("Searching for configuration file\n");
   FILE *f = sdlFindFile("vbam.cfg");
 
   if(f == NULL) {
@@ -371,81 +290,105 @@ void sdlReadPreferences()
   fclose(f);
 }
 
-/* returns filename of savestate num, in static buffer (not reentrant, no need to free,
- * but value won't survive much - so if you want to remember it, dup it)
- * You may use the buffer for something else though - until you call sdlStateName again
- */
-static char * sdlStateName(int num)
-{
-  static char stateName[2048];
+static gchar *conf_get_battery_dir() {
+	gchar *dir = NULL;
+	if (batteryDir) {
+		dir = g_build_filename(batteryDir, NULL);
+	} else {
+		const gchar *userDataDir = g_get_user_data_dir();
+		dir = g_build_filename(userDataDir, CONF_DIR, NULL);
+	}
 
-  if(saveDir[0])
-    sprintf(stateName, "%s/%s%d.sgm", saveDir, sdlGetFilename(filename),
-            num+1);
-  else if (homeDir)
-    sprintf(stateName, "%s/%s/%s%d.sgm", homeDir, DOT_DIR, sdlGetFilename(filename), num + 1);
-  else
-    sprintf(stateName,"%s%d.sgm", filename, num+1);
+	return dir;
+}
+
+static gchar *conf_get_save_dir() {
+	gchar *dir = NULL;
+	if (saveDir) {
+		dir = g_build_filename(saveDir, NULL);
+	} else {
+		const gchar *userDataDir = g_get_user_data_dir();
+		dir = g_build_filename(userDataDir, CONF_DIR, NULL);
+	}
+
+	return dir;
+}
+
+static gchar *sdlStateName(int num)
+{
+  gchar *stateNum = g_strdup_printf("%d", num + 1);
+  gchar *baseName = g_path_get_basename(filename[0]);
+  gchar *saveDir = conf_get_save_dir();
+  gchar *fileName = g_strconcat(baseName, stateNum, ".sgm", NULL);
+  gchar *stateName = g_build_filename(batteryDir, fileName, NULL);
+
+  g_free(saveDir);
+  g_free(fileName);
+  g_free(baseName);
+  g_free(stateNum);
 
   return stateName;
 }
 
+static gchar *sdlBatteryName()
+{
+  gchar *batteryDir = conf_get_battery_dir();
+  gchar *baseName = g_path_get_basename(filename[0]);
+  gchar *fileName = g_strconcat(baseName, ".sav", NULL);
+  gchar *batteryFile = g_build_filename(batteryDir, fileName, NULL);
+
+  g_free(batteryDir);
+  g_free(fileName);
+  g_free(baseName);
+
+  return batteryFile;
+}
+
 void sdlWriteState(int num)
 {
-  char * stateName;
-
-  stateName = sdlStateName(num);
-
+  gchar *stateName = sdlStateName(num);
   CPUWriteState(stateName);
+  g_free(stateName);
 
-	sprintf(stateName, "Wrote state %d", num+1);
-	systemScreenMessage(stateName);
+  gchar *message = g_strdup_printf("Wrote state %d", num + 1);
+  systemScreenMessage(message);
+  g_free(message);
 }
 
 void sdlReadState(int num)
 {
-  char * stateName;
-
-  stateName = sdlStateName(num);
+  gchar *stateName = sdlStateName(num);
   CPUReadState(stateName);
+  g_free(stateName);
 
-	  sprintf(stateName, "Loaded state %d", num+1);
-  systemScreenMessage(stateName);
+  gchar *message = g_strdup_printf("Loaded state %d", num + 1);
+  systemScreenMessage(message);
+  g_free(message);
 }
 
 void sdlWriteBattery()
 {
-  char buffer[1048];
+  gchar *batteryFile = sdlBatteryName();
 
-  if(batteryDir[0])
-    sprintf(buffer, "%s/%s.sav", batteryDir, sdlGetFilename(filename));
-  else if (homeDir)
-    sprintf(buffer, "%s/%s/%s.sav", homeDir, DOT_DIR, sdlGetFilename(filename));
-  else
-    sprintf(buffer, "%s.sav", filename);
-
-  Cartridge::writeBatteryToFile(buffer);
+  Cartridge::writeBatteryToFile(batteryFile);
 
   systemScreenMessage("Wrote battery");
+
+  g_free(batteryFile);
 }
 
 void sdlReadBattery()
 {
-  char buffer[1048];
-
-  if(batteryDir[0])
-    sprintf(buffer, "%s/%s.sav", batteryDir, sdlGetFilename(filename));
-  else if (homeDir)
-    sprintf(buffer, "%s/%s/%s.sav", homeDir, DOT_DIR, sdlGetFilename(filename));
-  else
-    sprintf(buffer, "%s.sav", filename);
+  gchar *batteryFile = sdlBatteryName();
 
   bool res = false;
 
-  res = Cartridge::readBatteryFromFile(buffer);
+  res = Cartridge::readBatteryFromFile(batteryFile);
 
   if(res)
     systemScreenMessage("Loaded battery");
+
+  g_free(batteryFile);
 }
 
 //void sdlReadDesktopVideoMode() {
@@ -648,26 +591,7 @@ void sdlPollEvents()
   }
 }
 
-void usage(char *cmd)
-{
-  printf("%s [option ...] file\n", cmd);
-  printf("\
-\n\
-Options:\n\
-  -F, --fullscreen             Full screen\n\
-  -b, --bios=BIOS              Use given bios file\n\
-  -c, --config=FILE            Read the given configuration file\n\
-  -h, --help                   Print this help\n\
-\n\
-Long options only:\n\
-      --no-pause-when-inactive Don't pause when inactive\n\
-      --no-show-speed          Don't show emulation speed\n\
-      --pause-when-inactive    Pause when inactive\n\
-      --show-speed-normal      Show emulation speed\n\
-");
-}
-
-bool loadROM(const char *file)
+static bool loadROM(const char *file)
 {
 	if (!CPUInitMemory())
 		return false;
@@ -694,106 +618,71 @@ bool loadROM(const char *file)
 	return true;
 }
 
+static void usage(GOptionContext *context) {
+    gchar *usage = g_option_context_get_help(context, FALSE, NULL);
+    g_print("%s", usage);
+    g_free(usage);
+}
+
 int main(int argc, char **argv)
 {
   fprintf(stdout, "VBA-M version %s [SDL]\n", VERSION);
 
-  arg0 = argv[0];
+  // Parse command line
+  GError *error = NULL;
+  GOptionContext *context;
 
-  saveDir[0] = 0;
-  batteryDir[0] = 0;
+  context = g_option_context_new(NULL);
+  g_option_context_add_main_entries (context, sdlOptions, NULL);
 
-  int op = -1;
+  if (!g_option_context_parse (context, &argc, &argv, &error)) {
+      g_print("Command line parsing failed: %s.\n", error->message);
 
-  char buf[1024];
-  struct stat s;
+      usage(context);
 
-#ifndef _WIN32
-  // Get home dir
-  homeDir = getenv("HOME");
-  snprintf(buf, 1024, "%s/%s", homeDir, DOT_DIR);
-  // Make dot dir if not existent
-  if (stat(buf, &s) == -1 || !S_ISDIR(s.st_mode))
-    mkdir(buf, 0755);
-#else
-  homeDir = 0;
-#endif
+      g_option_context_free(context);
+      exit (1);
+  }
+  if (filename == NULL || g_strv_length(filename) != 1) {
+      g_print("You must specify exactly one GBA ROM file.\n");
+
+      usage(context);
+
+      g_option_context_free(context);
+      exit (1);
+  }
+  g_option_context_free(context);
+
 
   sdlReadPreferences();
 
+  // Make sure the batteries dir exists
+  gchar* batteriesDir = conf_get_battery_dir();
+  g_mkdir_with_parents(batteriesDir, 0777);
+  g_free(batteriesDir);
+
+  // Make sure the saves dir exists
+  gchar* savesDir = conf_get_save_dir();
+  g_mkdir_with_parents(savesDir, 0777);
+  g_free(savesDir);
+
   Display::initColorMap(19, 11, 3);
 
-  sdlPrintUsage = 0;
-
-  while((op = getopt_long(argc,
-                          argv,
-                           "FNO:T:Y:G:I:D:b:c:df:hi:p::s:t:v:",
-                          sdlOptions,
-                          NULL)) != -1) {
-    switch(op) {
-    case 0:
-      // long option already processed by getopt_long
-      break;
-    case 'b':
-      if(optarg == NULL) {
-        fprintf(stderr, "Missing BIOS file name\n");
-        exit(-1);
-      }
-      strcpy(biosFileName, optarg);
-      break;
-    case 'c':
-      {
-        if(optarg == NULL) {
-          fprintf(stderr, "Missing config file name\n");
-          exit(-1);
-        }
-        FILE *f = fopen(optarg, "r");
-        if(f == NULL) {
-          fprintf(stderr, "File not found %s\n", optarg);
-          exit(-1);
-        }
-        sdlReadPreferences(f);
-        fclose(f);
-      }
-      break;
-    case 'h':
-      sdlPrintUsage = 1;
-      break;
-    case 'F':
-      fullscreen = 1;
-      mouseCounter = 120;
-      break;
-    case '?':
-      sdlPrintUsage = 1;
-      break;
-    break;
-
-    }
-  }
-
-  if(sdlPrintUsage) {
-    usage(argv[0]);
-    exit(-1);
-  }
-
-  if(optind < argc) {
-    char *szFile = argv[optind];
-    u32 len = strlen(szFile);
+    u32 len = strlen(filename[0]);
     if (len > SYSMSG_BUFFER_SIZE)
     {
-      fprintf(stderr,"%s :%s: File name too long\n",argv[0],szFile);
+      fprintf(stderr,"%s :%s: File name too long\n",argv[0],filename[0]);
       exit(-1);
     }
 
     soundInit();
 
-    bool failed = !loadROM(szFile);
+    bool failed = !loadROM(filename[0]);
 
     if(failed) {
-      systemMessage("Failed to load file %s", szFile);
+      systemMessage("Failed to load file %s", filename[0]);
       exit(-1);
     }
-  }
 
   sdlReadBattery();
 
@@ -838,11 +727,18 @@ int main(int argc, char **argv)
   fprintf(stdout,"Shutting down\n");
   soundShutdown();
 
-    sdlWriteBattery();
+  sdlWriteBattery();
   Cartridge::unloadGame();
   CPUCleanUp();
 
   SDL_Quit();
+
+  g_strfreev(filename);
+  g_free(biosFileName);
+  g_free(configFileName);
+  g_free(saveDir);
+  g_free(batteryDir);
+
   return 0;
 }
 

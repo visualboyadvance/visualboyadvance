@@ -79,8 +79,6 @@ SET(SRC_APU
 
 SET(SRC_SDL
 	${RESOURCE_FILE}
-	src/sdl/getopt.c
-	src/sdl/getopt1.c
 	src/sdl/InputSDL.cpp
 	src/sdl/SDL.cpp
 	src/sdl/text.cpp
