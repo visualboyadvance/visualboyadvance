@@ -2,7 +2,6 @@
 #define CARTRIDGE_H
 
 #include "../common/Types.h"
-#include "GameInfos.h"
 
 namespace Cartridge
 {
@@ -10,10 +9,9 @@ namespace Cartridge
 bool init();
 void reset();
 void uninit();
-bool loadRom(const std::string &_sFileName);
+bool loadRom(const char *_sFileName);
 void unloadGame();
 void getGameName(u8 *romname);
-const GameInfos &getGame();
 bool isPresent();
 
 bool readBatteryFromFile(const char *fileName);

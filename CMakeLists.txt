@@ -18,10 +18,7 @@ ENDIF( NOT VERSION )
 FIND_PACKAGE ( ZLIB REQUIRED )
 FIND_PACKAGE ( SDL REQUIRED )
 FIND_PACKAGE ( LibArchive REQUIRED )
-FIND_PACKAGE ( PkgConfig REQUIRED )
-
-# These dependencies require pkg-config to be found
-PKG_CHECK_MODULES ( GLIBMM glibmm-2.4 )
+FIND_PACKAGE ( Glib REQUIRED )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
@@ -38,7 +35,8 @@ ADD_DEFINITIONS (-DGBA_LOGGING)
 
 # Source files definition
 SET(SRC_MAIN
-	src/common/GameDB.cpp
+	src/common/GameDB.c
+	src/common/GameInfos.c
 	src/common/Util.cpp
 )
 
@@ -52,7 +50,6 @@ SET(SRC_GBA
 	src/gba/CPUArm.cpp
 	src/gba/CPUThumb.cpp
 	src/gba/Display.cpp
-	src/gba/GameInfos.cpp
 	src/gba/GBA.cpp
 	src/gba/Gfx.cpp
 	src/gba/GfxHelpers.cpp
@@ -78,7 +75,6 @@ SET(SRC_APU
 )
 
 SET(SRC_SDL
-	${RESOURCE_FILE}
 	src/sdl/InputSDL.cpp
 	src/sdl/SDL.cpp
 	src/sdl/text.cpp
@@ -86,17 +82,10 @@ SET(SRC_SDL
 )
 
 INCLUDE_DIRECTORIES(
-	${LibArchive_INCLUDE_DIR}
-	${ZLIB_INCLUDE_DIR}
+	${LibArchive_INCLUDE_DIRS}
+	${ZLIB_INCLUDE_DIRS}
 	${SDL_INCLUDE_DIR}
-)
-
-INCLUDE_DIRECTORIES(
-	${GLIBMM_INCLUDE_DIRS}
-)
-
-LINK_DIRECTORIES(
-	${GLIBMM_LIBRARY_DIRS}
+	${Glib_INCLUDE_DIRS}
 )
 
 ADD_LIBRARY (
@@ -117,10 +106,10 @@ ADD_EXECUTABLE (
 TARGET_LINK_LIBRARIES (
 	vbam
 	vbamcore
-	${LibArchive_LIBRARY}
-	${ZLIB_LIBRARY}
+	${LibArchive_LIBRARIES}
+	${ZLIB_LIBRARIES}
 	${SDL_LIBRARY}
-	${GLIBMM_LIBRARIES}
+	${Glib_LIBRARIES}
 )
 
 # Installation

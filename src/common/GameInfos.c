@@ -15,41 +15,36 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef __VBA_GAME_H__
-#define __VBA_GAME_H__
+#include "GameInfos.h"
 
-#include <string>
+#include "glib.h"
 
-namespace Cartridge
-{
+GameInfos *game_infos_new() {
+	GameInfos *game = g_new(GameInfos, 1);
 
-class GameInfos
-{
-protected:
-	std::string m_sTitle;
-	std::string m_sCode;
+	game_infos_reset(game);
 
-	bool m_bHasSRAM;
-	bool m_bHasEEPROM;
-	bool m_bHasFlash;
-	bool m_bHasRTC;
-	int m_iEEPROMSize;
-	int m_iFlashSize;
-
-	void reset();
-
-public:
-	GameInfos();
-
-	const std::string& getTitle() const;
-	bool hasSRAM() const;
-	bool hasFlash() const;
-	bool hasEEPROM() const;
-	bool hasRTC() const;
-	int getEEPROMSize() const;
-	int getFlashSize() const;
-};
-
+	return game;
 }
 
-#endif // __VBA_GAME_H__
+void game_infos_free(GameInfos *game)
+{
+	if (game == NULL)
+		return;
+
+	g_free(game->m_sCode);
+	g_free(game->m_sTitle);
+	g_free(game);
+}
+
+void game_infos_reset(GameInfos *game)
+{
+	game->hasSRAM = FALSE;
+	game->hasEEPROM = FALSE;
+	game->hasFlash = FALSE;
+	game->hasRTC = FALSE;
+	game->EEPROMSize = 0x2000;
+	game->flashSize = 0x10000;
+	game->m_sTitle = NULL;
+	game->m_sCode = NULL;
+}

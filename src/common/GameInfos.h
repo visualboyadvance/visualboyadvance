@@ -15,29 +15,51 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
-#ifndef __VBA_GAMEDB_H__
-#define __VBA_GAMEDB_H__
+#ifndef __VBA_GAMEINFOS_H__
+#define __VBA_GAMEINFOS_H__
 
 #include <glib.h>
-#include "GameInfos.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct
+{
+	gboolean hasSRAM;
+	gboolean hasEEPROM;
+	gboolean hasFlash;
+	gboolean hasRTC;
+	int EEPROMSize;
+	int flashSize;
+
+	gchar *m_sTitle;
+	gchar *m_sCode;
+} GameInfos;
+
 /**
- * Lookup cartridge data from the game database
- * 
- * @param code Four letter game code
- * @return NULL if the game is not found
+ * Create a new empty cartridge infos object initialized with default values
  */
-GameInfos *game_db_lookup_code(const gchar *code);
+GameInfos *game_infos_new();
+
+/**
+ * Free cartridge infos
+ *
+ * @param game GameInfos to free
+ */
+void game_infos_free(GameInfos *game);
+
+/**
+ * Reset a cartridge infos object to default values
+ *
+ * @param game GameInfos to reset
+ */
+void game_infos_reset(GameInfos *game);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __VBA_GAMEDB_H__
+#endif // __VBA_GAMEINFOS_H__
