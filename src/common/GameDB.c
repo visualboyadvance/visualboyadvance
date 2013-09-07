@@ -59,7 +59,8 @@ static void on_start_element(GMarkupParseContext *context,
 		db->isInGameTag = TRUE;
 		
 		// Reset our cartridge data
-		game_infos_reset(db->game);
+		game_infos_free(db->game);
+		db->game = game_infos_new();
 	}
 	else if (g_strcmp0(element_name, "title") == 0)
 	{
@@ -136,16 +137,16 @@ static void on_text(GMarkupParseContext *context,
 	
 	if (db->isInGameTag && db->isInTitleTag)
 	{
-		g_free(db->game->m_sTitle);
-		db->game->m_sTitle = g_strdup(text);
+		g_free(db->game->title);
+		db->game->title = g_strdup(text);
 	}
 	else if (db->isInGameTag && db->isInCodeTag)
 	{
 		if (g_strcmp0(text, db->lookupCode) == 0) {
 			db->foundCode = TRUE;
 
-			g_free(db->game->m_sCode);
-			db->game->m_sCode = g_strdup(text);
+			g_free(db->game->code);
+			db->game->code = g_strdup(text);
 		}
 	}
 }
@@ -168,7 +169,7 @@ GameInfos *game_db_lookup_code(const gchar *code)
 {
 	GameDBParserContext *db = g_new(GameDBParserContext, 1);
 	
-	db->game = game_infos_new();
+	db->game = NULL;
 	db->lookupCode = code;
 	db->foundCode = FALSE;
 	db->gameLoaded = FALSE;
@@ -197,10 +198,14 @@ GameInfos *game_db_lookup_code(const gchar *code)
 	g_free(xmlData);
 	g_free(dbFilePath);
 
-	GameInfos *game = NULL;
+	GameInfos *game;
 
-	if (db->gameLoaded)
+	if (db->gameLoaded) {
 		game = db->game;
+	} else {
+		game_infos_free(db->game);
+		game = NULL;
+	}
 	
 	g_free(db);
 

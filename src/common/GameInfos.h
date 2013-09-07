@@ -34,8 +34,8 @@ typedef struct
 	int EEPROMSize;
 	int flashSize;
 
-	gchar *m_sTitle;
-	gchar *m_sCode;
+	gchar *title;
+	gchar *code;
 } GameInfos;
 
 /**
@@ -49,13 +49,6 @@ GameInfos *game_infos_new();
  * @param game GameInfos to free
  */
 void game_infos_free(GameInfos *game);
-
-/**
- * Reset a cartridge infos object to default values
- *
- * @param game GameInfos to reset
- */
-void game_infos_reset(GameInfos *game);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

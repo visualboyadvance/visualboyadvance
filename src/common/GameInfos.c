@@ -22,7 +22,14 @@
 GameInfos *game_infos_new() {
 	GameInfos *game = g_new(GameInfos, 1);
 
-	game_infos_reset(game);
+	game->hasSRAM = FALSE;
+	game->hasEEPROM = FALSE;
+	game->hasFlash = FALSE;
+	game->hasRTC = FALSE;
+	game->EEPROMSize = 0x2000;
+	game->flashSize = 0x10000;
+	game->title = NULL;
+	game->code = NULL;
 
 	return game;
 }
@@ -32,19 +39,7 @@ void game_infos_free(GameInfos *game)
 	if (game == NULL)
 		return;
 
-	g_free(game->m_sCode);
-	g_free(game->m_sTitle);
+	g_free(game->code);
+	g_free(game->title);
 	g_free(game);
-}
-
-void game_infos_reset(GameInfos *game)
-{
-	game->hasSRAM = FALSE;
-	game->hasEEPROM = FALSE;
-	game->hasFlash = FALSE;
-	game->hasRTC = FALSE;
-	game->EEPROMSize = 0x2000;
-	game->flashSize = 0x10000;
-	game->m_sTitle = NULL;
-	game->m_sCode = NULL;
 }
