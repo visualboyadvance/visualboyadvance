@@ -19,8 +19,14 @@
 #define VBAM_SDL_INPUT_H
 
 #include <SDL.h>
+#include <glib.h>
 
-enum EKey {
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
 	KEY_LEFT,
 	KEY_RIGHT,
 	KEY_UP,
@@ -35,13 +41,13 @@ enum EKey {
 	KEY_BUTTON_CAPTURE,
 	KEY_BUTTON_AUTO_A,
 	KEY_BUTTON_AUTO_B
-};
+} EKey;
 
 /**
  * Init the joysticks needed by the keymap. Verify that the keymap is compatible
  * with the joysticks. If it's not the case, revert to the default keymap.
  */
-void inputInitJoysticks();
+void input_init_joysticks();
 
 /**
  * Define which key controls an emulated joypad button
@@ -49,7 +55,7 @@ void inputInitJoysticks();
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
-void inputSetKeymap(EKey key, uint32_t code);
+void input_set_keymap(EKey key, uint32_t code);
 
 /**
  * Get which key is associated to which emulated joypad button
@@ -57,65 +63,69 @@ void inputSetKeymap(EKey key, uint32_t code);
  * @param key Emulated joypad button
  * @retunr Code defining an actual joypad / keyboard button
  */
-uint32_t inputGetKeymap(EKey key);
+uint32_t input_get_keymap(EKey key);
 
 /**
  * Define which keys control motion detection emulation
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
-void inputSetMotionKeymap(EKey key, uint32_t code);
+void input_set_motion_keymap(EKey key, uint32_t code);
 
 /**
  * Toggle Auto fire for the specified button. Only A, B, R, L are supported.
  * @param key Emulated joypad button
  * @return Auto fire enabled
  */
-bool inputToggleAutoFire(EKey key);
+gboolean input_toggle_autofire(EKey key);
 
 /**
  * Get Auto fire status for the specified button. Only A, B, R, L are supported.
  * @param key Emulated joypad button
  * @return Auto fire enabled
  */
-bool inputGetAutoFire(EKey key);
+gboolean input_get_autofire(EKey key);
 
 /**
  * Update the emulated pads state with a SDL event
  * @param SDL_Event An event that has just occured
  */
-void inputProcessSDLEvent(const SDL_Event &event);
+void input_process_SDL_event(const SDL_Event *event);
 
 /**
  * Get the keymap code corresponding to a SDL event
  * @param SDL_Event An event that has just occured
  * @return Keymap code
  */
-uint32_t inputGetEventCode(const SDL_Event &event);
+uint32_t input_get_event_code(const SDL_Event *event);
 
 /**
  * Read the state of an emulated joypad
  * @param which Emulated joypad index
  * @return Joypad state
  */
-uint32_t inputReadJoypad();
+uint32_t input_read_joypad();
 
 /**
  * Compute the motion sensor X and Y values
  */
-void inputUpdateMotionSensor();
+void input_update_motion_sensor();
 
 /**
  * Get the motion sensor X value
  * @return motion sensor X value
  */
-int inputGetSensorX();
+int input_get_sensor_x();
 
 /**
  * Get the motion sensor Y value
  * @return motion sensor Y value
  */
-int inputGetSensorY();
+int input_get_sensor_y();
 
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif // VBAM_SDL_INPUT_H

@@ -191,41 +191,41 @@ void sdlReadPreferences(FILE *f)
     }
 
     if(!strcmp(key,"Joy0_Left")) {
-      inputSetKeymap(KEY_LEFT, sdlFromHex(value));
+      input_set_keymap(KEY_LEFT, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Right")) {
-      inputSetKeymap(KEY_RIGHT, sdlFromHex(value));
+      input_set_keymap(KEY_RIGHT, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Up")) {
-      inputSetKeymap(KEY_UP, sdlFromHex(value));
+      input_set_keymap(KEY_UP, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Down")) {
-      inputSetKeymap(KEY_DOWN, sdlFromHex(value));
+      input_set_keymap(KEY_DOWN, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_A")) {
-      inputSetKeymap(KEY_BUTTON_A, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_A, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_B")) {
-      inputSetKeymap(KEY_BUTTON_B, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_B, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_L")) {
-      inputSetKeymap(KEY_BUTTON_L, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_L, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_R")) {
-      inputSetKeymap(KEY_BUTTON_R, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_R, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Start")) {
-      inputSetKeymap(KEY_BUTTON_START, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_START, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Select")) {
-      inputSetKeymap(KEY_BUTTON_SELECT, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_SELECT, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Speed")) {
-      inputSetKeymap(KEY_BUTTON_SPEED, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_SPEED, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_Capture")) {
-      inputSetKeymap(KEY_BUTTON_CAPTURE, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_CAPTURE, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_AutoA")) {
-      inputSetKeymap(KEY_BUTTON_AUTO_A, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_AUTO_A, sdlFromHex(value));
     } else if(!strcmp(key, "Joy0_AutoB")) {
-      inputSetKeymap(KEY_BUTTON_AUTO_B, sdlFromHex(value));
+      input_set_keymap(KEY_BUTTON_AUTO_B, sdlFromHex(value));
     } else if(!strcmp(key, "Motion_Left")) {
-      inputSetMotionKeymap(KEY_LEFT, sdlFromHex(value));
+      input_set_motion_keymap(KEY_LEFT, sdlFromHex(value));
     } else if(!strcmp(key, "Motion_Right")) {
-      inputSetMotionKeymap(KEY_RIGHT, sdlFromHex(value));
+      input_set_motion_keymap(KEY_RIGHT, sdlFromHex(value));
     } else if(!strcmp(key, "Motion_Up")) {
-      inputSetMotionKeymap(KEY_UP, sdlFromHex(value));
+      input_set_motion_keymap(KEY_UP, sdlFromHex(value));
     } else if(!strcmp(key, "Motion_Down")) {
-      inputSetMotionKeymap(KEY_DOWN, sdlFromHex(value));
+      input_set_motion_keymap(KEY_DOWN, sdlFromHex(value));
     } else if(!strcmp(key, "fullScreen")) {
       fullscreen = sdlFromHex(value) ? 1 : 0;
     } else if(!strcmp(key, "biosFile")) {
@@ -492,7 +492,7 @@ void sdlPollEvents()
     case SDL_JOYBUTTONUP:
     case SDL_JOYAXISMOTION:
     case SDL_KEYDOWN:
-      inputProcessSDLEvent(event);
+      input_process_SDL_event(&event);
       break;
     case SDL_KEYUP:
       switch(event.key.keysym.sym) {
@@ -575,7 +575,7 @@ void sdlPollEvents()
 	  else if (event.key.keysym.sym == SDLK_4)
 	    k = KEY_BUTTON_L;
 
-          if(inputToggleAutoFire(k)) {
+          if(input_toggle_autofire(k)) {
             systemScreenMessage(enableMessages[event.key.keysym.sym - SDLK_1]);
           } else {
             systemScreenMessage(disableMessages[event.key.keysym.sym - SDLK_1]);
@@ -585,7 +585,7 @@ void sdlPollEvents()
       default:
         break;
       }
-      inputProcessSDLEvent(event);
+      input_process_SDL_event(&event);
       break;
     }
   }
@@ -698,7 +698,7 @@ int main(int argc, char **argv)
     systemMessage("Failed to init joystick support: %s", SDL_GetError());
   }
 
-  inputInitJoysticks();
+  input_init_joysticks();
 
   srcWidth = 240;
   srcHeight = 160;
@@ -845,22 +845,22 @@ void systemScreenMessage(const char *msg)
 
 u32 systemReadJoypad()
 {
-  return inputReadJoypad();
+  return input_read_joypad();
 }
 
 void systemUpdateMotionSensor()
 {
-  inputUpdateMotionSensor();
+  input_update_motion_sensor();
 }
 
 int systemGetSensorX()
 {
-  return inputGetSensorX();
+  return input_get_sensor_x();
 }
 
 int systemGetSensorY()
 {
-  return inputGetSensorY();
+  return input_get_sensor_y();
 }
 
 SoundDriver * systemSoundInit()

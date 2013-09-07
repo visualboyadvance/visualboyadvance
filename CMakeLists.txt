@@ -75,7 +75,7 @@ SET(SRC_APU
 )
 
 SET(SRC_SDL
-	src/sdl/InputSDL.cpp
+	src/sdl/InputSDL.c
 	src/sdl/SDL.cpp
 	src/sdl/text.cpp
 	src/common/SoundSDL.cpp
