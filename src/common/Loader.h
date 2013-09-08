@@ -37,7 +37,8 @@ GQuark loader_error_quark();
  */
 typedef enum
 {
-	G_LOADER_ERROR_FAILED
+	G_LOADER_ERROR_FAILED,
+	G_LOADER_ERROR_NOT_IN_DB
 } LoaderError;
 
 /**

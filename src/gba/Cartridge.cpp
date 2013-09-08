@@ -48,7 +48,7 @@ bool loadRom(const char *_sFileName, GError **err) {
 	}*/
 	
 	gchar *code = getRomCode();
-	game = game_db_lookup_code(code);
+	game = game_db_lookup_code(code, err);
 	g_free(code);
 
 	return game != NULL;

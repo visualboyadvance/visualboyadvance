@@ -31,9 +31,10 @@ extern "C" {
  * Lookup cartridge data from the game database
  * 
  * @param code Four letter game code
+ * @param err error return location
  * @return NULL if the game is not found
  */
-GameInfos *game_db_lookup_code(const gchar *code);
+GameInfos *game_db_lookup_code(const gchar *code, GError **err);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

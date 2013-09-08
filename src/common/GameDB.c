@@ -18,6 +18,7 @@
 #include <stdlib.h>
 
 #include "GameDB.h"
+#include "Loader.h"
 
 typedef struct {
 	GameInfos *game;
@@ -165,10 +166,21 @@ static gchar *game_db_get_file_path(const gchar *filename)
 	return dataFilePath;
 }
 
-GameInfos *game_db_lookup_code(const gchar *code)
+GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	gchar *dbFilePath = game_db_get_file_path("game-db.xml");
+	gchar *xmlData = NULL;
+	gsize  length = 0;
+
+	if (!g_file_get_contents(dbFilePath, &xmlData, &length, err)) {
+		g_free(dbFilePath);
+		return NULL;
+	}
+	g_free(dbFilePath);
+
 	GameDBParserContext *db = g_new(GameDBParserContext, 1);
-	
 	db->game = NULL;
 	db->lookupCode = code;
 	db->foundCode = FALSE;
@@ -176,15 +188,6 @@ GameInfos *game_db_lookup_code(const gchar *code)
 	db->isInGameTag = FALSE;
 	db->isInTitleTag = FALSE;
 	db->isInCodeTag = FALSE;
-
-	gchar *dbFilePath = game_db_get_file_path("game-db.xml");
-	gchar *xmlData = NULL;
-	gsize  length = 0;
-
-	if (!g_file_get_contents(dbFilePath, &xmlData, &length, NULL)) {
-		g_free(dbFilePath);
-		return NULL;
-	}
 
 	GMarkupParser parser;
 	parser.start_element = &on_start_element;
@@ -194,12 +197,23 @@ GameInfos *game_db_lookup_code(const gchar *code)
 	parser.error = NULL;
 
 	GMarkupParseContext *context = g_markup_parse_context_new(&parser, (GMarkupParseFlags)0, db, NULL);
-	g_markup_parse_context_parse(context, xmlData, length, NULL);
-	g_markup_parse_context_end_parse(context, NULL);
-	g_markup_parse_context_free(context);
-
+	if (!g_markup_parse_context_parse(context, xmlData, length, err)) {
+		game_infos_free(db->game);
+		g_free(db);
+		g_free(xmlData);
+		g_markup_parse_context_free(context);
+		return NULL;
+	}
 	g_free(xmlData);
-	g_free(dbFilePath);
+
+	if (!g_markup_parse_context_end_parse(context, err)) {
+		game_infos_free(db->game);
+		g_free(db);
+		g_markup_parse_context_free(context);
+		return NULL;
+	}
+
+	g_markup_parse_context_free(context);
 
 	GameInfos *game;
 
@@ -208,6 +222,8 @@ GameInfos *game_db_lookup_code(const gchar *code)
 	} else {
 		game_infos_free(db->game);
 		game = NULL;
+		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_NOT_IN_DB,
+				"Game '%s' was not found in '%s'", code, "game-db.xml");
 	}
 	
 	g_free(db);
