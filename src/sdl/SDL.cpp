@@ -357,26 +357,27 @@ void sdlPollEvents()
   }
 }
 
-static bool loadROM(const char *file)
-{
-	if (!CPUInitMemory())
-		return false;
+static gboolean loadROM(const char *file, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
-	if (!Cartridge::loadRom(file))
-	{
-		CPUCleanUp();
-		return false;
+	if (!CPUInitMemory(err)) {
+		return FALSE;
 	}
 
-	if (!CPULoadBios(settings_get_bios()))
-	{
-		return false;
+	if (!Cartridge::loadRom(file, err))	{
+		CPUCleanUp();
+		return FALSE;
+	}
+
+	if (!CPULoadBios(settings_get_bios(), err))	{
+		CPUCleanUp();
+		return FALSE;
 	}
 
 	CPUInit();
 	CPUReset();
 
-	return true;
+	return TRUE;
 }
 
 int main(int argc, char **argv)
@@ -428,18 +429,18 @@ int main(int argc, char **argv)
 		input_set_keymap(settings_buttons[i], keymap);
 	}
 
+	Display::initColorMap(19, 11, 3);
 
-  Display::initColorMap(19, 11, 3);
+	soundSetVolume(settings_sound_volume());
+	soundSetSampleRate(settings_sound_sample_rate());
+	soundInit();
 
-  soundSetVolume(settings_sound_volume());
-  soundSetSampleRate(settings_sound_sample_rate());
-    soundInit();
+    if(!loadROM(filename, &err)) {
+		g_printerr("%s\n", err->message);
+		settings_free();
 
-    bool failed = !loadROM(filename);
-
-    if(failed) {
-      systemMessage("Failed to load file %s", filename);
-      exit(-1);
+		g_clear_error(&err);
+		exit(1);
     }
 
   sdlReadBattery();

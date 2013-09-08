@@ -173,6 +173,9 @@ GameInfos *game_db_lookup_code(const gchar *code)
 	db->lookupCode = code;
 	db->foundCode = FALSE;
 	db->gameLoaded = FALSE;
+	db->isInGameTag = FALSE;
+	db->isInTitleTag = FALSE;
+	db->isInCodeTag = FALSE;
 
 	gchar *dbFilePath = game_db_get_file_path("game-db.xml");
 	gchar *xmlData = NULL;

@@ -5,6 +5,7 @@
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
 #include "../common/GameDB.h"
+#include "../common/Loader.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
 #include "../System.h"
@@ -26,13 +27,17 @@ static gchar *getRomCode()
 	return g_strndup((gchar *) &rom[0xac], 4);
 }
 
-bool loadRom(const char *_sFileName)
-{
+bool loadRom(const char *_sFileName, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
 	int romSize = 0x2000000;
 	
-	if (!utilLoad(_sFileName, utilIsGBAImage, rom, romSize)) {
-		return false;
+	RomLoader *loader = loader_new(ROM_GBA, _sFileName);
+	if (!loader_load(loader, rom, &romSize, err)) {
+		loader_free(loader);
+		return FALSE;
 	}
+	loader_free(loader);
 
 	// What does this do ?
 	/*u16 *temp = (u16 *)(rom+((romSize+1)&~1));
@@ -69,7 +74,6 @@ bool init()
 	rom = (u8 *)malloc(0x2000000);
 	if (!rom)
 	{
-		systemMessage("Failed to allocate memory for %s", "ROM");
 		return false;
 	}
 

@@ -10,9 +10,6 @@ typedef struct {
   int size;
 } variable_desc;
 
-bool utilIsGBAImage(const char *);
-bool utilLoad(const char *, bool (*)(const char*), u8 *, int &);
-
 void utilPutDword(u8 *, u32);
 void utilPutWord(u8 *, u16);
 void utilWriteData(gzFile, variable_desc *);

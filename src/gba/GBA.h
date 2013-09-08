@@ -2,6 +2,7 @@
 #define GBA_H
 
 #include "../System.h"
+#include <glib.h>
 
 #define SAVE_GAME_VERSION_11 11
 #define SAVE_GAME_VERSION  SAVE_GAME_VERSION_11
@@ -18,8 +19,8 @@ extern u8 memoryWaitSeq32[16];
 extern void CPUUpdateRender();
 extern void CPUUpdateRegister(u32, u16);
 extern void CPUInit();
-bool CPUInitMemory();
-bool CPULoadBios(const char *biosFileName);
+gboolean CPUInitMemory(GError **err);
+gboolean CPULoadBios(const gchar *biosFileName, GError **err);
 void CPUCleanUp();
 extern void CPUReset();
 extern void CPULoop(int ticks = 250000);

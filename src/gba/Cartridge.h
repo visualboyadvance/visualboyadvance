@@ -2,6 +2,7 @@
 #define CARTRIDGE_H
 
 #include "../common/Types.h"
+#include <glib.h>
 
 namespace Cartridge
 {
@@ -9,7 +10,7 @@ namespace Cartridge
 bool init();
 void reset();
 void uninit();
-bool loadRom(const char *_sFileName);
+bool loadRom(const char *_sFileName, GError **err);
 void unloadGame();
 void getGameName(u8 *romname);
 bool isPresent();

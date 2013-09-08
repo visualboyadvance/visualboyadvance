@@ -14,6 +14,7 @@
 #include "Sound.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
+#include "../common/Loader.h"
 #include "../System.h"
 
 #ifdef LINK_EMULATION
@@ -389,30 +390,6 @@ bool CPUReadState(const char * file)
 	return res;
 }
 
-static bool CPUIsGBABios(const char * file)
-{
-	if (strlen(file) > 4)
-	{
-		const char * p = strrchr(file,'.');
-
-		if (p != NULL)
-		{
-			if (_stricmp(p, ".gba") == 0)
-				return true;
-			if (_stricmp(p, ".agb") == 0)
-				return true;
-			if (_stricmp(p, ".bin") == 0)
-				return true;
-			if (_stricmp(p, ".bios") == 0)
-				return true;
-			if (_stricmp(p, ".rom") == 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
 void CPUCleanUp()
 {
 	Cartridge::uninit();
@@ -422,36 +399,33 @@ void CPUCleanUp()
 	Display::uninit();
 }
 
-bool CPUInitMemory()
-{
-/*	if (vram != NULL)
-	{
-		CPUCleanUp();
-	}*/
+gboolean CPUInitMemory(GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
-	if (!MMU::init())
-	{
-		systemMessage("Failed to allocate memory for %s", "MMU");
+	if (!MMU::init()) {
+		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
+				"Failed to allocate memory for %s", "MMU");
 		CPUCleanUp();
-		return false;
+		return FALSE;
 	}
 
-	if (!Display::init())
-	{
-		systemMessage("Failed to allocate memory for %s", "PIX");
+	if (!Display::init()) {
+		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
+				"Failed to allocate memory for %s", "PIX");
 		CPUCleanUp();
-		return false;
+		return FALSE;
 	}
 
-	if (!Cartridge::init())
-	{
+	if (!Cartridge::init()) {
+		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
+				"Failed to allocate memory for %s", "ROM");
 		CPUCleanUp();
-		return false;
+		return FALSE;
 	}
 
-	GFX::clearRenderBuffers(true);
+	GFX::clearRenderBuffers(TRUE);
 
-	return true;
+	return TRUE;
 }
 
 static void CPUCompareVCOUNT()
@@ -1467,10 +1441,16 @@ static void applyTimer ()
 	timerOnOffDelay = 0;
 }
 
-bool CPULoadBios(const char *biosFileName)
+gboolean CPULoadBios(const gchar *biosFileName, GError **err)
 {
 	int size = 0x4000;
-	return utilLoad(biosFileName, CPUIsGBABios, bios, size);
+	RomLoader *loader = loader_new(ROM_BIOS, biosFileName);
+	if (!loader_load(loader, bios, &size, err)) {
+		loader_free(loader);
+		return FALSE;
+	}
+	loader_free(loader);
+	return TRUE;
 }
 
 void CPUInit()
