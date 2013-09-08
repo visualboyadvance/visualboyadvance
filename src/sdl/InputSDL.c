@@ -17,7 +17,8 @@
 
 #include "InputSDL.h"
 
-#define SDLBUTTONS_NUM 14
+// Number of configurable buttons
+#define SETTINGS_NUM_BUTTONS 13
 
 static void key_update(uint32_t key, gboolean down);
 static void button_update(int which, int button, gboolean pressed);
@@ -25,10 +26,10 @@ static void hat_update(int which, int hat, int value);
 static void axis_update(int which, int axis, int value);
 static gboolean key_check(int key);
 
-static gboolean sdlButtons[SDLBUTTONS_NUM] = {
+static gboolean sdlButtons[SETTINGS_NUM_BUTTONS] = {
 	FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
 	FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-	FALSE, FALSE
+	FALSE
 };
 
 static gboolean sdlMotionButtons[4] = { FALSE, FALSE, FALSE, FALSE };
@@ -41,18 +42,18 @@ static gboolean autoFireToggle = FALSE;
 static int autoFireCountdown = 0;
 static int autoFireMaxCount = 1;
 
-static uint32_t default_joypad[SDLBUTTONS_NUM] = {
+static uint32_t default_joypad[SETTINGS_NUM_BUTTONS] = {
 	SDLK_LEFT,  SDLK_RIGHT,
 	SDLK_UP,    SDLK_DOWN,
 	SDLK_z,     SDLK_x,
 	SDLK_RETURN,SDLK_BACKSPACE,
 	SDLK_a,     SDLK_s,
-	SDLK_SPACE, SDLK_F12,
+	SDLK_SPACE,
 	SDLK_q,     SDLK_w,
 };
 
-static uint32_t joypad[SDLBUTTONS_NUM] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+static uint32_t joypad[SETTINGS_NUM_BUTTONS] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 
@@ -208,7 +209,7 @@ static void key_update(uint32_t key, gboolean down)
 {
 	int i;
 
-	for (i = 0 ; i < SDLBUTTONS_NUM; i++) {
+	for (i = 0 ; i < SETTINGS_NUM_BUTTONS; i++) {
 		if ((joypad[i] & 0xffff0000) == 0) {
 			if (key == joypad[i])
 				sdlButtons[i] = down;
@@ -229,7 +230,7 @@ static void button_update(int which,
 {
 	int i;
 
-	for (i = 0; i < SDLBUTTONS_NUM; i++) {
+	for (i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		int dev = (joypad[i] >> 16);
 		int b = joypad[i] & 0xffff;
 		if (dev) {
@@ -260,7 +261,7 @@ static void hat_update(int which,
 {
 	int i;
 
-	for (i = 0; i < SDLBUTTONS_NUM; i++) {
+	for (i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		int dev = (joypad[i] >> 16);
 		int a = joypad[i] & 0xffff;
 		if (dev) {
@@ -323,7 +324,7 @@ static void axis_update(int which,
 {
 	int i;
 
-	for (i = 0; i < SDLBUTTONS_NUM; i++) {
+	for (i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		int dev = (joypad[i] >> 16);
 		int a = joypad[i] & 0xffff;
 		if (dev) {
@@ -379,7 +380,7 @@ static gboolean key_check(int key)
 void input_init_joysticks()
 {
 	// The main joypad has to be entirely defined
-	for (int i = 0; i < SDLBUTTONS_NUM; i++) {
+	for (int i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		if (!joypad[i])
 			joypad[i] = default_joypad[i];
 	}
@@ -391,7 +392,7 @@ void input_init_joysticks()
 		                                     sizeof(SDL_Joystick **));
 	gboolean usesJoy = FALSE;
 
-	for (int i = 0; i < SDLBUTTONS_NUM; i++) {
+	for (int i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		int dev = joypad[i] >> 16;
 		if (dev) {
 			dev--;
@@ -513,8 +514,6 @@ uint32_t input_read_joypad()
 
 	if (sdlButtons[KEY_BUTTON_SPEED])
 		res |= 1024;
-	if (sdlButtons[KEY_BUTTON_CAPTURE])
-		res |= 2048;
 
 	if (realAutoFire) {
 		res &= (~realAutoFire);

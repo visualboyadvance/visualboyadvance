@@ -38,6 +38,7 @@
 
 #include "text.h"
 #include "InputSDL.h"
+#include "../common/Settings.h"
 #include "../common/SoundSDL.h"
 
 #include <glib.h>
@@ -50,23 +51,13 @@ int systemVerbose = 0;
 static int srcWidth = 0;
 static int srcHeight = 0;
 
-static int pauseWhenInactive = 0;
 int emulating = 0;
-static gchar **filename = NULL;
-static gchar *biosFileName = NULL;
-static gchar *configFileName = NULL;
-static gchar *saveDir = NULL;
-static gchar *batteryDir = NULL;
-
-// Directory within confdir to use for default save location.
-#define CONF_DIR "vbam"
+static gchar *filename = NULL;
 
 #define SYSMSG_BUFFER_SIZE 1024
 
-static int showSpeed = 1;
-static bool disableStatusMessages = false;
 static bool paused = false;
-static int fullscreen = 0;
+static bool fullscreen = false;
 
 /* forward */
 void systemConsoleMessage(const char*);
@@ -77,25 +68,13 @@ static bool screenMessage = false;
 static char screenMessageBuffer[21];
 static u32  screenMessageTime = 0;
 
-#define SDL_SOUND_MAX_VOLUME 2.0
-
-static GOptionEntry sdlOptions[] = {
-  { "bios", 'b', 0, G_OPTION_ARG_FILENAME, &biosFileName, "Use given bios file", NULL },
-  { "config", 'c', 0, G_OPTION_ARG_FILENAME, &configFileName, "Read the given configuration file", NULL },
-  { "fullscreen", 0, 0, G_OPTION_ARG_NONE, &fullscreen, "Full screen", NULL },
-  { "pause-when-inactive", 0, 0, G_OPTION_ARG_NONE, &pauseWhenInactive, "Pause when inactive", NULL },
-  { "show-speed", 0, 0, G_OPTION_ARG_NONE, &showSpeed, "Show emulation speed", NULL },
-  { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &filename, NULL, "[GBA ROM file]" },
-  { NULL }
-};
-
 static void sdlChangeVolume(float d)
 {
 	float oldVolume = soundGetVolume();
 	float newVolume = oldVolume + d;
 
 	if (newVolume < 0.0) newVolume = 0.0;
-	if (newVolume > SDL_SOUND_MAX_VOLUME) newVolume = SDL_SOUND_MAX_VOLUME;
+	if (newVolume > SETTINGS_SOUND_MAX_VOLUME) newVolume = SETTINGS_SOUND_MAX_VOLUME;
 
 	if (fabs(newVolume - oldVolume) > 0.001) {
 		char tmp[32];
@@ -105,224 +84,14 @@ static void sdlChangeVolume(float d)
 	}
 }
 
-u32 sdlFromHex(char *s)
-{
-  u32 value;
-  sscanf(s, "%x", &value);
-  return value;
-}
-
-u32 sdlFromDec(char *s)
-{
-  u32 value = 0;
-  sscanf(s, "%u", &value);
-  return value;
-}
-
-static bool sdlCheckDirectory(char *dir)
-{
-  if (g_file_test(dir, G_FILE_TEST_EXISTS)) {
-    if(!g_file_test(dir, G_FILE_TEST_IS_DIR)) {
-      fprintf(stderr, "Error: %s is not a directory\n", dir);
-      return false;
-    }
-  } else {
-    fprintf(stderr, "Error: %s does not exist\n", dir);
-    return false;
-  }
-
-  return true;
-}
-
-FILE *sdlFindFile(const char *name)
-{
-  const gchar *configDir = g_get_user_config_dir();
-  gchar *currentDir = g_get_current_dir();
-  gchar *filename = NULL;
-  FILE *f = NULL;
-
-  if (f == NULL&& currentDir != NULL) {
-    filename = g_build_filename(currentDir, name, NULL);
-    g_print("Searching current directory: %s\n", filename);
-    f = fopen(filename, "r");
-    g_free(filename);
-  }
-
-  if (f == NULL && configDir) {
-    filename = g_build_filename(configDir, CONF_DIR, name, NULL);
-    g_print("Searching user config directory: %s\n", filename);
-    f = fopen(filename, "r");
-    g_free(filename);
-  }
-
-  g_free(currentDir);
-  return f;
-}
-
-void sdlReadPreferences(FILE *f)
-{
-  char buffer[2048];
-
-  while(1) {
-    char *s = fgets(buffer, 2048, f);
-
-    if(s == NULL)
-      break;
-
-    char *p  = strchr(s, '#');
-
-    if(p)
-      *p = 0;
-
-    char *token = strtok(s, " \t\n\r=");
-
-    if(!token)
-      continue;
-
-    if(strlen(token) == 0)
-      continue;
-
-    char *key = token;
-    char *value = strtok(NULL, "\t\n\r");
-
-    if(value == NULL) {
-      fprintf(stdout, "Empty value for key %s\n", key);
-      continue;
-    }
-
-    if(!strcmp(key,"Joy0_Left")) {
-      input_set_keymap(KEY_LEFT, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Right")) {
-      input_set_keymap(KEY_RIGHT, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Up")) {
-      input_set_keymap(KEY_UP, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Down")) {
-      input_set_keymap(KEY_DOWN, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_A")) {
-      input_set_keymap(KEY_BUTTON_A, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_B")) {
-      input_set_keymap(KEY_BUTTON_B, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_L")) {
-      input_set_keymap(KEY_BUTTON_L, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_R")) {
-      input_set_keymap(KEY_BUTTON_R, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Start")) {
-      input_set_keymap(KEY_BUTTON_START, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Select")) {
-      input_set_keymap(KEY_BUTTON_SELECT, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Speed")) {
-      input_set_keymap(KEY_BUTTON_SPEED, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_Capture")) {
-      input_set_keymap(KEY_BUTTON_CAPTURE, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_AutoA")) {
-      input_set_keymap(KEY_BUTTON_AUTO_A, sdlFromHex(value));
-    } else if(!strcmp(key, "Joy0_AutoB")) {
-      input_set_keymap(KEY_BUTTON_AUTO_B, sdlFromHex(value));
-    } else if(!strcmp(key, "Motion_Left")) {
-      input_set_motion_keymap(KEY_LEFT, sdlFromHex(value));
-    } else if(!strcmp(key, "Motion_Right")) {
-      input_set_motion_keymap(KEY_RIGHT, sdlFromHex(value));
-    } else if(!strcmp(key, "Motion_Up")) {
-      input_set_motion_keymap(KEY_UP, sdlFromHex(value));
-    } else if(!strcmp(key, "Motion_Down")) {
-      input_set_motion_keymap(KEY_DOWN, sdlFromHex(value));
-    } else if(!strcmp(key, "fullScreen")) {
-      fullscreen = sdlFromHex(value) ? 1 : 0;
-    } else if(!strcmp(key, "biosFile")) {
-      g_free(biosFileName);
-      biosFileName = g_strdup(value);
-    } else if(!strcmp(key, "disableStatus")) {
-      disableStatusMessages = sdlFromHex(value) ? true : false;
-    } else if(!strcmp(key, "saveDir")) {
-      if (sdlCheckDirectory(value)) {
-        g_free(saveDir);
-        saveDir = g_strdup(value);
-      }
-    } else if(!strcmp(key, "batteryDir")) {
-      if (sdlCheckDirectory(value)) {
-        g_free(batteryDir);
-        batteryDir = g_strdup(value);
-      }
-    } else if(!strcmp(key, "soundQuality")) {
-      int soundQuality = sdlFromHex(value);
-      switch(soundQuality) {
-      case 1:
-      case 2:
-      case 4:
-        break;
-      default:
-        fprintf(stdout, "Unknown sound quality %d. Defaulting to 22Khz\n",
-                soundQuality);
-        soundQuality = 2;
-        break;
-      }
-      soundSetSampleRate(44100 / soundQuality);
-    } else if(!strcmp(key, "soundVolume")) {
-      float volume = sdlFromDec(value) / 100.0;
-      if (volume < 0.0 || volume > SDL_SOUND_MAX_VOLUME)
-        volume = 1.0;
-      soundSetVolume(volume);
-    } else if(!strcmp(key, "showSpeed")) {
-      showSpeed = sdlFromHex(value);
-      if(showSpeed < 0 || showSpeed > 2)
-        showSpeed = 1;
-    } else if(!strcmp(key, "pauseWhenInactive")) {
-      pauseWhenInactive = sdlFromHex(value) ? true : false;
-    } else {
-      fprintf(stderr, "Unknown configuration key %s\n", key);
-    }
-  }
-}
-
-void sdlReadPreferences()
-{
-  g_print("Searching for configuration file\n");
-  FILE *f = sdlFindFile("vbam.cfg");
-
-  if(f == NULL) {
-    fprintf(stdout, "Configuration file NOT FOUND (using defaults)\n");
-    return;
-  } else
-    fprintf(stdout, "Reading configuration file.\n");
-
-  sdlReadPreferences(f);
-
-  fclose(f);
-}
-
-static gchar *conf_get_battery_dir() {
-	gchar *dir = NULL;
-	if (batteryDir) {
-		dir = g_build_filename(batteryDir, NULL);
-	} else {
-		const gchar *userDataDir = g_get_user_data_dir();
-		dir = g_build_filename(userDataDir, CONF_DIR, NULL);
-	}
-
-	return dir;
-}
-
-static gchar *conf_get_save_dir() {
-	gchar *dir = NULL;
-	if (saveDir) {
-		dir = g_build_filename(saveDir, NULL);
-	} else {
-		const gchar *userDataDir = g_get_user_data_dir();
-		dir = g_build_filename(userDataDir, CONF_DIR, NULL);
-	}
-
-	return dir;
-}
-
 static gchar *sdlStateName(int num)
 {
+  const gchar *saveDir = settings_get_save_dir();
   gchar *stateNum = g_strdup_printf("%d", num + 1);
-  gchar *baseName = g_path_get_basename(filename[0]);
-  gchar *saveDir = conf_get_save_dir();
+  gchar *baseName = g_path_get_basename(filename);
   gchar *fileName = g_strconcat(baseName, stateNum, ".sgm", NULL);
-  gchar *stateName = g_build_filename(batteryDir, fileName, NULL);
+  gchar *stateName = g_build_filename(saveDir, fileName, NULL);
 
-  g_free(saveDir);
   g_free(fileName);
   g_free(baseName);
   g_free(stateNum);
@@ -332,12 +101,11 @@ static gchar *sdlStateName(int num)
 
 static gchar *sdlBatteryName()
 {
-  gchar *batteryDir = conf_get_battery_dir();
-  gchar *baseName = g_path_get_basename(filename[0]);
+  const gchar *batteryDir = settings_get_battery_dir();
+  gchar *baseName = g_path_get_basename(filename);
   gchar *fileName = g_strconcat(baseName, ".sav", NULL);
   gchar *batteryFile = g_build_filename(batteryDir, fileName, NULL);
 
-  g_free(batteryDir);
   g_free(fileName);
   g_free(baseName);
 
@@ -470,7 +238,7 @@ void sdlPollEvents()
       emulating = 0;
       break;
     case SDL_ACTIVEEVENT:
-      if(!paused && pauseWhenInactive && (event.active.state & SDL_APPINPUTFOCUS)) {
+      if(!paused && settings_pause_when_inactive() && (event.active.state & SDL_APPINPUTFOCUS)) {
     	  paused = event.active.gain;
           if(!paused) {
               soundResume();
@@ -602,12 +370,7 @@ static bool loadROM(const char *file)
 		return false;
 	}
 
-	if (biosFileName == NULL)
-	{
-		return false;
-	}
-
-	if (!CPULoadBios(biosFileName))
+	if (!CPULoadBios(settings_get_bios()))
 	{
 		return false;
 	}
@@ -618,69 +381,73 @@ static bool loadROM(const char *file)
 	return true;
 }
 
-static void usage(GOptionContext *context) {
-    gchar *usage = g_option_context_get_help(context, FALSE, NULL);
-    g_print("%s", usage);
-    g_free(usage);
-}
-
 int main(int argc, char **argv)
 {
-  fprintf(stdout, "VBA-M version %s [SDL]\n", VERSION);
+	fprintf(stdout, "VBA-M version %s [SDL]\n", VERSION);
 
-  // Parse command line
-  GError *error = NULL;
-  GOptionContext *context;
+	GError *err = NULL;
 
-  context = g_option_context_new(NULL);
-  g_option_context_add_main_entries (context, sdlOptions, NULL);
+	// Read config file
+	settings_init();
+	if (!settings_read_config_file(&err)) {
+		g_printerr("%s\n", err->message);
+		settings_free();
 
-  if (!g_option_context_parse (context, &argc, &argv, &error)) {
-      g_print("Command line parsing failed: %s.\n", error->message);
+		g_clear_error(&err);
+		exit(1);
+	}
 
-      usage(context);
+	// Parse command line
+	filename = settings_parse_command_line(&argc, &argv, &err);
+	if (filename == NULL) {
+		settings_display_usage(err);
+		settings_free();
 
-      g_option_context_free(context);
-      exit (1);
-  }
-  if (filename == NULL || g_strv_length(filename) != 1) {
-      g_print("You must specify exactly one GBA ROM file.\n");
+		g_clear_error(&err);
+		exit(1);
+	}
 
-      usage(context);
+	// Check the settings
+	if (!settings_check(&err)) {
+		g_printerr("%s\n", err->message);
+		settings_free();
 
-      g_option_context_free(context);
-      exit (1);
-  }
-  g_option_context_free(context);
+		g_clear_error(&err);
+		exit(1);
+	}
 
+	// Make sure the batteries dir exists
+	const gchar* batteriesDir = settings_get_battery_dir();
+	g_mkdir_with_parents(batteriesDir, 0777);
 
-  sdlReadPreferences();
+	// Make sure the saves dir exists
+	const gchar* savesDir = settings_get_save_dir();
+	g_mkdir_with_parents(savesDir, 0777);
 
-  // Make sure the batteries dir exists
-  gchar* batteriesDir = conf_get_battery_dir();
-  g_mkdir_with_parents(batteriesDir, 0777);
-  g_free(batteriesDir);
+	// Apply the button mapping
+	for (guint i = 0; i < G_N_ELEMENTS(settings_buttons); i++) {
+		guint32 keymap = settings_get_button_mapping(settings_buttons[i]);
+		input_set_keymap(settings_buttons[i], keymap);
+	}
 
-  // Make sure the saves dir exists
-  gchar* savesDir = conf_get_save_dir();
-  g_mkdir_with_parents(savesDir, 0777);
-  g_free(savesDir);
 
   Display::initColorMap(19, 11, 3);
 
-    u32 len = strlen(filename[0]);
+    u32 len = strlen(filename);
     if (len > SYSMSG_BUFFER_SIZE)
     {
-      fprintf(stderr,"%s :%s: File name too long\n",argv[0],filename[0]);
+      fprintf(stderr,"%s :%s: File name too long\n",argv[0],filename);
       exit(-1);
     }
 
+  soundSetVolume(settings_sound_volume());
+  soundSetSampleRate(settings_sound_sample_rate());
     soundInit();
 
-    bool failed = !loadROM(filename[0]);
+    bool failed = !loadROM(filename);
 
     if(failed) {
-      systemMessage("Failed to load file %s", filename[0]);
+      systemMessage("Failed to load file %s", filename);
       exit(-1);
     }
 
@@ -703,6 +470,7 @@ int main(int argc, char **argv)
   srcWidth = 240;
   srcHeight = 160;
 
+  fullscreen = settings_is_fullscreen();
   sdlInitVideo();
 
   emulating = 1;
@@ -733,11 +501,9 @@ int main(int argc, char **argv)
 
   SDL_Quit();
 
-  g_strfreev(filename);
-  g_free(biosFileName);
-  g_free(configFileName);
-  g_free(saveDir);
-  g_free(batteryDir);
+  settings_free();
+
+  g_free(filename);
 
   return 0;
 }
@@ -746,7 +512,7 @@ void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duratio
 {
   if(screenMessage) {
     if(((systemGetClock() - screenMessageTime) < duration) &&
-       !disableStatusMessages) {
+       !settings_disable_status_messages()) {
       drawText(screen, pitch, x, y,
                screenMessageBuffer, false);
     } else {
@@ -779,7 +545,7 @@ void systemDrawScreen(u32 *pix)
 
   drawScreenMessage(screen, srcWidth * 4, 10, srcHeight - 20, 3000);
 
-  if (showSpeed && fullscreen)
+  if (settings_show_speed())
     drawSpeed(screen, srcWidth * 4, 10, 20);
 
   SDL_UnlockSurface(surface);
@@ -794,13 +560,6 @@ void systemSetTitle(const char *title)
 void systemShowSpeed(int speed)
 {
   systemSpeed = speed;
-
-  if(!fullscreen && showSpeed) {
-    char buffer[80];
-    sprintf(buffer, "VBA-M - %d%%", systemSpeed);
-
-    systemSetTitle(buffer);
-  }
 }
 
 u32 systemGetClock()
