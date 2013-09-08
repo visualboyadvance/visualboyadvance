@@ -54,8 +54,6 @@ static int srcHeight = 0;
 int emulating = 0;
 static gchar *filename = NULL;
 
-#define SYSMSG_BUFFER_SIZE 1024
-
 static bool paused = false;
 static bool fullscreen = false;
 
@@ -433,13 +431,6 @@ int main(int argc, char **argv)
 
   Display::initColorMap(19, 11, 3);
 
-    u32 len = strlen(filename);
-    if (len > SYSMSG_BUFFER_SIZE)
-    {
-      fprintf(stderr,"%s :%s: File name too long\n",argv[0],filename);
-      exit(-1);
-    }
-
   soundSetVolume(settings_sound_volume());
   soundSetSampleRate(settings_sound_sample_rate());
     soundInit();
@@ -631,13 +622,11 @@ SoundDriver * systemSoundInit()
 
 void systemMessage(const char *msg, ...)
 {
-  char buffer[SYSMSG_BUFFER_SIZE*2];
   va_list valist;
 
   va_start(valist, msg);
-  vsprintf(buffer, msg, valist);
-
-  fprintf(stderr, "%s\n", buffer);
+  vfprintf(stderr, msg, valist);
+  fprintf(stderr, "\n");
   va_end(valist);
 }
 
