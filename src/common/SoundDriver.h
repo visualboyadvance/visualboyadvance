@@ -58,8 +58,6 @@ public:
 	 * Write length bytes of data from the finalWave buffer to the driver output buffer.
 	 */
 	virtual void write(u16 * finalWave, int length) = 0;
-
-	virtual void setThrottle(unsigned short throttle) { };
 };
 
 #endif // __VBA_SOUND_DRIVER_H__
