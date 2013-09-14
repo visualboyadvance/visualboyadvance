@@ -47,7 +47,6 @@
 
 SDL_Surface *surface = NULL;
 
-static int systemSpeed = 0;
 int systemVerbose = 0;
 
 static int srcWidth = 0;
@@ -445,7 +444,9 @@ int main(int argc, char **argv)
 
   emulating = 1;
 
-  SDL_WM_SetCaption("VBA-M", NULL);
+  gchar *windowTitle = g_strdup_printf("%s - VBA", cartridge_get_game_title());
+  SDL_WM_SetCaption(windowTitle, NULL);
+  g_free(windowTitle);
 
   while(emulating) {
     if(!paused) {
@@ -494,7 +495,7 @@ void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duratio
 void drawSpeed(u8 *screen, int pitch, int x, int y)
 {
   char buffer[50];
-  sprintf(buffer, "%d%%", systemSpeed);
+  sprintf(buffer, "%d%%", gba_get_speed());
 
   drawText(screen, pitch, x, y, buffer, true);
 }
@@ -520,16 +521,6 @@ void systemDrawScreen(u32 *pix)
 
   SDL_UnlockSurface(surface);
   SDL_Flip(surface);
-}
-
-void systemSetTitle(const char *title)
-{
-  SDL_WM_SetCaption(title, NULL);
-}
-
-void systemShowSpeed(int speed)
-{
-  systemSpeed = speed;
 }
 
 u32 systemReadJoypad()

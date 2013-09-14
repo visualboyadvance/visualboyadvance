@@ -71,6 +71,7 @@ static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
 static gint64 lastTime = 0;
+static guint speed = 0;
 static int count = 0;
 
 static const int TIMER_TICKS[4] =
@@ -1696,13 +1697,11 @@ updateLoop:
 							if (count == 60)
 							{
 								gint64 time = g_get_monotonic_time();
-								if (time != lastTime)
-								{
-									u32 t = 100000000/(time - lastTime);
-									systemShowSpeed(t);
+								if (time != lastTime) {
+									speed = 100000000/(time - lastTime);
+								} else {
+									speed = 0;
 								}
-								else
-									systemShowSpeed(0);
 								lastTime = time;
 								count = 0;
 							}
@@ -2008,3 +2007,6 @@ updateLoop:
 	}
 }
 
+guint gba_get_speed() {
+	return speed;
+}

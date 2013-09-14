@@ -14,7 +14,6 @@ extern SoundDriver * systemSoundInit();
 extern void systemUpdateMotionSensor();
 extern int  systemGetSensorX();
 extern int  systemGetSensorY();
-extern void systemShowSpeed(int);
 
 #define VERBOSE_SWI                  1
 #define VERBOSE_UNALIGNED_MEMORY     2

@@ -29,6 +29,11 @@ extern void CPUCheckDMA(int,int);
 gboolean CPUReadState(gzFile gzFile, GError **err);
 void CPUWriteState(gzFile gzFile);
 
+/**
+ * Return the emulation speed in percents
+ */
+guint gba_get_speed();
+
 #define R13_IRQ  18
 #define R14_IRQ  19
 #define SPSR_IRQ 20
