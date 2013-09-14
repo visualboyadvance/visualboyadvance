@@ -1,12 +1,24 @@
-#include <cstdio>
-#include <algorithm>
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
+// Copyright (C) 1999-2003 Forgotten
+// Copyright (C) 2005-2006 Forgotten and the VBA development team
 
-#include "GBA.h"
-#include "Globals.h"
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "CartridgeFlash.h"
 
-namespace Cartridge
-{
+#include <string.h>
 
 #define FLASH_READ_ARRAY         0
 #define FLASH_CMD_1              1
@@ -19,7 +31,7 @@ namespace Cartridge
 #define FLASH_PROGRAM            8
 #define FLASH_SETBANK            9
 
-static u8 flashSaveMemory[0x20000];
+static guint8 flashSaveMemory[0x20000];
 static int flashState = FLASH_READ_ARRAY;
 static int flashReadState = FLASH_READ_ARRAY;
 static size_t flashSize = 0x10000;
@@ -43,12 +55,12 @@ static void flashSetSize(int size)
 	flashSize = size;
 }
 
-void flashInit()
+void cartridge_flash_init()
 {
-	std::fill(flashSaveMemory, flashSaveMemory + 0x20000, 0xff);
+	memset(flashSaveMemory, 0xFF, 0x20000);
 }
 
-void flashReset(int size)
+void cartridge_flash_reset(int size)
 {
 	flashState = FLASH_READ_ARRAY;
 	flashReadState = FLASH_READ_ARRAY;
@@ -56,7 +68,7 @@ void flashReset(int size)
 	flashSetSize(size);
 }
 
-u8 flashRead(u32 address)
+guint8 cartridge_flash_read(guint32 address)
 {
 	address &= 0xFFFF;
 
@@ -83,7 +95,7 @@ u8 flashRead(u32 address)
 	return 0;
 }
 
-void flashWrite(u32 address, u8 byte)
+void cartridge_flash_write(guint32 address, guint8 byte)
 {
 	//  log("Writing %02x at %08x\n", byte, address);
 	//  log("Current state is %d\n", flashState);
@@ -163,14 +175,14 @@ void flashWrite(u32 address, u8 byte)
 		if (byte == 0x30)
 		{
 			// SECTOR ERASE
-			u8 *offset = flashSaveMemory + (flashBank << 16) + (address & 0xF000);
-			std::fill(offset, offset + 0x1000, 0);
+			guint8 *offset = flashSaveMemory + (flashBank << 16) + (address & 0xF000);
+			memset(offset, 0, 0x1000);
 			flashReadState = FLASH_ERASE_COMPLETE;
 		}
 		else if (byte == 0x10)
 		{
 			// CHIP ERASE
-			std::fill(flashSaveMemory, flashSaveMemory + flashSize, 0);
+			memset(flashSaveMemory, 0, flashSize);
 			flashReadState = FLASH_ERASE_COMPLETE;
 		}
 		else
@@ -211,17 +223,16 @@ void flashWrite(u32 address, u8 byte)
 	}
 }
 
-bool flashReadBattery(FILE *file, size_t size)
+gboolean cartridge_flash_read_battery(FILE *file, size_t size)
 {
 	if (size != flashSize)
-		return false;
+		return FALSE;
 
 	return fread(flashSaveMemory, 1, flashSize, file) == flashSize;
 }
 
-bool flashWriteBattery(FILE *file)
+gboolean cartridge_flash_write_battery(FILE *file)
 {
 	return fwrite(flashSaveMemory, 1, flashSize, file) == (size_t)flashSize;
 }
 
-} // namespace Cartridge

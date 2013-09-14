@@ -85,17 +85,17 @@ bool init()
 		return false;
 	}
 
-	flashInit();
-	sramInit();
-	eepromInit();
+	cartridge_flash_init();
+	cartridge_sram_init();
+	cartridge_eeprom_init();
 
 	return true;
 }
 
 void reset()
 {
-	eepromReset(game->EEPROMSize);
-	flashReset(game->flashSize);
+	cartridge_eeprom_reset(game->EEPROMSize);
+	cartridge_flash_reset(game->flashSize);
 
 	rtcReset();
 	rtcEnable(game->hasRTC);
@@ -126,15 +126,15 @@ bool writeBatteryToFile(const char *fileName)
 
 		if (game->hasFlash)
 		{
-			res = flashWriteBattery(file);
+			res = cartridge_flash_write_battery(file);
 		}
 		else if (game->hasEEPROM)
 		{
-			res = eepromWriteBattery(file);
+			res = cartridge_eeprom_write_battery(file);
 		}
 		else if (game->hasSRAM)
 		{
-			res = sramWriteBattery(file);
+			res = cartridge_sram_write_battery(file);
 		}
 
 		fclose(file);
@@ -162,15 +162,15 @@ bool readBatteryFromFile(const char *fileName)
 
 	if (game->hasFlash)
 	{
-		res = flashReadBattery(file, size);
+		res = cartridge_flash_read_battery(file, size);
 	}
 	else if (game->hasEEPROM)
 	{
-		res = eepromReadBattery(file, size);
+		res = cartridge_eeprom_read_battery(file, size);
 	}
 	else if (game->hasSRAM)
 	{
-		res = sramReadBattery(file, size);
+		res = cartridge_sram_read_battery(file, size);
 	}
 
 	fclose(file);
@@ -190,13 +190,13 @@ u32 read32(const u32 address)
 		break;
 	case 13:
 		if (game->hasEEPROM)
-			return eepromRead(address);
+			return cartridge_eeprom_read(address);
 		break;
 	case 14:
 		if (game->hasSRAM)
-			return sramRead(address);
+			return cartridge_sram_read(address);
 		else if (game->hasFlash)
-			return flashRead(address);
+			return cartridge_flash_read(address);
 		break;
 	default:
 		break;
@@ -221,13 +221,13 @@ u16 read16(const u32 address)
 		break;
 	case 13:
 		if (game->hasEEPROM)
-			return eepromRead(address);
+			return cartridge_eeprom_read(address);
 		break;
 	case 14:
 		if (game->hasSRAM)
-			return sramRead(address);
+			return cartridge_sram_read(address);
 		else if (game->hasFlash)
-			return flashRead(address);
+			return cartridge_flash_read(address);
 		break;
 	default:
 		break;
@@ -249,13 +249,13 @@ u8 read8(const u32 address)
 		break;
 	case 13:
 		if (game->hasEEPROM)
-			return eepromRead(address);
+			return cartridge_eeprom_read(address);
 		break;
 	case 14:
 		if (game->hasSRAM)
-			return sramRead(address);
+			return cartridge_sram_read(address);
 		else if (game->hasFlash)
-			return flashRead(address);
+			return cartridge_flash_read(address);
 
 		/*if (game.hasMotionSensor())
 		{
@@ -286,17 +286,17 @@ void write32(const u32 address, const u32 value)
 	case 13:
 		if (game->hasEEPROM)
 		{
-			eepromWrite(address, value);
+			cartridge_eeprom_write(address, value);
 		}
 		break;
 	case 14:
 		if (game->hasSRAM)
 		{
-			sramWrite(address, (u8)value);
+			cartridge_sram_write(address, (u8)value);
 		}
 		else if (game->hasFlash)
 		{
-			flashWrite(address, (u8)value);
+			cartridge_flash_write(address, (u8)value);
 		}
 		break;
 	default:
@@ -317,17 +317,17 @@ void write16(const u32 address, const u16 value)
 	case 13:
 		if (game->hasEEPROM)
 		{
-			eepromWrite(address, (u8)value);
+			cartridge_eeprom_write(address, (u8)value);
 		}
 		break;
 	case 14:
 		if (game->hasSRAM)
 		{
-			sramWrite(address, (u8)value);
+			cartridge_sram_write(address, (u8)value);
 		}
 		else if (game->hasFlash)
 		{
-			flashWrite(address, (u8)value);
+			cartridge_flash_write(address, (u8)value);
 		}
 		break;
 	default:
@@ -342,17 +342,17 @@ void write8(const u32 address, const u8 value)
 	case 13:
 		if (game->hasEEPROM)
 		{
-			eepromWrite(address, value);
+			cartridge_eeprom_write(address, value);
 		}
 		break;
 	case 14:
 		if (game->hasSRAM)
 		{
-			sramWrite(address, value);
+			cartridge_sram_write(address, value);
 		}
 		else if (game->hasFlash)
 		{
-			flashWrite(address, value);
+			cartridge_flash_write(address, value);
 		}
 		break;
 	default:

@@ -16,27 +16,33 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef VBAM_GBA_EEPROM_H_
-#define VBAM_GBA_EEPROM_H_
+#include "CartridgeSram.h"
+#include <string.h>
 
-#include <glib.h>
-#include <stdio.h>
+static const size_t sramSize = 0x10000;
+static guint8 sramData[sramSize];
 
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int cartridge_eeprom_read(guint32 address);
-void cartridge_eeprom_write(guint32 address, guint8 value);
-void cartridge_eeprom_init();
-void cartridge_eeprom_reset(int size);
-gboolean cartridge_eeprom_read_battery(FILE *file, size_t size);
-gboolean cartridge_eeprom_write_battery(FILE *file);
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
+void cartridge_sram_init()
+{
+	memset(sramData, 0xFF, sramSize);
 }
-#endif
 
-#endif // VBAM_GBA_EEPROM_H_
+guint8 cartridge_sram_read(guint32 address)
+{
+	return sramData[address & 0xFFFF];
+}
+
+void cartridge_sram_write(guint32 address, guint8 byte)
+{
+	sramData[address & 0xFFFF] = byte;
+}
+
+gboolean cartridge_sram_read_battery(FILE *file, size_t size)
+{
+	return fread(sramData, 1, size, file) == size;
+}
+
+gboolean cartridge_sram_write_battery(FILE *file)
+{
+	return fwrite(sramData, 1, sramSize, file) == sramSize;
+}

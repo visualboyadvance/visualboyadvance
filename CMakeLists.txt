@@ -44,10 +44,10 @@ SET(SRC_MAIN
 
 SET(SRC_GBA
 	src/gba/Cartridge.cpp
-	src/gba/CartridgeEEprom.cpp
-	src/gba/CartridgeFlash.cpp
+	src/gba/CartridgeEEprom.c
+	src/gba/CartridgeFlash.c
 	src/gba/CartridgeRTC.cpp
-	src/gba/CartridgeSram.cpp
+	src/gba/CartridgeSram.c
 	src/gba/CPU.cpp
 	src/gba/CPUArm.cpp
 	src/gba/CPUThumb.cpp
