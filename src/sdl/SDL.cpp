@@ -63,29 +63,8 @@ static bool screenMessage = false;
 static char screenMessageBuffer[21];
 static u32  screenMessageTime = 0;
 
-static void systemConsoleMessage(const char *msg)
+static void sdlScreenMessage(const char *msg)
 {
-  time_t now_time;
-  struct tm now_time_broken;
-
-  now_time		= time(NULL);
-  now_time_broken	= *(localtime( &now_time ));
-  fprintf(
-		stdout,
-		"%02d:%02d:%02d %02d.%02d.%4d: %s\n",
-		now_time_broken.tm_hour,
-		now_time_broken.tm_min,
-		now_time_broken.tm_sec,
-		now_time_broken.tm_mday,
-		now_time_broken.tm_mon + 1,
-		now_time_broken.tm_year + 1900,
-		msg
-  );
-}
-
-static void systemScreenMessage(const char *msg)
-{
-
   screenMessage = true;
   screenMessageTime = SDL_GetTicks();
   if(strlen(msg) > 20) {
@@ -94,17 +73,7 @@ static void systemScreenMessage(const char *msg)
   } else
     strcpy(screenMessageBuffer, msg);
 
-  systemConsoleMessage(msg);
-}
-
-static void systemMessage(const char *msg, ...)
-{
-  va_list valist;
-
-  va_start(valist, msg);
-  vfprintf(stderr, msg, valist);
-  fprintf(stderr, "\n");
-  va_end(valist);
+  g_message("%s", msg);
 }
 
 static void sdlChangeVolume(float d)
@@ -118,7 +87,7 @@ static void sdlChangeVolume(float d)
 	if (fabs(newVolume - oldVolume) > 0.001) {
 		char tmp[32];
 		sprintf(tmp, "Volume: %i%%", (int)(newVolume*100.0+0.5));
-		systemScreenMessage(tmp);
+		sdlScreenMessage(tmp);
 		soundSetVolume(newVolume);
 	}
 }
@@ -135,7 +104,7 @@ void sdlWriteState(int num)
 		message = g_strdup_printf("Wrote state %d", num + 1);
 	}
 
-	systemScreenMessage(message);
+	sdlScreenMessage(message);
 	g_free(message);
 }
 
@@ -150,7 +119,7 @@ void sdlReadState(int num) {
 		message = g_strdup_printf("Loaded state %d", num + 1);
 	}
 
-	systemScreenMessage(message);
+	sdlScreenMessage(message);
 	g_free(message);
 }
 
@@ -165,7 +134,7 @@ void sdlWriteBattery() {
 		message = g_strdup_printf("Wrote battery");
 	}
 
-	systemScreenMessage(message);
+	sdlScreenMessage(message);
 	g_free(message);
 }
 
@@ -174,7 +143,7 @@ void sdlReadBattery() {
 	gboolean res = cartridge_read_battery(NULL);
 
 	if (res)
-		systemScreenMessage("Loaded battery");
+		sdlScreenMessage("Loaded battery");
 }
 
 //void sdlReadDesktopVideoMode() {
@@ -192,7 +161,7 @@ void sdlInitVideo() {
   surface = SDL_SetVideoMode(srcWidth, srcHeight, 32, flags);
 
   if(surface == NULL) {
-    systemMessage("Failed to set video mode");
+	  g_printerr("Failed to set video mode\n");
     SDL_Quit();
     exit(-1);
   }
@@ -244,7 +213,7 @@ void sdlPollEvents()
           if(emulating) {
             CPUReset();
 
-            systemScreenMessage("Reset");
+            sdlScreenMessage("Reset");
           }
         }
         break;
@@ -262,7 +231,7 @@ void sdlPollEvents()
            (event.key.keysym.mod & KMOD_CTRL)) {
           paused = !paused;
           SDL_PauseAudio(paused);
-	  systemConsoleMessage(paused?"Pause on":"Pause off");
+	  g_message(paused?"Pause on":"Pause off");
         }
         break;
       case SDLK_ESCAPE:
@@ -318,9 +287,9 @@ void sdlPollEvents()
 	    k = KEY_BUTTON_L;
 
           if(input_toggle_autofire(k)) {
-            systemScreenMessage(enableMessages[event.key.keysym.sym - SDLK_1]);
+            sdlScreenMessage(enableMessages[event.key.keysym.sym - SDLK_1]);
           } else {
-            systemScreenMessage(disableMessages[event.key.keysym.sym - SDLK_1]);
+            sdlScreenMessage(disableMessages[event.key.keysym.sym - SDLK_1]);
           }
         }
         break;
@@ -426,12 +395,12 @@ int main(int argc, char **argv)
     SDL_INIT_TIMER|SDL_INIT_NOPARACHUTE;
 
   if(SDL_Init(flags)) {
-    systemMessage("Failed to init SDL: %s", SDL_GetError());
+	  g_printerr("Failed to init SDL: %s\n", SDL_GetError());
     exit(-1);
   }
 
   if(SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-    systemMessage("Failed to init joystick support: %s", SDL_GetError());
+	  g_printerr("Failed to init joystick support: %s\n", SDL_GetError());
   }
 
   input_init_joysticks();
