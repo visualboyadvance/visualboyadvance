@@ -4,17 +4,19 @@
 #include "CartridgeFlash.h"
 #include "CartridgeRTC.h"
 #include "CartridgeSram.h"
+#include "Savestate.h"
 #include "../common/GameDB.h"
 #include "../common/Loader.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
-#include "../System.h"
+#include "../common/Settings.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include <errno.h>
 
 namespace Cartridge
 {
@@ -110,47 +112,74 @@ void uninit()
 	}
 }
 
-bool writeBatteryToFile(const char *fileName)
-{
+static gchar *get_battery_name() {
+	const gchar *batteryDir = settings_get_battery_dir();
+	gchar *baseName = g_path_get_basename(getGameTitle());
+	gchar *fileName = g_strconcat(baseName, ".sav", NULL);
+	gchar *batteryFile = g_build_filename(batteryDir, fileName, NULL);
+
+	g_free(fileName);
+	g_free(baseName);
+
+	return batteryFile;
+}
+
+gboolean writeBatteryToFile(GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
 	if (game->hasFlash || game->hasEEPROM || game->hasSRAM)
 	{
-		FILE *file = fopen(fileName, "wb");
+		gchar *batteryFile = get_battery_name();
+		FILE *file = fopen(batteryFile, "wb");
+		g_free(batteryFile);
 
-		if (!file)
-		{
-			systemMessage("Error creating file %s", fileName);
-			return false;
+		if (file == NULL) {
+			g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_ERROR_FAILED,
+					"Failed to save battery: %s", g_strerror(errno));
+			return FALSE;
 		}
 
-		bool res = true;
+		gboolean success = TRUE;
 
 		if (game->hasFlash)
 		{
-			res = cartridge_flash_write_battery(file);
+			success = cartridge_flash_write_battery(file);
 		}
 		else if (game->hasEEPROM)
 		{
-			res = cartridge_eeprom_write_battery(file);
+			success = cartridge_eeprom_write_battery(file);
 		}
 		else if (game->hasSRAM)
 		{
-			res = cartridge_sram_write_battery(file);
+			success = cartridge_sram_write_battery(file);
 		}
 
 		fclose(file);
 
-		return res;
+		if (!success) {
+			g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_ERROR_FAILED,
+					"Failed to save battery");
+			return FALSE;
+		}
+
+		return TRUE;
 	}
 
-	return true;
+	return TRUE;
 }
 
-bool readBatteryFromFile(const char *fileName)
-{
-	FILE *file = fopen(fileName, "rb");
+gboolean readBatteryFromFile(GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
-	if (!file)
-		return false;
+	gchar *batteryFile = get_battery_name();
+	FILE *file = fopen(batteryFile, "rb");
+	g_free(batteryFile);
+
+	if (file == NULL) {
+		g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_ERROR_FAILED,
+				"Failed to load battery: %s", g_strerror(errno));
+		return FALSE;
+	}
 
 	// check file size to know what we should read
 	fseek(file, 0, SEEK_END);
@@ -158,23 +187,30 @@ bool readBatteryFromFile(const char *fileName)
 	long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	bool res = true;
+	gboolean success = TRUE;
 
 	if (game->hasFlash)
 	{
-		res = cartridge_flash_read_battery(file, size);
+		success = cartridge_flash_read_battery(file, size);
 	}
 	else if (game->hasEEPROM)
 	{
-		res = cartridge_eeprom_read_battery(file, size);
+		success = cartridge_eeprom_read_battery(file, size);
 	}
 	else if (game->hasSRAM)
 	{
-		res = cartridge_sram_read_battery(file, size);
+		success = cartridge_sram_read_battery(file, size);
 	}
 
 	fclose(file);
-	return res;
+
+	if (!success) {
+		g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_ERROR_FAILED,
+				"Failed to load battery");
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 u32 read32(const u32 address)

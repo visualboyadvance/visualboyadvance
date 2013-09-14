@@ -16,8 +16,8 @@ void getGameName(u8 *romname);
 const gchar *getGameTitle();
 bool isPresent();
 
-bool readBatteryFromFile(const char *fileName);
-bool writeBatteryToFile(const char *fileName);
+gboolean readBatteryFromFile(GError **err);
+gboolean writeBatteryToFile(GError **err);
 
 u32 read32(const u32 address);
 u16 read16(const u32 address);

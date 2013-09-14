@@ -54,7 +54,6 @@ static int srcWidth = 0;
 static int srcHeight = 0;
 
 int emulating = 0;
-static gchar *filename = NULL;
 
 static bool paused = false;
 static bool fullscreen = false;
@@ -82,19 +81,6 @@ static void sdlChangeVolume(float d)
 		systemScreenMessage(tmp);
 		soundSetVolume(newVolume);
 	}
-}
-
-static gchar *sdlBatteryName()
-{
-  const gchar *batteryDir = settings_get_battery_dir();
-  gchar *baseName = g_path_get_basename(filename);
-  gchar *fileName = g_strconcat(baseName, ".sav", NULL);
-  gchar *batteryFile = g_build_filename(batteryDir, fileName, NULL);
-
-  g_free(fileName);
-  g_free(baseName);
-
-  return batteryFile;
 }
 
 void sdlWriteState(int num)
@@ -128,29 +114,27 @@ void sdlReadState(int num) {
 	g_free(message);
 }
 
-void sdlWriteBattery()
-{
-  gchar *batteryFile = sdlBatteryName();
+void sdlWriteBattery() {
+	gchar *message = NULL;
+	GError *err = NULL;
 
-  Cartridge::writeBatteryToFile(batteryFile);
+	if (!Cartridge::writeBatteryToFile(&err)) {
+		message = strdup(err->message);
+		g_clear_error(&err);
+	} else {
+		message = g_strdup_printf("Wrote battery");
+	}
 
-  systemScreenMessage("Wrote battery");
-
-  g_free(batteryFile);
+	systemScreenMessage(message);
+	g_free(message);
 }
 
-void sdlReadBattery()
-{
-  gchar *batteryFile = sdlBatteryName();
+void sdlReadBattery() {
+	// Ignore errors, we don't care loading battery failed
+	gboolean res = Cartridge::readBatteryFromFile(NULL);
 
-  bool res = false;
-
-  res = Cartridge::readBatteryFromFile(batteryFile);
-
-  if(res)
-    systemScreenMessage("Loaded battery");
-
-  g_free(batteryFile);
+	if (res)
+		systemScreenMessage("Loaded battery");
 }
 
 //void sdlReadDesktopVideoMode() {
@@ -337,6 +321,7 @@ int main(int argc, char **argv)
 	fprintf(stdout, "VBA-M version %s [SDL]\n", VERSION);
 
 	GError *err = NULL;
+	gchar *filename = NULL;
 
 	// Read config file
 	settings_init();
