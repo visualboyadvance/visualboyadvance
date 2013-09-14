@@ -36,7 +36,7 @@ public:
 	virtual void write(u16 * finalWave, int length);
 
 private:
-	RingBuffer<u16> _rbuf;
+	ring_buffer *_rbuf;
 
 	SDL_cond  * _cond;
 	SDL_mutex * _mutex;

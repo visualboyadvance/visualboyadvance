@@ -42,7 +42,7 @@ void SoundSDL::read(u16 * stream, int length)
 
 	SDL_mutexP(_mutex);
 
-	_rbuf.read(stream, std::min(static_cast<std::size_t>(length) / 2, _rbuf.used()));
+	ring_buffer_read(_rbuf, stream, length);
 
 	SDL_CondSignal(_cond);
 	SDL_mutexV(_mutex);
@@ -60,10 +60,10 @@ void SoundSDL::write(u16 * finalWave, int length)
 
 	unsigned int samples = length / 4;
 
-	std::size_t avail;
-	while ((avail = _rbuf.avail() / 2) < samples)
+	int avail;
+	while ((avail = ring_buffer_avail(_rbuf) / 4) < samples)
 	{
-		_rbuf.write(finalWave, avail * 2);
+		ring_buffer_write(_rbuf, finalWave, avail * 4);
 
 		finalWave += avail * 2;
 		samples -= avail;
@@ -82,7 +82,7 @@ void SoundSDL::write(u16 * finalWave, int length)
 		}
 	}
 
-	_rbuf.write(finalWave, samples * 2);
+	ring_buffer_write(_rbuf, finalWave, samples * 4);
 
 	SDL_mutexV(_mutex);
 }
@@ -104,7 +104,7 @@ bool SoundSDL::init(long sampleRate)
 		return false;
 	}
 
-	_rbuf.reset(_delay * sampleRate * 2);
+	_rbuf = ring_buffer_new(_delay * sampleRate * 2 * sizeof(u16));
 
 	_cond  = SDL_CreateCond();
 	_mutex = SDL_CreateMutex();
@@ -130,6 +130,8 @@ SoundSDL::~SoundSDL()
 	SDL_DestroyMutex(_mutex);
 	_mutex = NULL;
 
+	ring_buffer_free(_rbuf);
+
 	SDL_CloseAudio();
 
 	emulating = iSave;
@@ -153,4 +155,5 @@ void SoundSDL::resume()
 
 void SoundSDL::reset()
 {
+	ring_buffer_reset(_rbuf);
 }

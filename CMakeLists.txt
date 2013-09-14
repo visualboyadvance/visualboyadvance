@@ -38,6 +38,7 @@ SET(SRC_MAIN
 	src/common/GameDB.c
 	src/common/GameInfos.c
 	src/common/Loader.c
+	src/common/RingBuffer.c
 	src/common/Settings.c
 	src/common/Util.c
 )
