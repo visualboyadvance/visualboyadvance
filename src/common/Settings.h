@@ -28,6 +28,9 @@ extern "C" {
 
 #define SETTINGS_SOUND_MAX_VOLUME 2.0
 
+/**
+ * Emulated buttons
+ */
 typedef enum {
 	KEY_LEFT,
 	KEY_RIGHT,
@@ -45,37 +48,96 @@ typedef enum {
 } EKey;
 
 static EKey settings_buttons[] = {
-		KEY_LEFT,
-		KEY_RIGHT,
-		KEY_UP,
-		KEY_DOWN,
-		KEY_BUTTON_A,
-		KEY_BUTTON_B,
-		KEY_BUTTON_START,
-		KEY_BUTTON_SELECT,
-		KEY_BUTTON_L,
-		KEY_BUTTON_R,
-		KEY_BUTTON_SPEED,
-		KEY_BUTTON_AUTO_A,
-		KEY_BUTTON_AUTO_B
+	KEY_LEFT,
+	KEY_RIGHT,
+	KEY_UP,
+	KEY_DOWN,
+	KEY_BUTTON_A,
+	KEY_BUTTON_B,
+	KEY_BUTTON_START,
+	KEY_BUTTON_SELECT,
+	KEY_BUTTON_L,
+	KEY_BUTTON_R,
+	KEY_BUTTON_SPEED,
+	KEY_BUTTON_AUTO_A,
+	KEY_BUTTON_AUTO_B
 };
 
+/**
+ * Initialize the settings module and set default setting values
+ */
 void settings_init();
+
+/**
+ * Clean up the settings module
+ */
 void settings_free();
+
+/**
+ * Override the current settings with the values from the command line
+ *
+ * @param argc argument count
+ * @param argv argument values
+ * @param err return location for a GError, or NULL
+ * @return newly allocated string to the ROM file to be loaded
+ */
 gchar *settings_parse_command_line(gint *argc, gchar ***argv, GError **err);
+
+/**
+ * Prints an help text regarding the available command line options
+ * on the standard output.
+ *
+ * @param err optional error message to display
+ */
 void settings_display_usage(GError *err);
+
+/**
+ * Override the current settings with the values from the configuration file
+ *
+ * @param err return location for a GError, or NULL
+ * @return whether reading the configuration file was successful
+ */
 gboolean settings_read_config_file(GError **err);
+
+/**
+ * Validate that the current settings are good enough to allow games to run
+ *
+ * @param err return location for a GError, or NULL
+ * @return whether an error was returned
+ */
 gboolean settings_check(GError **err);
 
+/** @return path where the battery files are stored */
 const gchar *settings_get_battery_dir();
+
+/** @return path where the state files are stored */
 const gchar *settings_get_save_dir();
+
+/** @return path of the GBA BIOS ROM file */
 const gchar *settings_get_bios();
+
+/** @return whether to start display fullscreen */
 gboolean settings_is_fullscreen();
+
+/** @return whether to pause the game when the window is inactive */
 gboolean settings_pause_when_inactive();
+
+/** @return whether to always display the emulation speed */
 gboolean settings_show_speed();
+
+/** @return whether to disable informational status messages */
 gboolean settings_disable_status_messages();
+
+/** @return initial value for the sound volume */
 gdouble settings_sound_volume();
+
+/** @return sound sample rate value */
 guint settings_sound_sample_rate();
+
+/**
+ * @param button emulated button for which to query mapping information
+ * @return button mapping code
+ */
 guint32 settings_get_button_mapping(EKey button);
 
 /* Ends C function definitions when using C++ */
