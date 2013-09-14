@@ -407,7 +407,7 @@ void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
 			reg[17].I = reg[SPSR_UND].I;
 		break;
 	default:
-		systemMessage("Unsupported ARM mode %02x", mode);
+		log("Unsupported ARM mode %02x", mode);
 		break;
 	}
 	armMode = mode;

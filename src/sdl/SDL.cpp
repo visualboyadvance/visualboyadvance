@@ -58,14 +58,55 @@ int emulating = 0;
 static bool paused = false;
 static bool fullscreen = false;
 
-/* forward */
-void systemConsoleMessage(const char*);
-
 static int  mouseCounter = 0;
 
 static bool screenMessage = false;
 static char screenMessageBuffer[21];
 static u32  screenMessageTime = 0;
+
+static void systemConsoleMessage(const char *msg)
+{
+  time_t now_time;
+  struct tm now_time_broken;
+
+  now_time		= time(NULL);
+  now_time_broken	= *(localtime( &now_time ));
+  fprintf(
+		stdout,
+		"%02d:%02d:%02d %02d.%02d.%4d: %s\n",
+		now_time_broken.tm_hour,
+		now_time_broken.tm_min,
+		now_time_broken.tm_sec,
+		now_time_broken.tm_mday,
+		now_time_broken.tm_mon + 1,
+		now_time_broken.tm_year + 1900,
+		msg
+  );
+}
+
+static void systemScreenMessage(const char *msg)
+{
+
+  screenMessage = true;
+  screenMessageTime = systemGetClock();
+  if(strlen(msg) > 20) {
+    strncpy(screenMessageBuffer, msg, 20);
+    screenMessageBuffer[20] = 0;
+  } else
+    strcpy(screenMessageBuffer, msg);
+
+  systemConsoleMessage(msg);
+}
+
+static void systemMessage(const char *msg, ...)
+{
+  va_list valist;
+
+  va_start(valist, msg);
+  vfprintf(stderr, msg, valist);
+  fprintf(stderr, "\n");
+  va_end(valist);
+}
 
 static void sdlChangeVolume(float d)
 {
@@ -496,41 +537,6 @@ u32 systemGetClock()
   return SDL_GetTicks();
 }
 
-/* xKiv: added timestamp */
-void systemConsoleMessage(const char *msg)
-{
-  time_t now_time;
-  struct tm now_time_broken;
-
-  now_time		= time(NULL);
-  now_time_broken	= *(localtime( &now_time ));
-  fprintf(
-		stdout,
-		"%02d:%02d:%02d %02d.%02d.%4d: %s\n",
-		now_time_broken.tm_hour,
-		now_time_broken.tm_min,
-		now_time_broken.tm_sec,
-		now_time_broken.tm_mday,
-		now_time_broken.tm_mon + 1,
-		now_time_broken.tm_year + 1900,
-		msg
-  );
-}
-
-void systemScreenMessage(const char *msg)
-{
-
-  screenMessage = true;
-  screenMessageTime = systemGetClock();
-  if(strlen(msg) > 20) {
-    strncpy(screenMessageBuffer, msg, 20);
-    screenMessageBuffer[20] = 0;
-  } else
-    strcpy(screenMessageBuffer, msg);
-
-  systemConsoleMessage(msg);
-}
-
 u32 systemReadJoypad()
 {
   return input_read_joypad();
@@ -556,16 +562,6 @@ SoundDriver * systemSoundInit()
 	soundShutdown();
 
 	return new SoundSDL();
-}
-
-void systemMessage(const char *msg, ...)
-{
-  va_list valist;
-
-  va_start(valist, msg);
-  vfprintf(stderr, msg, valist);
-  fprintf(stderr, "\n");
-  va_end(valist);
 }
 
 void log(const char *defaultMsg, ...)
