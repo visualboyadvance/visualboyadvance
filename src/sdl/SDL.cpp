@@ -183,50 +183,6 @@ void sdlInitVideo() {
 #define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_META)
 #define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_META)
 
-
-
-/*
- * handle the F* keys (for savestates)
- * given the slot number and state of the SHIFT modifier, save or restore
- * (in savemode 3, saveslot is stored in saveSlotPosition and num means:
- *  4 .. F5: decrease slot number (down to 0)
- *  5 .. F6: increase slot number (up to 7, because 8 and 9 are reserved for backups)
- *  6 .. F7: save state
- *  7 .. F8: load state
- *  (these *should* be configurable)
- *  other keys are ignored
- * )
- */
-static void sdlHandleSavestateKey(int num, int shifted)
-{
-	int action	= -1;
-	// 0: load
-	// 1: save
-
-		if (shifted)
-			action	= 1; // save
-		else	action	= 0; // load
-
-	if (action < 0 || action > 1)
-	{
-		fprintf(
-				stderr,
-				"sdlHandleSavestateKey(%d,%d): unexpected action %d.\n",
-				num,
-				shifted,
-				action
-		);
-	}
-
-	if (action)
-	{        /* save */
-		sdlWriteState(num);
-	} else { /* load */
-		sdlReadState(num);
-    }
-
-} // sdlHandleSavestateKey
-
 void sdlPollEvents()
 {
   SDL_Event event;
@@ -309,9 +265,9 @@ void sdlPollEvents()
       case SDLK_F8:
         if(!(event.key.keysym.mod & MOD_NOSHIFT) &&
            (event.key.keysym.mod & KMOD_SHIFT)) {
-		sdlHandleSavestateKey( event.key.keysym.sym - SDLK_F1, 1); // with SHIFT
+        	sdlWriteState(event.key.keysym.sym - SDLK_F1);
         } else if(!(event.key.keysym.mod & MOD_KEYS)) {
-		sdlHandleSavestateKey( event.key.keysym.sym - SDLK_F1, 0); // without SHIFT
+        	sdlReadState(event.key.keysym.sym - SDLK_F1);
 	}
         break;
       case SDLK_1:
