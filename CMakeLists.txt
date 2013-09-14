@@ -39,14 +39,14 @@ SET(SRC_MAIN
 	src/common/GameInfos.c
 	src/common/Loader.c
 	src/common/Settings.c
-	src/common/Util.cpp
+	src/common/Util.c
 )
 
 SET(SRC_GBA
 	src/gba/Cartridge.cpp
 	src/gba/CartridgeEEprom.c
 	src/gba/CartridgeFlash.c
-	src/gba/CartridgeRTC.cpp
+	src/gba/CartridgeRTC.c
 	src/gba/CartridgeSram.c
 	src/gba/CPU.cpp
 	src/gba/CPUArm.cpp

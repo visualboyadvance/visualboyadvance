@@ -283,7 +283,7 @@ void CPUWriteState(gzFile gzFile)
 	utilGzWrite(gzFile, ioMem, 0x400);
 
 	soundSaveGame(gzFile);
-	Cartridge::rtcSaveGame(gzFile);
+	cartridge_rtc_save_state(gzFile);
 }
 
 gboolean CPUReadState(gzFile gzFile, GError **err) {
@@ -338,7 +338,7 @@ gboolean CPUReadState(gzFile gzFile, GError **err) {
 
 	soundReadGame(gzFile, version);
 
-	Cartridge::rtcReadGame(gzFile);
+	cartridge_rtc_load_state(gzFile);
 
 	// set pointers!
 	layerEnable = DISPCNT;

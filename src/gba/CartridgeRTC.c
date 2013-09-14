@@ -1,39 +1,56 @@
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
+// Copyright (C) 1999-2003 Forgotten
+// Copyright (C) 2005-2006 Forgotten and the VBA development team
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "CartridgeRTC.h"
 
-#include <ctime>
-#include <memory>
+#include "../common/Util.h"
 
-namespace Cartridge
-{
+#include <time.h>
+#include <string.h>
 
-enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
+typedef enum { IDLE, COMMAND, DATA, READDATA } RTCSTATE;
 
 typedef struct
 {
-	u8 byte0;
-	u8 byte1;
-	u8 byte2;
-	u8 command;
+	guint8 byte0;
+	guint8 byte1;
+	guint8 byte2;
+	guint8 command;
 	int dataLen;
 	int bits;
 	RTCSTATE state;
-	u8 data[12];
+	guint8 data[12];
 } RTCCLOCKDATA;
 
 static RTCCLOCKDATA rtcClockData;
-static bool rtcEnabled = false;
+static gboolean rtcEnabled = FALSE;
 
-void rtcEnable(bool e)
+void cartridge_rtc_enable(gboolean enable)
 {
-	rtcEnabled = e;
+	rtcEnabled = enable;
 }
 
-bool rtcIsEnabled()
+gboolean cartridge_rtc_is_enabled()
 {
 	return rtcEnabled;
 }
 
-u16 rtcRead(u32 address)
+guint16 cartridge_rtc_read(guint32 address)
 {
 	if (rtcEnabled)
 	{
@@ -55,7 +72,7 @@ u16 rtcRead(u32 address)
 	return 0;
 }
 
-static u8 toBCD(u8 value)
+static guint8 toBCD(guint8 value)
 {
 	value = value % 100;
 	int l = value % 10;
@@ -63,18 +80,18 @@ static u8 toBCD(u8 value)
 	return h * 16 + l;
 }
 
-bool rtcWrite(u32 address, u16 value)
+gboolean cartridge_rtc_write(guint32 address, guint16 value)
 {
 	if (!rtcEnabled)
-		return false;
+		return FALSE;
 
 	if (address == 0x80000c8)
 	{
-		rtcClockData.byte2 = (u8)value; // enable ?
+		rtcClockData.byte2 = (guint8)value; // enable ?
 	}
 	else if (address == 0x80000c6)
 	{
-		rtcClockData.byte1 = (u8)value; // read/write
+		rtcClockData.byte1 = (guint8)value; // read/write
 	}
 	else if (address == 0x80000c4)
 	{
@@ -88,7 +105,7 @@ bool rtcWrite(u32 address, u16 value)
 			}
 			else if (!(rtcClockData.byte0 & 1) && (value & 1)) // bit transfer
 			{
-				rtcClockData.byte0 = (u8)value;
+				rtcClockData.byte0 = (guint8)value;
 				switch (rtcClockData.state)
 				{
 				case COMMAND:
@@ -198,14 +215,14 @@ bool rtcWrite(u32 address, u16 value)
 			}
 			else
 			{
-				rtcClockData.byte0 = (u8)value;
+				rtcClockData.byte0 = (guint8)value;
 			}
 		}
 	}
-	return true;
+	return TRUE;
 }
 
-void rtcReset()
+void cartridge_rtc_reset()
 {
 	rtcClockData.byte0 = 0;
 	rtcClockData.byte1 = 0;
@@ -215,18 +232,16 @@ void rtcReset()
 	rtcClockData.bits = 0;
 	rtcClockData.state = IDLE;
 
-	std::fill(rtcClockData.data, rtcClockData.data + 12, 0);
+	memset(rtcClockData.data, 0, sizeof(rtcClockData.data));
 }
 
-void rtcSaveGame(gzFile gzFile)
+void cartridge_rtc_save_state(gzFile gzFile)
 {
 	utilGzWrite(gzFile, &rtcClockData, sizeof(rtcClockData));
 }
 
-void rtcReadGame(gzFile gzFile)
+void cartridge_rtc_load_state(gzFile gzFile)
 {
 	utilGzRead(gzFile, &rtcClockData, sizeof(rtcClockData));
 }
-
-} // namespace Cartridge
 

@@ -97,8 +97,8 @@ void reset()
 	cartridge_eeprom_reset(game->EEPROMSize);
 	cartridge_flash_reset(game->flashSize);
 
-	rtcReset();
-	rtcEnable(game->hasRTC);
+	cartridge_rtc_reset();
+	cartridge_rtc_enable(game->hasRTC);
 }
 
 void uninit()
@@ -214,8 +214,8 @@ u16 read16(const u32 address)
 	case 10:
 	case 11:
 	case 12:
-		if (rtcIsEnabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
-			return rtcRead(address);
+		if (cartridge_rtc_is_enabled() && (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8))
+			return cartridge_rtc_read(address);
 		else
 			return READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 		break;
@@ -311,7 +311,7 @@ void write16(const u32 address, const u16 value)
 	case 8:
 		if (address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8)
 		{
-			rtcWrite(address, value);
+			cartridge_rtc_write(address, value);
 		}
 		break;
 	case 13:

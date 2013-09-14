@@ -16,33 +16,43 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef VBAM_UTIL_H_
-#define VBAM_UTIL_H_
+#include "Util.h"
 
-#include "Types.h"
-#include <zlib.h>
-
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// save game
-typedef struct {
-  void *address;
-  int size;
-} variable_desc;
-
-void utilWriteData(gzFile, variable_desc *);
-void utilReadData(gzFile, variable_desc *);
-int utilReadInt(gzFile);
-void utilWriteInt(gzFile, int);
-int utilGzWrite(gzFile file, const voidp buffer, unsigned int len);
-int utilGzRead(gzFile file, voidp buffer, unsigned int len);
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
+void utilWriteInt(gzFile gzFile, int i)
+{
+  utilGzWrite(gzFile, &i, sizeof(int));
 }
-#endif
 
-#endif /* VBAM_UTIL_H_ */
+int utilReadInt(gzFile gzFile)
+{
+  int i = 0;
+  utilGzRead(gzFile, &i, sizeof(int));
+  return i;
+}
+
+void utilReadData(gzFile gzFile, variable_desc* data)
+{
+  while(data->address) {
+    utilGzRead(gzFile, data->address, data->size);
+    data++;
+  }
+}
+
+void utilWriteData(gzFile gzFile, variable_desc *data)
+{
+  while(data->address) {
+    utilGzWrite(gzFile, data->address, data->size);
+    data++;
+  }
+}
+
+int utilGzWrite(gzFile file, const voidp buffer, unsigned int len)
+{
+  return gzwrite(file, buffer, len);
+}
+
+int utilGzRead(gzFile file, voidp buffer, unsigned int len)
+{
+  return gzread(file, buffer, len);
+}
+
