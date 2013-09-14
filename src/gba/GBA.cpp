@@ -70,7 +70,7 @@ static u32 dma2Source = 0;
 static u32 dma2Dest = 0;
 static u32 dma3Source = 0;
 static u32 dma3Dest = 0;
-static u32 lastTime = 0;
+static gint64 lastTime = 0;
 static int count = 0;
 
 static const int TIMER_TICKS[4] =
@@ -1582,7 +1582,7 @@ void CPUReset()
 
 	CPU::reset();
 
-	lastTime = systemGetClock();
+	lastTime = g_get_monotonic_time();
 
 }
 
@@ -1695,10 +1695,10 @@ updateLoop:
 
 							if (count == 60)
 							{
-								u32 time = systemGetClock();
+								gint64 time = g_get_monotonic_time();
 								if (time != lastTime)
 								{
-									u32 t = 100000/(time - lastTime);
+									u32 t = 100000000/(time - lastTime);
 									systemShowSpeed(t);
 								}
 								else

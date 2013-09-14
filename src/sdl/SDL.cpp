@@ -88,7 +88,7 @@ static void systemScreenMessage(const char *msg)
 {
 
   screenMessage = true;
-  screenMessageTime = systemGetClock();
+  screenMessageTime = SDL_GetTicks();
   if(strlen(msg) > 20) {
     strncpy(screenMessageBuffer, msg, 20);
     screenMessageBuffer[20] = 0;
@@ -481,7 +481,7 @@ int main(int argc, char **argv)
 void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duration)
 {
   if(screenMessage) {
-    if(((systemGetClock() - screenMessageTime) < duration) &&
+    if(((SDL_GetTicks() - screenMessageTime) < duration) &&
        !settings_disable_status_messages()) {
       drawText(screen, pitch, x, y,
                screenMessageBuffer, false);
@@ -530,11 +530,6 @@ void systemSetTitle(const char *title)
 void systemShowSpeed(int speed)
 {
   systemSpeed = speed;
-}
-
-u32 systemGetClock()
-{
-  return SDL_GetTicks();
 }
 
 u32 systemReadJoypad()
