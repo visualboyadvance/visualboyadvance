@@ -11,6 +11,7 @@
 #include "Globals.h"
 #include "Gfx.h"
 #include "CartridgeRTC.h"
+#include "Savestate.h"
 #include "Sound.h"
 #include "../common/Util.h"
 #include "../common/Port.h"
@@ -35,7 +36,7 @@ int cpuNextEvent = 0;
 
 static bool intState = false;
 bool stopState = false;
-bool holdState = false;
+gboolean holdState = false;
 
 int cpuTotalTicks = 0;
 
@@ -261,7 +262,7 @@ static inline int CPUUpdateTicks()
 	return cpuLoopTicks;
 }
 
-static bool CPUWriteState(gzFile gzFile)
+void CPUWriteState(gzFile gzFile)
 {
 	utilWriteInt(gzFile, SAVE_GAME_VERSION);
 
@@ -283,35 +284,18 @@ static bool CPUWriteState(gzFile gzFile)
 
 	soundSaveGame(gzFile);
 	Cartridge::rtcSaveGame(gzFile);
-
-	return true;
 }
 
-bool CPUWriteState(const char *file)
-{
-	gzFile gzFile = utilGzOpen(file, "wb");
+gboolean CPUReadState(gzFile gzFile, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
-	if (gzFile == NULL)
-	{
-		systemMessage("Error creating file %s", file);
-		return false;
-	}
-
-	bool res = CPUWriteState(gzFile);
-
-	utilGzClose(gzFile);
-
-	return res;
-}
-
-static bool CPUReadState(gzFile gzFile)
-{
 	int version = utilReadInt(gzFile);
 
 	if (version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_11)
 	{
-		systemMessage("Unsupported VisualBoyAdvance save game version %d", version);
-		return false;
+		g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_UNSUPPORTED_VERSION,
+				"Unsupported VisualBoyAdvance save game version %d", version);
+		return FALSE;
 	}
 
 	u8 savename[17];
@@ -322,12 +306,14 @@ static bool CPUReadState(gzFile gzFile)
 
 	if (memcmp(romname, savename, 16) != 0)
 	{
-		savename[16]=0;
+		savename[16] = 0;
 		for (int i = 0; i < 16; i++)
 			if (savename[i] < 32)
 				savename[i] = 32;
-		systemMessage("Cannot load save game for %s", savename);
-		return false;
+
+		g_set_error(err, SAVESTATE_ERROR, G_SAVESTATE_WRONG_GAME,
+				"Cannot load save game for %s", savename);
+		return FALSE;
 	}
 
 	utilGzRead(gzFile, &CPU::reg[0], sizeof(CPU::reg));
@@ -373,21 +359,7 @@ static bool CPUReadState(gzFile gzFile)
 
 	CPUUpdateRegister(0x204, ioMem[0x204]);
 
-	return true;
-}
-
-bool CPUReadState(const char * file)
-{
-	gzFile gzFile = utilGzOpen(file, "rb");
-
-	if (gzFile == NULL)
-		return false;
-
-	bool res = CPUReadState(gzFile);
-
-	utilGzClose(gzFile);
-
-	return res;
+	return TRUE;
 }
 
 void CPUCleanUp()

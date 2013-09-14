@@ -1,8 +1,9 @@
 #ifndef GBA_H
 #define GBA_H
 
-#include "../System.h"
+#include "../common/Types.h"
 #include <glib.h>
+#include <zlib.h>
 
 #define SAVE_GAME_VERSION_11 11
 #define SAVE_GAME_VERSION  SAVE_GAME_VERSION_11
@@ -10,7 +11,7 @@
 extern u8 biosProtected[4];
 extern int cpuNextEvent;
 extern int cpuTotalTicks;
-extern bool holdState;
+extern gboolean holdState;
 extern u8 memoryWait[16];
 extern u8 memoryWait32[16];
 extern u8 memoryWaitSeq[16];
@@ -23,10 +24,10 @@ gboolean CPUInitMemory(GError **err);
 gboolean CPULoadBios(const gchar *biosFileName, GError **err);
 void CPUCleanUp();
 extern void CPUReset();
-extern void CPULoop(int ticks = 250000);
+extern void CPULoop(int ticks);
 extern void CPUCheckDMA(int,int);
-bool CPUReadState(const char * file);
-bool CPUWriteState(const char *file);
+gboolean CPUReadState(gzFile gzFile, GError **err);
+void CPUWriteState(gzFile gzFile);
 
 #define R13_IRQ  18
 #define R14_IRQ  19

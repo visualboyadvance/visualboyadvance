@@ -65,6 +65,14 @@ void getGameName(u8 *romname)
 	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
 }
 
+const gchar *getGameTitle() {
+	if (!isPresent()) {
+		return NULL;
+	}
+
+	return game->title;
+}
+
 bool isPresent() {
 	return game != NULL;
 }

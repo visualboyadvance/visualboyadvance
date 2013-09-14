@@ -2,6 +2,7 @@
 #include "GBA.h"
 #include "Globals.h"
 #include "MMU.h"
+#include "../System.h"
 
 #include <algorithm>
 

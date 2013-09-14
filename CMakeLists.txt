@@ -64,6 +64,7 @@ SET(SRC_GBA
 	src/gba/Globals.cpp
 	src/gba/Link.cpp
 	src/gba/MMU.cpp
+	src/gba/Savestate.cpp
 	src/gba/Sound.cpp
 )
 

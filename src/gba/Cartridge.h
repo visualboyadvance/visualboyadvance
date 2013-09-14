@@ -13,6 +13,7 @@ void uninit();
 bool loadRom(const char *_sFileName, GError **err);
 void unloadGame();
 void getGameName(u8 *romname);
+const gchar *getGameTitle();
 bool isPresent();
 
 bool readBatteryFromFile(const char *fileName);

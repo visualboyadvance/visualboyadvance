@@ -27,12 +27,14 @@
 #include <time.h>
 
 #include "../version.h"
+#include "../System.h"
 
 #include <SDL.h>
 
 #include "../gba/GBA.h"
 #include "../gba/Cartridge.h"
 #include "../gba/Display.h"
+#include "../gba/Savestate.h"
 #include "../gba/Sound.h"
 #include "../common/Util.h"
 
@@ -82,21 +84,6 @@ static void sdlChangeVolume(float d)
 	}
 }
 
-static gchar *sdlStateName(int num)
-{
-  const gchar *saveDir = settings_get_save_dir();
-  gchar *stateNum = g_strdup_printf("%d", num + 1);
-  gchar *baseName = g_path_get_basename(filename);
-  gchar *fileName = g_strconcat(baseName, stateNum, ".sgm", NULL);
-  gchar *stateName = g_build_filename(saveDir, fileName, NULL);
-
-  g_free(fileName);
-  g_free(baseName);
-  g_free(stateNum);
-
-  return stateName;
-}
-
 static gchar *sdlBatteryName()
 {
   const gchar *batteryDir = settings_get_battery_dir();
@@ -112,24 +99,33 @@ static gchar *sdlBatteryName()
 
 void sdlWriteState(int num)
 {
-  gchar *stateName = sdlStateName(num);
-  CPUWriteState(stateName);
-  g_free(stateName);
+	gchar *message = NULL;
+	GError *err = NULL;
 
-  gchar *message = g_strdup_printf("Wrote state %d", num + 1);
-  systemScreenMessage(message);
-  g_free(message);
+	if (!savestate_save_slot(num, &err)) {
+		message = strdup(err->message);
+		g_clear_error(&err);
+	} else {
+		message = g_strdup_printf("Wrote state %d", num + 1);
+	}
+
+	systemScreenMessage(message);
+	g_free(message);
 }
 
-void sdlReadState(int num)
-{
-  gchar *stateName = sdlStateName(num);
-  CPUReadState(stateName);
-  g_free(stateName);
+void sdlReadState(int num) {
+	gchar *message = NULL;
+	GError *err = NULL;
 
-  gchar *message = g_strdup_printf("Loaded state %d", num + 1);
-  systemScreenMessage(message);
-  g_free(message);
+	if (!savestate_load_slot(num, &err)) {
+		message = strdup(err->message);
+		g_clear_error(&err);
+	} else {
+		message = g_strdup_printf("Loaded state %d", num + 1);
+	}
+
+	systemScreenMessage(message);
+	g_free(message);
 }
 
 void sdlWriteBattery()
@@ -427,7 +423,7 @@ int main(int argc, char **argv)
 
   while(emulating) {
     if(!paused) {
-      CPULoop();
+      CPULoop(250000);
     } else {
       SDL_Delay(500);
     }

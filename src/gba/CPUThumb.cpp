@@ -2,6 +2,7 @@
 #include "CPU.h"
 #include "Globals.h"
 #include "MMU.h"
+#include "../System.h"
 
 namespace CPU
 {
