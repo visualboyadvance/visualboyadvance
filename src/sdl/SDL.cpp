@@ -22,11 +22,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <cmath>
+#include <math.h>
 
-#include <time.h>
-
-#include "../version.h"
 #include "../System.h"
 
 #include <SDL.h>
