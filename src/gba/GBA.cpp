@@ -556,7 +556,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				int count = (DM0CNT_L ? DM0CNT_L : 0x4000) << 1;
 				if (DM0CNT_H & 0x0400)
 					count <<= 1;
-				log("DMA0: s=%08x d=%08x c=%04x count=%08x\n", dma0Source, dma0Dest,
+				g_message("DMA0: s=%08x d=%08x c=%04x count=%08x\n", dma0Source, dma0Dest,
 				    DM0CNT_H,
 				    count);
 			}
@@ -619,7 +619,7 @@ void CPUCheckDMA(int reason, int dmamask)
 #ifdef GBA_LOGGING
 				if (systemVerbose & VERBOSE_DMA1)
 				{
-					log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
+					g_message("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
 					    DM1CNT_H,
 					    16);
 				}
@@ -635,7 +635,7 @@ void CPUCheckDMA(int reason, int dmamask)
 					int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
 					if (DM1CNT_H & 0x0400)
 						count <<= 1;
-					log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
+					g_message("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
 					    DM1CNT_H,
 					    count);
 				}
@@ -700,7 +700,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				if (systemVerbose & VERBOSE_DMA2)
 				{
 					int count = (4) << 2;
-					log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
+					g_message("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
 					    DM2CNT_H,
 					    count);
 				}
@@ -716,7 +716,7 @@ void CPUCheckDMA(int reason, int dmamask)
 					int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
 					if (DM2CNT_H & 0x0400)
 						count <<= 1;
-					log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
+					g_message("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
 					    DM2CNT_H,
 					    count);
 				}
@@ -781,7 +781,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				int count = (DM3CNT_L ? DM3CNT_L : 0x10000) << 1;
 				if (DM3CNT_H & 0x0400)
 					count <<= 1;
-				log("DMA3: s=%08x d=%08x c=%04x count=%08x\n", dma3Source, dma3Dest,
+				g_message("DMA3: s=%08x d=%08x c=%04x count=%08x\n", dma3Source, dma3Dest,
 				    DM3CNT_H,
 				    count);
 			}

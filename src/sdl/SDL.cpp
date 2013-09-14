@@ -549,18 +549,3 @@ SoundDriver * systemSoundInit()
 
 	return new SoundSDL();
 }
-
-void log(const char *defaultMsg, ...)
-{
-  static FILE *out = NULL;
-
-  if(out == NULL) {
-    out = fopen("trace.log","w");
-  }
-
-  va_list valist;
-
-  va_start(valist, defaultMsg);
-  vfprintf(out, defaultMsg, valist);
-  va_end(valist);
-}

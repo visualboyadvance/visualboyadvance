@@ -407,7 +407,7 @@ void CPUSwitchMode(int mode, bool saveState, bool breakLoop)
 			reg[17].I = reg[SPSR_UND].I;
 		break;
 	default:
-		log("Unsupported ARM mode %02x", mode);
+		g_message("Unsupported ARM mode %02x", mode);
 		break;
 	}
 	armMode = mode;
@@ -455,7 +455,7 @@ void CPUSoftwareInterrupt(int comment)
 #ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_SWI)
 	{
-		log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
+		g_message("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
 		    armState ? armNextPC - 4: armNextPC -2,
 		    reg[0].I,
 		    reg[1].I,

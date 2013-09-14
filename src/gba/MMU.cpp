@@ -183,7 +183,7 @@ u32 read32(u32 address)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
  		{
-			log("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
+			g_message("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
  			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
  		}
 	}
@@ -208,7 +208,7 @@ u32 read16(u32 address)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
 		{
-			log("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
+			g_message("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
 		}
 	}
@@ -245,7 +245,7 @@ void write32(u32 address, u32 value)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
 		{
-			log("Unaligned word write: %08x to %08x from %08x\n",
+			g_message("Unaligned word write: %08x to %08x from %08x\n",
 			    value,
 			    address,
 			    CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
@@ -263,7 +263,7 @@ void write16(u32 address, u16 value)
 	{
 		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
 		{
-			log("Unaligned halfword write: %04x to %08x from %08x\n",
+			g_message("Unaligned halfword write: %04x to %08x from %08x\n",
 			    value,
 			    address,
 			    CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
@@ -286,7 +286,7 @@ static T unreadable(u32 address)
 #ifdef GBA_LOGGING
 		if (systemVerbose & VERBOSE_ILLEGAL_READ)
 		{
-			log("Illegal read: %08x at %08x\n", address, CPU::armMode ?
+			g_message("Illegal read: %08x at %08x\n", address, CPU::armMode ?
 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
 		}
 #endif
@@ -411,7 +411,7 @@ static void unwritable(u32 address, T value)
 #ifdef GBA_LOGGING
 	if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
 	{
-		log("Illegal write: %02x to %08x from %08x\n",
+		g_message("Illegal write: %02x to %08x from %08x\n",
 			value,
 			address,
 			CPU::armMode ? CPU::armNextPC - 4 : CPU::armNextPC - 2);
