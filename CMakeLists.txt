@@ -43,7 +43,7 @@ SET(SRC_MAIN
 )
 
 SET(SRC_GBA
-	src/gba/Cartridge.cpp
+	src/gba/Cartridge.c
 	src/gba/CartridgeEEprom.c
 	src/gba/CartridgeFlash.c
 	src/gba/CartridgeRTC.c

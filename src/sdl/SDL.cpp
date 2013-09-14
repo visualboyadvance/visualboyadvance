@@ -159,7 +159,7 @@ void sdlWriteBattery() {
 	gchar *message = NULL;
 	GError *err = NULL;
 
-	if (!Cartridge::writeBatteryToFile(&err)) {
+	if (!cartridge_write_battery(&err)) {
 		message = strdup(err->message);
 		g_clear_error(&err);
 	} else {
@@ -172,7 +172,7 @@ void sdlWriteBattery() {
 
 void sdlReadBattery() {
 	// Ignore errors, we don't care loading battery failed
-	gboolean res = Cartridge::readBatteryFromFile(NULL);
+	gboolean res = cartridge_read_battery(NULL);
 
 	if (res)
 		systemScreenMessage("Loaded battery");
@@ -341,7 +341,7 @@ static gboolean loadROM(const char *file, GError **err) {
 		return FALSE;
 	}
 
-	if (!Cartridge::loadRom(file, err))	{
+	if (!cartridge_load_rom(file, err))	{
 		CPUCleanUp();
 		return FALSE;
 	}
@@ -466,7 +466,7 @@ int main(int argc, char **argv)
   soundShutdown();
 
   sdlWriteBattery();
-  Cartridge::unloadGame();
+  cartridge_unload();
   CPUCleanUp();
 
   SDL_Quit();

@@ -27,6 +27,18 @@ namespace MMU
 
 static bool ioReadable[0x400];
 
+template <typename T>
+static inline T readLE(u8* x)
+{
+	return *((T *)x);
+}
+
+template <typename T>
+static inline void writeLE(u8* x, T value)
+{
+	*((T *)x) = value;
+}
+
 // Memory read functions forward declarations
 template<typename T>
 static T unreadable(u32 address);
@@ -87,13 +99,13 @@ static MemAccess memMap[] =
 	{ 0, 0x000003FF, readGeneric<5, u8>, readGeneric<5, u16>, readGeneric<5, u32>, writeVideo8<5>,      writeGeneric<5, u16>, writeGeneric<5, u32> }, // 5
 	{ 0, 0x0001FFFF, readVRAM<u8>,       readVRAM<u16>,       readVRAM<u32>,       writeVRAM<u8>,       writeVRAM<u16>,       writeVRAM<u32>       }, // 6
 	{ 0, 0x000003FF, readGeneric<7, u8>, readGeneric<7, u16>, readGeneric<7, u32>, unwritable<u8>,      writeGeneric<7, u16>, writeGeneric<7, u32> }, // 7
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 8
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 9
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 10
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 11
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 12
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }, // 13
-	{ 0, 0xFFFFFFFF, Cartridge::read8,   Cartridge::read16,   Cartridge::read32,   Cartridge::write8,   Cartridge::write16,   Cartridge::write32   }  // 14
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 8
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 9
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 10
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 11
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 12
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }, // 13
+	{ 0, 0xFFFFFFFF, cartridge_read8,   cartridge_read16,   cartridge_read32,   cartridge_write8,   cartridge_write16,   cartridge_write32   }  // 14
 };
 
 // MMU public functions

@@ -52,18 +52,6 @@ static inline u32 swap32(u32 v)
 #define WRITE32LE(x,v) \
   *((u32 *)x) = (v)
 
-template <typename T>
-static inline T readLE(u8* x)
-{
-	return *((T *)x);
-}
-
-template <typename T>
-static inline void writeLE(u8* x, T value)
-{
-	*((T *)x) = value;
-}
-
 #endif
 
 #endif // PORT_H

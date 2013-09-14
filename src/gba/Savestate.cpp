@@ -69,7 +69,7 @@ static gchar *get_slot_filename(gint num) {
 	const gchar *saveDir = settings_get_save_dir();
 
 	//TODO: Ensure the filename is safe
-	const gchar *gameTitle = Cartridge::getGameTitle();
+	const gchar *gameTitle = cartridge_get_game_title();
 
 	gchar *stateNum = g_strdup_printf("%d", num + 1);
 	gchar *baseName = g_path_get_basename(gameTitle);

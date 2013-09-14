@@ -1,9 +1,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <glib.h>
 #include "../common/Types.h"
 
-extern bool speedup;
+extern gboolean speedup;
 extern int layerEnable;
 
 extern u8 *bios;

@@ -267,7 +267,7 @@ void CPUWriteState(gzFile gzFile)
 	utilWriteInt(gzFile, SAVE_GAME_VERSION);
 
 	u8 romname[17];
-	Cartridge::getGameName(romname);
+	cartridge_get_game_name(romname);
 	utilGzWrite(gzFile, romname, 16);
 
 	utilGzWrite(gzFile, &CPU::reg[0], sizeof(CPU::reg));
@@ -302,7 +302,7 @@ gboolean CPUReadState(gzFile gzFile, GError **err) {
 	u8 romname[17];
 
 	utilGzRead(gzFile, savename, 16);
-	Cartridge::getGameName(romname);
+	cartridge_get_game_name(romname);
 
 	if (memcmp(romname, savename, 16) != 0)
 	{
@@ -364,7 +364,7 @@ gboolean CPUReadState(gzFile gzFile, GError **err) {
 
 void CPUCleanUp()
 {
-	Cartridge::uninit();
+	cartridge_free();
 
 	MMU::uninit();
 
@@ -388,7 +388,7 @@ gboolean CPUInitMemory(GError **err) {
 		return FALSE;
 	}
 
-	if (!Cartridge::init()) {
+	if (!cartridge_init()) {
 		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
 				"Failed to allocate memory for %s", "ROM");
 		CPUCleanUp();
@@ -1573,7 +1573,7 @@ void CPUReset()
 
 	GFX::clearRenderBuffers(true);
 
-	Cartridge::reset();
+	cartridge_reset();
 
 	GFX::updateWindow0();
 	GFX::updateWindow1();
@@ -1712,7 +1712,7 @@ updateLoop:
 							P1 = 0x03FF ^ (joy & 0x3FF);
 							
 							//FIXME: Reenable
-							/*if (Cartridge::features.hasMotionSensor)
+							/*if (features.hasMotionSensor)
 								systemUpdateMotionSensor();*/
 							UPDATE_REG(0x130, P1);
 							u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));

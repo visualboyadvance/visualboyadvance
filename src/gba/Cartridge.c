@@ -11,15 +11,9 @@
 #include "../common/Port.h"
 #include "../common/Settings.h"
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <cstdlib>
+#include <string.h>
+#include <stdlib.h>
 #include <errno.h>
-
-namespace Cartridge
-{
 
 static GameInfos *game = NULL;
 static u8 *rom = 0;
@@ -29,12 +23,12 @@ static gchar *getRomCode()
 	return g_strndup((gchar *) &rom[0xac], 4);
 }
 
-bool loadRom(const char *_sFileName, GError **err) {
+gboolean cartridge_load_rom(const char *filename, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
 	int romSize = 0x2000000;
 	
-	RomLoader *loader = loader_new(ROM_GBA, _sFileName);
+	RomLoader *loader = loader_new(ROM_GBA, filename);
 	if (!loader_load(loader, rom, &romSize, err)) {
 		loader_free(loader);
 		return FALSE;
@@ -56,45 +50,45 @@ bool loadRom(const char *_sFileName, GError **err) {
 	return game != NULL;
 }
 
-void unloadGame()
+void cartridge_unload()
 {
 	game_infos_free(game);
 	game = NULL;
 }
 
-void getGameName(u8 *romname)
+void cartridge_get_game_name(u8 *romname)
 {
-	std::copy(&rom[0xa0], &rom[0xa0] + 16, romname);
+	memcpy(romname, &rom[0xa0], 16);
 }
 
-const gchar *getGameTitle() {
-	if (!isPresent()) {
+const gchar *cartridge_get_game_title() {
+	if (!cartridge_is_present()) {
 		return NULL;
 	}
 
 	return game->title;
 }
 
-bool isPresent() {
+gboolean cartridge_is_present() {
 	return game != NULL;
 }
 
-bool init()
+gboolean cartridge_init()
 {
 	rom = (u8 *)malloc(0x2000000);
 	if (!rom)
 	{
-		return false;
+		return FALSE;
 	}
 
 	cartridge_flash_init();
 	cartridge_sram_init();
 	cartridge_eeprom_init();
 
-	return true;
+	return TRUE;
 }
 
-void reset()
+void cartridge_reset()
 {
 	cartridge_eeprom_reset(game->EEPROMSize);
 	cartridge_flash_reset(game->flashSize);
@@ -103,7 +97,7 @@ void reset()
 	cartridge_rtc_enable(game->hasRTC);
 }
 
-void uninit()
+void cartridge_free()
 {
 	if (rom)
 	{
@@ -114,7 +108,7 @@ void uninit()
 
 static gchar *get_battery_name() {
 	const gchar *batteryDir = settings_get_battery_dir();
-	gchar *baseName = g_path_get_basename(getGameTitle());
+	gchar *baseName = g_path_get_basename(cartridge_get_game_title());
 	gchar *fileName = g_strconcat(baseName, ".sav", NULL);
 	gchar *batteryFile = g_build_filename(batteryDir, fileName, NULL);
 
@@ -124,7 +118,7 @@ static gchar *get_battery_name() {
 	return batteryFile;
 }
 
-gboolean writeBatteryToFile(GError **err) {
+gboolean cartridge_write_battery(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
 	if (game->hasFlash || game->hasEEPROM || game->hasSRAM)
@@ -168,7 +162,7 @@ gboolean writeBatteryToFile(GError **err) {
 	return TRUE;
 }
 
-gboolean readBatteryFromFile(GError **err) {
+gboolean cartridge_read_battery(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
 	gchar *batteryFile = get_battery_name();
@@ -213,7 +207,7 @@ gboolean readBatteryFromFile(GError **err) {
 	return TRUE;
 }
 
-u32 read32(const u32 address)
+u32 cartridge_read32(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -241,7 +235,7 @@ u32 read32(const u32 address)
 	return 0;
 }
 
-u16 read16(const u32 address)
+u16 cartridge_read16(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -272,7 +266,7 @@ u16 read16(const u32 address)
 	return 0;
 }
 
-u8 read8(const u32 address)
+u8 cartridge_read8(const u32 address)
 {
 	switch (address >> 24)
 	{
@@ -315,7 +309,7 @@ u8 read8(const u32 address)
 	return 0;
 }
 
-void write32(const u32 address, const u32 value)
+void cartridge_write32(const u32 address, const u32 value)
 {
 	switch (address >> 24)
 	{
@@ -340,7 +334,7 @@ void write32(const u32 address, const u32 value)
 	}
 }
 
-void write16(const u32 address, const u16 value)
+void cartridge_write16(const u32 address, const u16 value)
 {
 	switch (address >> 24)
 	{
@@ -371,7 +365,7 @@ void write16(const u32 address, const u16 value)
 	}
 }
 
-void write8(const u32 address, const u8 value)
+void cartridge_write8(const u32 address, const u8 value)
 {
 	switch (address >> 24)
 	{
@@ -396,4 +390,3 @@ void write8(const u32 address, const u8 value)
 	}
 }
 
-} // namespace Cartridge
