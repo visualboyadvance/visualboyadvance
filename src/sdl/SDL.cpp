@@ -45,7 +45,7 @@
 
 #include <glib.h>
 
-SDL_Surface *surface = NULL;
+static SDL_Surface *surface = NULL;
 
 int systemVerbose = 0;
 
@@ -92,7 +92,7 @@ static void sdlChangeVolume(float d)
 	}
 }
 
-void sdlWriteState(int num)
+static void sdlWriteState(int num)
 {
 	gchar *message = NULL;
 	GError *err = NULL;
@@ -108,7 +108,7 @@ void sdlWriteState(int num)
 	g_free(message);
 }
 
-void sdlReadState(int num) {
+static void sdlReadState(int num) {
 	gchar *message = NULL;
 	GError *err = NULL;
 
@@ -123,7 +123,7 @@ void sdlReadState(int num) {
 	g_free(message);
 }
 
-void sdlWriteBattery() {
+static void sdlWriteBattery() {
 	gchar *message = NULL;
 	GError *err = NULL;
 
@@ -138,7 +138,7 @@ void sdlWriteBattery() {
 	g_free(message);
 }
 
-void sdlReadBattery() {
+static void sdlReadBattery() {
 	// Ignore errors, we don't care loading battery failed
 	gboolean res = cartridge_read_battery(NULL);
 
@@ -152,7 +152,7 @@ void sdlReadBattery() {
 //  desktopHeight = vInfo->current_h;
 //}
 
-void sdlInitVideo() {
+static void sdlInitVideo() {
   int flags;
 
   flags = SDL_ANYFORMAT | (fullscreen ? SDL_FULLSCREEN : 0);
@@ -172,7 +172,7 @@ void sdlInitVideo() {
 #define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_META)
 #define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_META)
 
-void sdlPollEvents()
+static void sdlPollEvents()
 {
   SDL_Event event;
   while(SDL_PollEvent(&event)) {
@@ -448,7 +448,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duration)
+static void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duration)
 {
   if(screenMessage) {
     if(((SDL_GetTicks() - screenMessageTime) < duration) &&
@@ -461,7 +461,7 @@ void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duratio
   }
 }
 
-void drawSpeed(u8 *screen, int pitch, int x, int y)
+static void drawSpeed(u8 *screen, int pitch, int x, int y)
 {
   char buffer[50];
   sprintf(buffer, "%d%%", gba_get_speed());
