@@ -37,8 +37,8 @@
 
 #include "text.h"
 #include "InputSDL.h"
+#include "SoundSDL.h"
 #include "../common/Settings.h"
-#include "../common/SoundSDL.h"
 
 #include <glib.h>
 
@@ -374,9 +374,17 @@ int main(int argc, char **argv)
 
 	Display::initColorMap(19, 11, 3);
 
+	// Init the sound driver
+	SoundDriver *soundDriver = sound_sdl_init(&err);
+	if (soundDriver == NULL) {
+		g_printerr("%s\n", err->message);
+		settings_free();
+
+		g_clear_error(&err);
+		exit(1);
+	}
 	soundSetVolume(settings_sound_volume());
-	soundSetSampleRate(settings_sound_sample_rate());
-	soundInit();
+	soundInit(soundDriver);
 
     if(!loadROM(filename, &err)) {
 		g_printerr("%s\n", err->message);
@@ -431,6 +439,7 @@ int main(int argc, char **argv)
   emulating = 0;
   fprintf(stdout,"Shutting down\n");
   soundShutdown();
+  sound_sdl_free(soundDriver);
 
   sdlWriteBattery();
   cartridge_unload();
@@ -507,11 +516,4 @@ int systemGetSensorX()
 int systemGetSensorY()
 {
   return input_get_sensor_y();
-}
-
-SoundDriver * systemSoundInit()
-{
-	soundShutdown();
-
-	return new SoundSDL();
 }

@@ -40,6 +40,7 @@ SET(SRC_MAIN
 	src/common/Loader.c
 	src/common/RingBuffer.c
 	src/common/Settings.c
+	src/common/SoundDriver.c
 	src/common/Util.c
 )
 
@@ -82,7 +83,7 @@ SET(SRC_SDL
 	src/sdl/InputSDL.c
 	src/sdl/SDL.cpp
 	src/sdl/text.cpp
-	src/common/SoundSDL.cpp
+	src/sdl/SoundSDL.c
 )
 
 INCLUDE_DIRECTORIES(

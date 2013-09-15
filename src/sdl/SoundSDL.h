@@ -18,36 +18,31 @@
 #ifndef __VBA_SOUND_SDL_H__
 #define __VBA_SOUND_SDL_H__
 
-#include "SoundDriver.h"
-#include "RingBuffer.h"
+#include "../common/SoundDriver.h"
 
-#include <SDL.h>
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class SoundSDL: public SoundDriver
-{
-public:
-	SoundSDL();
-	virtual ~SoundSDL();
+/**
+ * Initialize an SDL audio output, and returns the associated sound driver
+ *
+ * @param err return location for a GError, or NULL
+ * @return SDL sound driver or NULL if case of error
+ */
+SoundDriver *sound_sdl_init(GError **err);
 
-	virtual bool init(long sampleRate);
-	virtual void pause();
-	virtual void reset();
-	virtual void resume();
-	virtual void write(u16 * finalWave, int length);
+/**
+ * Free a SDL sound driver. If driver is NULL, it simply returns.
+ *
+ * @param driver SDL sound driver to be freed
+ */
+void sound_sdl_free(SoundDriver *driver);
 
-private:
-	ring_buffer *_rbuf;
-
-	SDL_cond  * _cond;
-	SDL_mutex * _mutex;
-
-	bool _initialized;
-
-	// Defines what delay in seconds we keep in the sound buffer
-	static const float _delay;
-
-	static void soundCallback(void *data, u8 *stream, int length);
-	virtual void read(u16 * stream, int length);
-};
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __VBA_SOUND_SDL_H__

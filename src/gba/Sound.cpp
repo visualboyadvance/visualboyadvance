@@ -361,7 +361,7 @@ static void flush_samples(Multi_Buffer * buffer)
 		if (soundPaused)
 			soundResume();
 
-		soundDriver->write(soundFinalWave, soundBufferLen);
+		soundDriver->write(soundDriver, soundFinalWave, soundBufferLen);
 	}
 }
 
@@ -463,25 +463,21 @@ static void remake_stereo_buffer()
 
 void soundShutdown()
 {
-	if (soundDriver)
-	{
-		delete soundDriver;
-		soundDriver = 0;
-	}
+	soundDriver = NULL;
 }
 
 void soundPause()
 {
 	soundPaused = true;
 	if (soundDriver)
-		soundDriver->pause();
+		soundDriver->pause(soundDriver, TRUE);
 }
 
 void soundResume()
 {
 	soundPaused = false;
 	if (soundDriver)
-		soundDriver->resume();
+		soundDriver->pause(soundDriver, FALSE);
 }
 
 void soundSetVolume( float volume )
@@ -496,7 +492,7 @@ float soundGetVolume()
 
 void soundReset()
 {
-	soundDriver->reset();
+	soundDriver->reset(soundDriver);
 
 	remake_stereo_buffer();
 	reset_apu();
@@ -508,13 +504,10 @@ void soundReset()
 	soundEvent( NR52, (u8) 0x80 );
 }
 
-bool soundInit()
+bool soundInit(SoundDriver *driver)
 {
-	soundDriver = systemSoundInit();
+	soundDriver = driver;
 	if ( !soundDriver )
-		return false;
-
-	if (!soundDriver->init(soundSampleRate))
 		return false;
 
 	soundPaused = true;
@@ -524,17 +517,6 @@ bool soundInit()
 long soundGetSampleRate()
 {
 	return soundSampleRate;
-}
-
-void soundSetSampleRate(long sampleRate)
-{
-	if ( soundSampleRate != sampleRate )
-	{
-		soundShutdown();
-		soundSampleRate      = sampleRate;
-		soundInit();
-		remake_stereo_buffer();
-	}
 }
 
 static gb_apu_state_t state;

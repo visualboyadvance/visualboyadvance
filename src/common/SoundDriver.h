@@ -18,46 +18,57 @@
 #ifndef __VBA_SOUND_DRIVER_H__
 #define __VBA_SOUND_DRIVER_H__
 
-#include "Types.h"
+#include "glib.h"
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Sound driver abstract interface for the core to use to output sound.
- * Subclass this to implement a new sound driver.
  */
-class SoundDriver
-{
-public:
+typedef struct SoundDriver SoundDriver;
+struct SoundDriver {
 
 	/**
-	 * Destructor. Free the resources allocated by the sound driver.
+	 * Tell the driver that the sound stream has paused or resumed
 	 */
-	virtual ~SoundDriver() { };
-
-	/**
-	 * Initialize the sound driver.
-	 * @param sampleRate In Hertz
-	 */
-	virtual bool init(long sampleRate) = 0;
-
-	/**
-	 * Tell the driver that the sound stream has paused
-	 */
-	virtual void pause() = 0;
+	void (*pause)(SoundDriver *driver, gboolean pause);
 
 	/**
 	 * Reset the sound driver
 	 */
-	virtual void reset() = 0;
-
-	/**
-	 * Tell the driver that the sound stream has resumed
-	 */
-	virtual void resume() = 0;
+	void (*reset)(SoundDriver *driver);
 
 	/**
 	 * Write length bytes of data from the finalWave buffer to the driver output buffer.
 	 */
-	virtual void write(u16 * finalWave, int length) = 0;
+	void (*write)(SoundDriver *driver, guint16 *finalWave, int length);
+
+	/**
+	 * Opaque driver specific data
+	 */
+	gpointer driverData;
 };
+
+/**
+ * Sound error domain
+ */
+#define SOUND_ERROR (sound_error_quark ())
+GQuark sound_error_quark();
+
+/**
+ * Loader error types
+ */
+typedef enum
+{
+	G_SOUND_ERROR_FAILED
+} SoundError;
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __VBA_SOUND_DRIVER_H__

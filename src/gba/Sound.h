@@ -4,12 +4,13 @@
 // Sound emulation setup/options and GBA sound emulation
 
 #include "../common/Util.h"
+#include "../common/SoundDriver.h"
 
 //// Setup/options (these affect GBA and GB sound)
 
 // Initializes sound and returns true if successful. Sets sound quality to
 // current value in soundQuality global.
-bool soundInit();
+bool soundInit(SoundDriver *driver);
 
 // Manages sound volume, where 1.0 is normal
 void soundSetVolume( float );
@@ -24,7 +25,6 @@ void soundShutdown();
 
 // Manages the sample rate
 long soundGetSampleRate();
-void soundSetSampleRate(long sampleRate);
 
 // Resets emulated sound hardware
 void soundReset();

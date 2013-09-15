@@ -3,12 +3,9 @@
 
 #include "common/Types.h"
 
-class SoundDriver;
-
 extern void systemDrawScreen(u32 *pix);
 // return information about the given joystick, -1 for default joystick
 extern u32 systemReadJoypad();
-extern SoundDriver * systemSoundInit();
 extern void systemUpdateMotionSensor();
 extern int  systemGetSensorX();
 extern int  systemGetSensorY();
