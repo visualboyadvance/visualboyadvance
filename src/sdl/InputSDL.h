@@ -20,7 +20,7 @@
 
 #include <SDL.h>
 #include <glib.h>
-#include "../common/Settings.h"
+#include "../common/InputDriver.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -30,8 +30,18 @@ extern "C" {
 /**
  * Init the joysticks needed by the keymap. Verify that the keymap is compatible
  * with the joysticks. If it's not the case, revert to the default keymap.
+ *
+ * @param err return location for a GError, or NULL
+ * @return SDL input driver or NULL if case of error
  */
-void input_init_joysticks();
+InputDriver *input_sdl_init(GError **err);
+
+/**
+ * Free a SDL input driver. If driver is NULL, it simply returns.
+ *
+ * @param driver SDL input driver to be freed
+ */
+void input_sdl_free(InputDriver *driver);
 
 /**
  * Define which key controls an emulated joypad button
@@ -39,7 +49,7 @@ void input_init_joysticks();
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
-void input_set_keymap(EKey key, uint32_t code);
+void input_sdl_set_keymap(EKey key, uint32_t code);
 
 /**
  * Get which key is associated to which emulated joypad button
@@ -47,65 +57,41 @@ void input_set_keymap(EKey key, uint32_t code);
  * @param key Emulated joypad button
  * @retunr Code defining an actual joypad / keyboard button
  */
-uint32_t input_get_keymap(EKey key);
+uint32_t input_sdl_get_keymap(EKey key);
 
 /**
  * Define which keys control motion detection emulation
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
-void input_set_motion_keymap(EKey key, uint32_t code);
+void input_sdl_set_motion_keymap(EKey key, uint32_t code);
 
 /**
  * Toggle Auto fire for the specified button. Only A, B, R, L are supported.
  * @param key Emulated joypad button
  * @return Auto fire enabled
  */
-gboolean input_toggle_autofire(EKey key);
+gboolean input_sdl_toggle_autofire(EKey key);
 
 /**
  * Get Auto fire status for the specified button. Only A, B, R, L are supported.
  * @param key Emulated joypad button
  * @return Auto fire enabled
  */
-gboolean input_get_autofire(EKey key);
+gboolean input_sdl_get_autofire(EKey key);
 
 /**
  * Update the emulated pads state with a SDL event
  * @param SDL_Event An event that has just occured
  */
-void input_process_SDL_event(const SDL_Event *event);
+void input_sdl_process_SDL_event(const SDL_Event *event);
 
 /**
  * Get the keymap code corresponding to a SDL event
  * @param SDL_Event An event that has just occured
  * @return Keymap code
  */
-uint32_t input_get_event_code(const SDL_Event *event);
-
-/**
- * Read the state of an emulated joypad
- * @param which Emulated joypad index
- * @return Joypad state
- */
-uint32_t input_read_joypad();
-
-/**
- * Compute the motion sensor X and Y values
- */
-void input_update_motion_sensor();
-
-/**
- * Get the motion sensor X value
- * @return motion sensor X value
- */
-int input_get_sensor_x();
-
-/**
- * Get the motion sensor Y value
- * @return motion sensor Y value
- */
-int input_get_sensor_y();
+uint32_t input_sdl_get_event_code(const SDL_Event *event);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

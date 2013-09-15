@@ -37,6 +37,7 @@ ADD_DEFINITIONS (-DGBA_LOGGING)
 SET(SRC_MAIN
 	src/common/GameDB.c
 	src/common/GameInfos.c
+	src/common/InputDriver.c
 	src/common/Loader.c
 	src/common/RingBuffer.c
 	src/common/Settings.c

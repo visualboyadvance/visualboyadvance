@@ -16,6 +16,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "InputSDL.h"
+#include "../common/Settings.h"
 
 // Number of configurable buttons
 #define SETTINGS_NUM_BUTTONS 13
@@ -107,7 +108,7 @@ static uint32_t axis_get_code(const SDL_Event *event)
 	       );
 }
 
-uint32_t input_get_event_code(const SDL_Event *event)
+uint32_t input_sdl_get_event_code(const SDL_Event *event)
 {
 	switch (event->type)
 	{
@@ -131,22 +132,22 @@ uint32_t input_get_event_code(const SDL_Event *event)
 	}
 }
 
-uint32_t input_get_keymap(EKey key)
+uint32_t input_sdl_get_keymap(EKey key)
 {
 	return joypad[key];
 }
 
-void input_set_keymap(EKey key, uint32_t code)
+void input_sdl_set_keymap(EKey key, uint32_t code)
 {
 	joypad[key] = code;
 }
 
-void input_set_motion_keymap(EKey key, uint32_t code)
+void input_sdl_set_motion_keymap(EKey key, uint32_t code)
 {
 	motion[key] = code;
 }
 
-gboolean input_get_autofire(EKey key)
+gboolean input_sdl_get_autofire(EKey key)
 {
 	int mask = 0;
 
@@ -171,7 +172,7 @@ gboolean input_get_autofire(EKey key)
 	return !(autoFire & mask);
 }
 
-gboolean input_toggle_autofire(EKey key)
+gboolean input_sdl_toggle_autofire(EKey key)
 {
 	int mask = 0;
 
@@ -377,8 +378,135 @@ static gboolean key_check(int key)
 	return TRUE;
 }
 
-void input_init_joysticks()
+static uint32_t input_read_joypad(InputDriver *driver)
 {
+	int realAutoFire  = autoFire;
+
+	uint32_t res = 0;
+
+	if (sdlButtons[KEY_BUTTON_A])
+		res |= 1;
+	if (sdlButtons[KEY_BUTTON_B])
+		res |= 2;
+	if (sdlButtons[KEY_BUTTON_SELECT])
+		res |= 4;
+	if (sdlButtons[KEY_BUTTON_START])
+		res |= 8;
+	if (sdlButtons[KEY_RIGHT])
+		res |= 16;
+	if (sdlButtons[KEY_LEFT])
+		res |= 32;
+	if (sdlButtons[KEY_UP])
+		res |= 64;
+	if (sdlButtons[KEY_DOWN])
+		res |= 128;
+	if (sdlButtons[KEY_BUTTON_R])
+		res |= 256;
+	if (sdlButtons[KEY_BUTTON_L])
+		res |= 512;
+	if (sdlButtons[KEY_BUTTON_AUTO_A])
+		realAutoFire ^= 1;
+	if (sdlButtons[KEY_BUTTON_AUTO_B])
+		realAutoFire ^= 2;
+
+	// disallow L+R or U+D of being pressed at the same time
+	if ((res & 48) == 48)
+		res &= ~16;
+	if ((res & 192) == 192)
+		res &= ~128;
+
+	if (sdlButtons[KEY_BUTTON_SPEED])
+		res |= 1024;
+
+	if (realAutoFire) {
+		res &= (~realAutoFire);
+		if (autoFireToggle)
+			res |= realAutoFire;
+		autoFireCountdown--; // this needs decrementing even when autoFireToggle is toggled,
+		// so that autoFireMaxCount==1 (the default) will alternate at the maximum possible
+		// frequency (every time this code is reached). Which is what it did before
+		// introducing autoFireCountdown.
+		if (autoFireCountdown <= 0) {
+			autoFireToggle = !autoFireToggle;
+			autoFireCountdown = autoFireMaxCount;
+		}
+	}
+
+	return res;
+}
+
+static void input_update_motion_sensor(InputDriver *driver)
+{
+	if (sdlMotionButtons[KEY_LEFT]) {
+		sensorX += 3;
+		if (sensorX > 2197)
+			sensorX = 2197;
+		if (sensorX < 2047)
+			sensorX = 2057;
+	} else if (sdlMotionButtons[KEY_RIGHT]) {
+		sensorX -= 3;
+		if (sensorX < 1897)
+			sensorX = 1897;
+		if (sensorX > 2047)
+			sensorX = 2037;
+	} else if (sensorX > 2047) {
+		sensorX -= 2;
+		if (sensorX < 2047)
+			sensorX = 2047;
+	} else {
+		sensorX += 2;
+		if (sensorX > 2047)
+			sensorX = 2047;
+	}
+
+	if (sdlMotionButtons[KEY_UP]) {
+		sensorY += 3;
+		if (sensorY > 2197)
+			sensorY = 2197;
+		if (sensorY < 2047)
+			sensorY = 2057;
+	} else if (sdlMotionButtons[KEY_DOWN]) {
+		sensorY -= 3;
+		if (sensorY < 1897)
+			sensorY = 1897;
+		if (sensorY > 2047)
+			sensorY = 2037;
+	} else if (sensorY > 2047) {
+		sensorY -= 2;
+		if (sensorY < 2047)
+			sensorY = 2047;
+	} else {
+		sensorY += 2;
+		if (sensorY > 2047)
+			sensorY = 2047;
+	}
+}
+
+static int input_get_sensor_x(InputDriver *driver)
+{
+	return sensorX;
+}
+
+static int input_get_sensor_y(InputDriver *driver)
+{
+	return sensorY;
+}
+
+InputDriver *input_sdl_init(GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+		g_set_error(err, INPUT_ERROR, G_INPUT_ERROR_FAILED,
+				"Failed to init joystick support: %s", SDL_GetError());
+		return NULL;
+	}
+
+	// Apply the button mapping from settings
+	for (guint i = 0; i < G_N_ELEMENTS(settings_buttons); i++) {
+		guint32 keymap = settings_get_button_mapping(settings_buttons[i]);
+		input_sdl_set_keymap(settings_buttons[i], keymap);
+	}
+
 	// The main joypad has to be entirely defined
 	for (int i = 0; i < SETTINGS_NUM_BUTTONS; i++) {
 		if (!joypad[i])
@@ -442,9 +570,26 @@ void input_init_joysticks()
 
 	if (usesJoy)
 		SDL_JoystickEventState(SDL_ENABLE);
+
+	InputDriver *driver = g_new(InputDriver, 1);
+	driver->driverData = NULL;
+	driver->read_joypad = input_read_joypad;
+	driver->read_sensor_x = input_get_sensor_x;
+	driver->read_sensor_y = input_get_sensor_y;
+	driver->update_motion_sensor = input_update_motion_sensor;
+
+	return driver;
 }
 
-void input_process_SDL_event(const SDL_Event *event)
+void input_sdl_free(InputDriver *driver) {
+	if (driver == NULL)
+		return;
+
+	g_free(driver->driverData);
+	g_free(driver);
+}
+
+void input_sdl_process_SDL_event(const SDL_Event *event)
 {
 //	fprintf(stdout, "%x\n", inputGetEventCode(event));
 
@@ -473,119 +618,5 @@ void input_process_SDL_event(const SDL_Event *event)
 		                 event->jaxis.value);
 		break;
 	}
-}
-
-uint32_t input_read_joypad()
-{
-	int realAutoFire  = autoFire;
-
-	uint32_t res = 0;
-
-	if (sdlButtons[KEY_BUTTON_A])
-		res |= 1;
-	if (sdlButtons[KEY_BUTTON_B])
-		res |= 2;
-	if (sdlButtons[KEY_BUTTON_SELECT])
-		res |= 4;
-	if (sdlButtons[KEY_BUTTON_START])
-		res |= 8;
-	if (sdlButtons[KEY_RIGHT])
-		res |= 16;
-	if (sdlButtons[KEY_LEFT])
-		res |= 32;
-	if (sdlButtons[KEY_UP])
-		res |= 64;
-	if (sdlButtons[KEY_DOWN])
-		res |= 128;
-	if (sdlButtons[KEY_BUTTON_R])
-		res |= 256;
-	if (sdlButtons[KEY_BUTTON_L])
-		res |= 512;
-	if (sdlButtons[KEY_BUTTON_AUTO_A])
-		realAutoFire ^= 1;
-	if (sdlButtons[KEY_BUTTON_AUTO_B])
-		realAutoFire ^= 2;
-
-	// disallow L+R or U+D of being pressed at the same time
-	if ((res & 48) == 48)
-		res &= ~16;
-	if ((res & 192) == 192)
-		res &= ~128;
-
-	if (sdlButtons[KEY_BUTTON_SPEED])
-		res |= 1024;
-
-	if (realAutoFire) {
-		res &= (~realAutoFire);
-		if (autoFireToggle)
-			res |= realAutoFire;
-		autoFireCountdown--; // this needs decrementing even when autoFireToggle is toggled,
-		// so that autoFireMaxCount==1 (the default) will alternate at the maximum possible
-		// frequency (every time this code is reached). Which is what it did before
-		// introducing autoFireCountdown.
-		if (autoFireCountdown <= 0) {
-			autoFireToggle = !autoFireToggle;
-			autoFireCountdown = autoFireMaxCount;
-		}
-	}
-
-	return res;
-}
-
-void input_update_motion_sensor()
-{
-	if (sdlMotionButtons[KEY_LEFT]) {
-		sensorX += 3;
-		if (sensorX > 2197)
-			sensorX = 2197;
-		if (sensorX < 2047)
-			sensorX = 2057;
-	} else if (sdlMotionButtons[KEY_RIGHT]) {
-		sensorX -= 3;
-		if (sensorX < 1897)
-			sensorX = 1897;
-		if (sensorX > 2047)
-			sensorX = 2037;
-	} else if (sensorX > 2047) {
-		sensorX -= 2;
-		if (sensorX < 2047)
-			sensorX = 2047;
-	} else {
-		sensorX += 2;
-		if (sensorX > 2047)
-			sensorX = 2047;
-	}
-
-	if (sdlMotionButtons[KEY_UP]) {
-		sensorY += 3;
-		if (sensorY > 2197)
-			sensorY = 2197;
-		if (sensorY < 2047)
-			sensorY = 2057;
-	} else if (sdlMotionButtons[KEY_DOWN]) {
-		sensorY -= 3;
-		if (sensorY < 1897)
-			sensorY = 1897;
-		if (sensorY > 2047)
-			sensorY = 2037;
-	} else if (sensorY > 2047) {
-		sensorY -= 2;
-		if (sensorY < 2047)
-			sensorY = 2047;
-	} else {
-		sensorY += 2;
-		if (sensorY > 2047)
-			sensorY = 2047;
-	}
-}
-
-int input_get_sensor_x()
-{
-	return sensorX;
-}
-
-int input_get_sensor_y()
-{
-	return sensorY;
 }
 

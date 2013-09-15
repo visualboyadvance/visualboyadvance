@@ -4,11 +4,6 @@
 #include "common/Types.h"
 
 extern void systemDrawScreen(u32 *pix);
-// return information about the given joystick, -1 for default joystick
-extern u32 systemReadJoypad();
-extern void systemUpdateMotionSensor();
-extern int  systemGetSensorX();
-extern int  systemGetSensorY();
 
 #define VERBOSE_SWI                  1
 #define VERBOSE_UNALIGNED_MEMORY     2

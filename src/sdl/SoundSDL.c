@@ -133,7 +133,7 @@ SoundDriver *sound_sdl_init(GError **err) {
 
 	if (SDL_OpenAudio(&audio, NULL)) {
 		g_set_error(err, SOUND_ERROR, G_SOUND_ERROR_FAILED,
-				"Failed to open audio: %s\n", SDL_GetError());
+				"Failed to open audio: %s", SDL_GetError());
 		g_free(driver);
 		return NULL;
 	}

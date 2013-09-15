@@ -20,6 +20,7 @@
 #define VBAM_SDL_SETTINGS_H_
 
 #include <glib.h>
+#include "InputDriver.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -27,41 +28,6 @@ extern "C" {
 #endif
 
 #define SETTINGS_SOUND_MAX_VOLUME 2.0
-
-/**
- * Emulated buttons
- */
-typedef enum {
-	KEY_LEFT,
-	KEY_RIGHT,
-	KEY_UP,
-	KEY_DOWN,
-	KEY_BUTTON_A,
-	KEY_BUTTON_B,
-	KEY_BUTTON_START,
-	KEY_BUTTON_SELECT,
-	KEY_BUTTON_L,
-	KEY_BUTTON_R,
-	KEY_BUTTON_SPEED,
-	KEY_BUTTON_AUTO_A,
-	KEY_BUTTON_AUTO_B
-} EKey;
-
-static EKey settings_buttons[] = {
-	KEY_LEFT,
-	KEY_RIGHT,
-	KEY_UP,
-	KEY_DOWN,
-	KEY_BUTTON_A,
-	KEY_BUTTON_B,
-	KEY_BUTTON_START,
-	KEY_BUTTON_SELECT,
-	KEY_BUTTON_L,
-	KEY_BUTTON_R,
-	KEY_BUTTON_SPEED,
-	KEY_BUTTON_AUTO_A,
-	KEY_BUTTON_AUTO_B
-};
 
 /**
  * Initialize the settings module and set default setting values

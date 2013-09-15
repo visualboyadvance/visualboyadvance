@@ -197,7 +197,7 @@ static void sdlPollEvents()
     case SDL_JOYBUTTONUP:
     case SDL_JOYAXISMOTION:
     case SDL_KEYDOWN:
-      input_process_SDL_event(&event);
+      input_sdl_process_SDL_event(&event);
       break;
     case SDL_KEYUP:
       switch(event.key.keysym.sym) {
@@ -280,7 +280,7 @@ static void sdlPollEvents()
 	  else if (event.key.keysym.sym == SDLK_4)
 	    k = KEY_BUTTON_L;
 
-          if(input_toggle_autofire(k)) {
+          if(input_sdl_toggle_autofire(k)) {
             sdlScreenMessage(enableMessages[event.key.keysym.sym - SDLK_1]);
           } else {
             sdlScreenMessage(disableMessages[event.key.keysym.sym - SDLK_1]);
@@ -290,7 +290,7 @@ static void sdlPollEvents()
       default:
         break;
       }
-      input_process_SDL_event(&event);
+      input_sdl_process_SDL_event(&event);
       break;
     }
   }
@@ -363,12 +363,6 @@ int main(int argc, char **argv)
 	const gchar* savesDir = settings_get_save_dir();
 	g_mkdir_with_parents(savesDir, 0777);
 
-	// Apply the button mapping
-	for (guint i = 0; i < G_N_ELEMENTS(settings_buttons); i++) {
-		guint32 keymap = settings_get_button_mapping(settings_buttons[i]);
-		input_set_keymap(settings_buttons[i], keymap);
-	}
-
 	Display::initColorMap(19, 11, 3);
 
 	// Init the sound driver
@@ -382,6 +376,18 @@ int main(int argc, char **argv)
 	}
 	soundSetVolume(settings_sound_volume());
 	soundInit(soundDriver);
+
+	// Init the input driver
+	InputDriver *inputDriver = input_sdl_init(&err);
+	if (inputDriver == NULL) {
+		g_printerr("%s\n", err->message);
+		settings_free();
+		sound_sdl_free(soundDriver);
+
+		g_clear_error(&err);
+		exit(1);
+	}
+	gba_init_input(inputDriver);
 
     if(!loadROM(filename, &err)) {
 		g_printerr("%s\n", err->message);
@@ -400,12 +406,6 @@ int main(int argc, char **argv)
 	  g_printerr("Failed to init SDL: %s\n", SDL_GetError());
     exit(-1);
   }
-
-  if(SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-	  g_printerr("Failed to init joystick support: %s\n", SDL_GetError());
-  }
-
-  input_init_joysticks();
 
   srcWidth = 240;
   srcHeight = 160;
@@ -437,6 +437,7 @@ int main(int argc, char **argv)
   fprintf(stdout,"Shutting down\n");
   soundShutdown();
   sound_sdl_free(soundDriver);
+  input_sdl_free(inputDriver);
 
   sdlWriteBattery();
   cartridge_unload();
@@ -493,24 +494,4 @@ void systemDrawScreen(u32 *pix)
 
   SDL_UnlockSurface(surface);
   SDL_Flip(surface);
-}
-
-u32 systemReadJoypad()
-{
-  return input_read_joypad();
-}
-
-void systemUpdateMotionSensor()
-{
-  input_update_motion_sensor();
-}
-
-int systemGetSensorX()
-{
-  return input_get_sensor_x();
-}
-
-int systemGetSensorY()
-{
-  return input_get_sensor_y();
 }

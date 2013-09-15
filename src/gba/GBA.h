@@ -2,6 +2,7 @@
 #define GBA_H
 
 #include "../common/Types.h"
+#include "../common/InputDriver.h"
 #include <glib.h>
 #include <zlib.h>
 
@@ -33,6 +34,12 @@ void CPUWriteState(gzFile gzFile);
  * Return the emulation speed in percents
  */
 guint gba_get_speed();
+
+/**
+ * Set the input driver
+ * @param driver Input driver to be used
+ */
+void gba_init_input(InputDriver *driver);
 
 #define R13_IRQ  18
 #define R14_IRQ  19

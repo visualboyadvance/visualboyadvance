@@ -74,6 +74,8 @@ static gint64 lastTime = 0;
 static guint speed = 0;
 static int count = 0;
 
+static InputDriver *inputDriver = NULL;
+
 static const int TIMER_TICKS[4] =
 {
 	0,
@@ -1705,14 +1707,13 @@ updateLoop:
 								lastTime = time;
 								count = 0;
 							}
-							u32 joy = 0;
-							// update joystick information
-							joy = systemReadJoypad();
+							u32 joy = inputDriver->read_joypad(inputDriver);
 							P1 = 0x03FF ^ (joy & 0x3FF);
 							
 							//FIXME: Reenable
-							/*if (features.hasMotionSensor)
-								systemUpdateMotionSensor();*/
+							/*if (features.hasMotionSensor)*/
+							inputDriver->update_motion_sensor(inputDriver);
+
 							UPDATE_REG(0x130, P1);
 							u16 P1CNT = READ16LE(((u16 *)&ioMem[0x132]));
 							// this seems wrong, but there are cases where the game
@@ -2009,4 +2010,8 @@ updateLoop:
 
 guint gba_get_speed() {
 	return speed;
+}
+
+void gba_init_input(InputDriver *driver) {
+	inputDriver = driver;
 }
