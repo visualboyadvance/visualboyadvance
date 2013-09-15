@@ -363,7 +363,7 @@ int main(int argc, char **argv)
 	const gchar* savesDir = settings_get_save_dir();
 	g_mkdir_with_parents(savesDir, 0777);
 
-	Display::initColorMap(19, 11, 3);
+	display_init_color_map(19, 11, 3);
 
 	// Init the sound driver
 	SoundDriver *soundDriver = sound_sdl_init(&err);

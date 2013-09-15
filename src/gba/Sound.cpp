@@ -20,7 +20,7 @@
 #define FIFOB_H 0xa6
 #define NR52 0x84
 
-SoundDriver * soundDriver = 0;
+static SoundDriver * soundDriver = NULL;
 
 extern bool stopState;      // TODO: silence sound when true
 

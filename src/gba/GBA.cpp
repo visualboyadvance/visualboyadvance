@@ -282,7 +282,7 @@ void CPUWriteState(gzFile gzFile)
 	utilGzWrite(gzFile, workRAM, 0x40000);
 	utilGzWrite(gzFile, vram, 0x20000);
 	utilGzWrite(gzFile, oam, 0x400);
-	Display::saveState(gzFile);
+	display_save_state(gzFile);
 	utilGzWrite(gzFile, ioMem, 0x400);
 
 	soundSaveGame(gzFile);
@@ -336,7 +336,7 @@ gboolean CPUReadState(gzFile gzFile, GError **err) {
 	utilGzRead(gzFile, workRAM, 0x40000);
 	utilGzRead(gzFile, vram, 0x20000);
 	utilGzRead(gzFile, oam, 0x400);
-	Display::readState(gzFile);
+	display_read_state(gzFile);
 	utilGzRead(gzFile, ioMem, 0x400);
 
 	soundReadGame(gzFile, version);
@@ -371,7 +371,7 @@ void CPUCleanUp()
 
 	MMU::uninit();
 
-	Display::uninit();
+	display_free();
 }
 
 gboolean CPUInitMemory(GError **err) {
@@ -384,7 +384,7 @@ gboolean CPUInitMemory(GError **err) {
 		return FALSE;
 	}
 
-	if (!Display::init()) {
+	if (!display_init()) {
 		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
 				"Failed to allocate memory for %s", "PIX");
 		CPUCleanUp();
@@ -1445,7 +1445,7 @@ void CPUReset()
 	// clean palette
 	memset(paletteRAM, 0, 0x400);
 	// clean picture
-	Display::clear();
+	display_clear();
 	// clean vram
 	memset(vram, 0, 0x20000);
 	// clean io memory
@@ -1752,7 +1752,7 @@ updateLoop:
 								UPDATE_REG(0x202, IF);
 							}
 							CPUCheckDMA(1, 0x0f);
-							Display::drawScreen();
+							display_draw_screen();
 						}
 
 						UPDATE_REG(0x04, DISPSTAT);
@@ -1762,7 +1762,7 @@ updateLoop:
 					else
 					{
 						GFX::renderLine();
-						Display::drawLine(VCOUNT, GFX::lineMix);
+						display_draw_line(VCOUNT, GFX::lineMix);
 
 						// entering H-Blank
 						DISPSTAT |= 2;

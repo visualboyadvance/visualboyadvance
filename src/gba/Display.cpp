@@ -1,16 +1,34 @@
-#include "Display.h"
-#include "../System.h"
-#include <algorithm>
+// VBA-M, A Nintendo Handheld Console Emulator
+// Copyright (C) 2008 VBA-M development team
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-namespace Display
-{
+#include "Display.h"
+
+#include "../System.h"
+#include "../common/Util.h"
+
+#include <string.h>
+
 static const int width = 240;
 static const int height = 160;
 
 static u32 colorMap[0x10000];
-static u32 *pix;
+static guint32 *pix;
 
-void initColorMap(int redShift, int greenShift, int blueShift)
+void display_init_color_map(int redShift, int greenShift, int blueShift)
 {
 	for (int i = 0; i < 0x10000; i++)
 	{
@@ -20,37 +38,34 @@ void initColorMap(int redShift, int greenShift, int blueShift)
 	}
 }
 
-void saveState(gzFile gzFile)
+void display_save_state(gzFile gzFile)
 {
 	utilGzWrite(gzFile, pix, 4 * width * height);
 }
 
-void readState(gzFile gzFile)
+void display_read_state(gzFile gzFile)
 {
 	utilGzRead(gzFile, pix, 4 * width * height);
 }
 
-void uninit()
+void display_free()
 {
-	if (pix)
-	{
-		delete pix;
-		pix = 0;
-	}
+	g_free(pix);
+	pix = NULL;
 }
 
-bool init()
+gboolean display_init()
 {
-	pix = new u32[width * height];
+	pix = (guint32 *)g_malloc(width * height * sizeof(guint32));
 	return pix != 0;
 }
 
-void clear()
+void display_clear()
 {
-	std::fill(pix, pix + width * height, 0);
+	memset(pix, width * height * sizeof(guint32), 0);
 }
 
-void drawLine(int line, u32* src)
+void display_draw_line(int line, u32* src)
 {
 	u32 *dest = pix + width * line;
 	for (int x = 0; x < width; )
@@ -77,9 +92,7 @@ void drawLine(int line, u32* src)
 	}
 }
 
-void drawScreen()
+void display_draw_screen()
 {
 	systemDrawScreen(pix);
 }
-
-} // namespace Display
