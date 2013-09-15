@@ -359,7 +359,7 @@ static void flush_samples(Multi_Buffer * buffer)
 	{
 		buffer->read_samples( (blip_sample_t*) soundFinalWave, out_buf_size );
 		if (soundPaused)
-			soundResume();
+			soundPause(FALSE);
 
 		soundDriver->write(soundDriver, soundFinalWave, soundBufferLen);
 	}
@@ -466,18 +466,11 @@ void soundShutdown()
 	soundDriver = NULL;
 }
 
-void soundPause()
+void soundPause(gboolean pause)
 {
-	soundPaused = true;
+	soundPaused = pause;
 	if (soundDriver)
-		soundDriver->pause(soundDriver, TRUE);
-}
-
-void soundResume()
-{
-	soundPaused = false;
-	if (soundDriver)
-		soundDriver->pause(soundDriver, FALSE);
+		soundDriver->pause(soundDriver, pause);
 }
 
 void soundSetVolume( float volume )

@@ -17,8 +17,7 @@ void soundSetVolume( float );
 float soundGetVolume();
 
 // Pauses/resumes system sound output
-void soundPause();
-void soundResume();
+void soundPause(gboolean pause);
 
 // Cleans up sound. Afterwards, soundInit() can be called again.
 void soundShutdown();

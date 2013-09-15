@@ -52,6 +52,7 @@ static int srcHeight = 0;
 int emulating = 0;
 
 static bool paused = false;
+static bool inactive = false;
 static bool fullscreen = false;
 
 static int  mouseCounter = 0;
@@ -179,13 +180,9 @@ static void sdlPollEvents()
       break;
     case SDL_ACTIVEEVENT:
       if(!paused && settings_pause_when_inactive() && (event.active.state & SDL_APPINPUTFOCUS)) {
-    	  paused = event.active.gain;
-          if(!paused) {
-              soundResume();
-          } else if(paused) {
-              soundPause();
-          }
-        }
+        inactive = !event.active.gain;
+        soundPause(inactive);
+      }
       break;
     case SDL_MOUSEMOTION:
     case SDL_MOUSEBUTTONUP:
@@ -227,7 +224,7 @@ static void sdlPollEvents()
         if(!(event.key.keysym.mod & MOD_NOCTRL) &&
            (event.key.keysym.mod & KMOD_CTRL)) {
           paused = !paused;
-          SDL_PauseAudio(paused);
+          soundPause(paused);
 	  g_message(paused?"Pause on":"Pause off");
         }
         break;
@@ -423,7 +420,7 @@ int main(int argc, char **argv)
   g_free(windowTitle);
 
   while(emulating) {
-    if(!paused) {
+    if(!paused && !inactive) {
       CPULoop(250000);
     } else {
       SDL_Delay(500);
