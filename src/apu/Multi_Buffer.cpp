@@ -35,34 +35,6 @@ Multi_Buffer::channel_t Multi_Buffer::channel( int /*index*/ )
 	return ch;
 }
 
-// Silent_Buffer
-
-Silent_Buffer::Silent_Buffer() : Multi_Buffer( 1 ) // 0 channels would probably confuse
-{
-	// TODO: better to use empty Blip_Buffer so caller never has to check for NULL?
-	chan.left   = 0;
-	chan.center = 0;
-	chan.right  = 0;
-}
-
-// Mono_Buffer
-
-Mono_Buffer::Mono_Buffer() : Multi_Buffer( 1 )
-{
-	chan.center = &buf;
-	chan.left   = &buf;
-	chan.right  = &buf;
-}
-
-Mono_Buffer::~Mono_Buffer() { }
-
-blargg_err_t Mono_Buffer::set_sample_rate( long rate, int msec )
-{
-	RETURN_ERR( buf.set_sample_rate( rate, msec ) );
-	return Multi_Buffer::set_sample_rate( buf.sample_rate(), buf.length() );
-}
-
-
 // Tracked_Blip_Buffer
 
 Tracked_Blip_Buffer::Tracked_Blip_Buffer()

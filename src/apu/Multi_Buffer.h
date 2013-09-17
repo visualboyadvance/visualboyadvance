@@ -74,27 +74,6 @@ private:
 	bool immediate_removal_;
 };
 
-// Uses a single buffer and outputs mono samples.
-class Mono_Buffer : public Multi_Buffer {
-	Blip_Buffer buf;
-	channel_t chan;
-public:
-	// Buffer used for all channels
-	Blip_Buffer* center() { return &buf; }
-
-public:
-	Mono_Buffer();
-	~Mono_Buffer();
-	blargg_err_t set_sample_rate( long rate, int msec = blip_default_length );
-	void clock_rate( long rate ) { buf.clock_rate( rate ); }
-	void bass_freq( int freq ) { buf.bass_freq( freq ); }
-	void clear() { buf.clear(); }
-	long samples_avail() const { return buf.samples_avail(); }
-	long read_samples( blip_sample_t* p, long s ) { return buf.read_samples( p, s ); }
-	channel_t channel( int ) { return chan; }
-	void end_frame( blip_time_t t ) { buf.end_frame( t ); }
-};
-
 	class Tracked_Blip_Buffer : public Blip_Buffer {
 	public:
 		// Non-zero if buffer still has non-silent samples in it. Requires that you call
@@ -161,32 +140,11 @@ private:
 	long samples_avail_;
 };
 
-// Silent_Buffer generates no samples, useful where no sound is wanted
-class Silent_Buffer : public Multi_Buffer {
-	channel_t chan;
-public:
-	Silent_Buffer();
-	blargg_err_t set_sample_rate( long rate, int msec = blip_default_length );
-	void clock_rate( long ) { }
-	void bass_freq( int ) { }
-	void clear() { }
-	channel_t channel( int ) { return chan; }
-	void end_frame( blip_time_t ) { }
-	long samples_avail() const { return 0; }
-	long read_samples( blip_sample_t*, long ) { return 0; }
-};
-
-
 inline blargg_err_t Multi_Buffer::set_sample_rate( long rate, int msec )
 {
 	sample_rate_ = rate;
 	length_ = msec;
 	return 0;
-}
-
-inline blargg_err_t Silent_Buffer::set_sample_rate( long rate, int msec )
-{
-	return Multi_Buffer::set_sample_rate( rate, msec );
 }
 
 inline int Multi_Buffer::samples_per_frame() const { return samples_per_frame_; }
