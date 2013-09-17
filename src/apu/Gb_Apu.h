@@ -91,12 +91,6 @@ public:
 public:
 	Gb_Apu();
 
-	// Use set_output() in place of these
-	BLARGG_DEPRECATED void output    (        Blip_Buffer* c                                 ) { set_output( c, c, c    ); }
-	BLARGG_DEPRECATED void output    (        Blip_Buffer* c, Blip_Buffer* l, Blip_Buffer* r ) { set_output( c, l, r    ); }
-	BLARGG_DEPRECATED void osc_output( int i, Blip_Buffer* c                                 ) { set_output( c, c, c, i ); }
-	BLARGG_DEPRECATED void osc_output( int i, Blip_Buffer* c, Blip_Buffer* l, Blip_Buffer* r ) { set_output( c, l, r, i ); }
-
 private:
 	// noncopyable
 	Gb_Apu( const Gb_Apu& );

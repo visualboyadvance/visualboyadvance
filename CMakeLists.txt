@@ -73,7 +73,6 @@ SET(SRC_GBA
 
 SET(SRC_APU
 	src/apu/Blip_Buffer.cpp
-	src/apu/Effects_Buffer.cpp
 	src/apu/Gb_Apu.cpp
 	src/apu/Gb_Apu_State.cpp
 	src/apu/Gb_Oscs.cpp
