@@ -64,7 +64,7 @@ SET(SRC_GBA
 	src/gba/GfxMode3.cpp
 	src/gba/GfxMode4.cpp
 	src/gba/GfxMode5.cpp
-	src/gba/Globals.cpp
+	src/gba/Globals.c
 	src/gba/Link.cpp
 	src/gba/MMU.cpp
 	src/gba/Savestate.cpp
