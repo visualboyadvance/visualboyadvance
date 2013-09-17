@@ -1,4 +1,3 @@
-#include "GBA.h"
 #include "Globals.h"
 #include "Gfx.h"
 #include "GfxHelpers.h"
