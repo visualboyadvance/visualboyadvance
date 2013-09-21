@@ -219,8 +219,14 @@ gboolean settings_read_config_file(GError **err) {
 	GKeyFile *file = g_key_file_new();
 	if (!g_key_file_load_from_file(file, settings.configFileName, G_KEY_FILE_KEEP_COMMENTS, err)) {
 		g_key_file_free(file);
+
 		g_prefix_error(err, "Failed to read configuration file '%s' : ", settings.configFileName);
-		return FALSE;
+
+		// If the file cannot be found this function is a noop
+		if (g_error_matches(*err, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
+			g_clear_error(err);
+		}
+		return TRUE;
 	}
 
 	if (!settings_read_boolean(file, "display", "fullscreen", &settings.fullscreen, err)) {
