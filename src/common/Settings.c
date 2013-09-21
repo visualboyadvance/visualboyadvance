@@ -249,9 +249,15 @@ gboolean settings_read_config_file(GError **err) {
 
 		g_prefix_error(err, "Failed to read configuration file '%s' : ", settings.configFileName);
 
-		// If the file cannot be found this function is a noop
+		// If the file cannot be found, write a default configuration file
 		if (g_error_matches(*err, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
 			g_clear_error(err);
+
+			if (!settings_write_config_file(err)) {
+				return FALSE;
+			}
+
+			g_message("Wrote default configuration file to '%s'", settings.configFileName);
 		}
 		return TRUE;
 	}
@@ -297,6 +303,51 @@ gboolean settings_read_config_file(GError **err) {
 	}
 
 	g_key_file_free(file);
+
+	return TRUE;
+}
+
+gboolean settings_write_config_file(GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
+	GKeyFile *file = g_key_file_new();
+
+	// Intentional no error checking
+	g_key_file_load_from_file(file, settings.configFileName, G_KEY_FILE_KEEP_COMMENTS, NULL);
+
+	// Write settings according to the description list
+	for (int i = 0; i < G_N_ELEMENTS(settingsList); i++) {
+		SettingDescription desc = settingsList[i];
+		switch (desc.type) {
+		case BOOLEAN:
+			g_key_file_set_boolean(file, desc.group_name, desc.key, *(gboolean *)desc.setting);
+			break;
+		case STRING:
+			if (*(gchar **)desc.setting) {
+				g_key_file_set_string(file, desc.group_name, desc.key, *(gchar **)desc.setting);
+			} else {
+				g_key_file_set_string(file, desc.group_name, desc.key, "");
+			}
+			break;
+		case INTEGER:
+			g_key_file_set_integer(file, desc.group_name, desc.key, *(gint *)desc.setting);
+			break;
+		case DOUBLE:
+			g_key_file_set_double(file, desc.group_name, desc.key, *(gdouble *)desc.setting);
+			break;
+		}
+	}
+
+	gchar *string = g_key_file_to_data(file, NULL, NULL);
+	g_key_file_free(file);
+
+	if (!g_file_set_contents(settings.configFileName, string, -1, err)) {
+		g_free(string);
+		g_prefix_error(err, "Failed to write configuration file '%s' : ", settings.configFileName);
+		return FALSE;
+	}
+
+	g_free(string);
 
 	return TRUE;
 }

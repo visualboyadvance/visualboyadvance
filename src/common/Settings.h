@@ -66,6 +66,14 @@ void settings_display_usage(GError *err);
 gboolean settings_read_config_file(GError **err);
 
 /**
+ * Save the current settings to the configuration file
+ *
+ * @param err return location for a GError, or NULL
+ * @return whether writing the configuration file was successful
+ */
+gboolean settings_write_config_file(GError **err);
+
+/**
  * Validate that the current settings are good enough to allow games to run
  *
  * @param err return location for a GError, or NULL
