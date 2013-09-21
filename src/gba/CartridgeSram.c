@@ -19,12 +19,12 @@
 #include "CartridgeSram.h"
 #include <string.h>
 
-static const size_t sramSize = 0x10000;
-static guint8 sramData[sramSize];
+#define SRAM_SIZE 0x10000
+static guint8 sramData[SRAM_SIZE];
 
 void cartridge_sram_init()
 {
-	memset(sramData, 0xFF, sramSize);
+	memset(sramData, 0xFF, SRAM_SIZE);
 }
 
 guint8 cartridge_sram_read(guint32 address)
@@ -44,5 +44,5 @@ gboolean cartridge_sram_read_battery(FILE *file, size_t size)
 
 gboolean cartridge_sram_write_battery(FILE *file)
 {
-	return fwrite(sramData, 1, sramSize, file) == sramSize;
+	return fwrite(sramData, 1, SRAM_SIZE, file) == SRAM_SIZE;
 }
