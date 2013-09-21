@@ -1,12 +1,10 @@
 bin
-gsettings
 CMakeFiles
-gvbam
 CMakeCache.txt
 Makefile
 cmake_install.cmake
 .cproject
 .project
-libvbamcore.a
 install_manifest.txt
-/src/gtk/Resources.c
+/vba
+/libvbacore.a

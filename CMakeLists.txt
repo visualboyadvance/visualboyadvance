@@ -1,17 +1,22 @@
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(VERSION 2.8)
 
-# The project's name is VBA-M it uses C++ code
-PROJECT(VBA-M C CXX)
+# The project's name is VBA it uses C++ code
+PROJECT(VBA C CXX)
 
 # CMake include path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
+
+# GCC doesn't enable C99 by default
+IF(CMAKE_COMPILER_IS_GNUCC)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+ENDIF()
 
 # Set the version number with -DVERSION=X.X.X-uber
 
 # Version number
 IF( NOT VERSION )
-	SET( VERSION "1.8.0-SVN" )
+	SET( VERSION "2.0.0-git" )
 ENDIF( NOT VERSION )
 
 # Look for some dependencies using builtin CMake scripts
@@ -22,7 +27,7 @@ FIND_PACKAGE ( Glib REQUIRED )
 
 # Set the default install dir
 IF( NOT DATA_INSTALL_DIR )
-	SET( DATA_INSTALL_DIR "share/vba-ttb" )
+	SET( DATA_INSTALL_DIR "share/vba" )
 ENDIF( NOT DATA_INSTALL_DIR )
 
 SET( PKGDATADIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR} )
@@ -94,7 +99,7 @@ INCLUDE_DIRECTORIES(
 )
 
 ADD_LIBRARY (
-	vbamcore
+	vbacore
 	${PROJECT_SRCS}
 	${SRC_MAIN}
 	${SRC_GBA}
@@ -102,15 +107,14 @@ ADD_LIBRARY (
 )
 
 ADD_EXECUTABLE (
-	vbam
+	vba
 	WIN32
-	MACOSX_BUNDLE
 	${SRC_SDL}
 )
 
 TARGET_LINK_LIBRARIES (
-	vbam
-	vbamcore
+	vba
+	vbacore
 	${LibArchive_LIBRARIES}
 	${ZLIB_LIBRARIES}
 	${SDL_LIBRARY}
@@ -118,6 +122,6 @@ TARGET_LINK_LIBRARIES (
 )
 
 # Installation
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/vbam DESTINATION bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/vba DESTINATION bin)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xml DESTINATION ${DATA_INSTALL_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/game-db.xsd DESTINATION ${DATA_INSTALL_DIR})

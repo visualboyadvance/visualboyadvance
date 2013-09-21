@@ -19,7 +19,7 @@
 #include "Settings.h"
 
 // Directory within confdir to use for default save location.
-#define CONF_DIR "vbam"
+#define CONF_DIR "vba"
 
 // key-file <=> button mapping
 static struct {

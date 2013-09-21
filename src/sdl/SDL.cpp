@@ -321,7 +321,7 @@ static gboolean loadROM(const char *file, GError **err) {
 
 int main(int argc, char **argv)
 {
-	fprintf(stdout, "VBA-M version %s [SDL]\n", VERSION);
+	fprintf(stdout, "VBA version %s\n", VERSION);
 
 	GError *err = NULL;
 	gchar *filename = NULL;
