@@ -19,7 +19,7 @@
 #include "Settings.h"
 
 // Directory within confdir to use for default save location.
-#define CONF_DIR "vba"
+#define CONF_DIR "visualboyadvance"
 
 // key-file <=> button mapping
 static struct {
@@ -71,11 +71,38 @@ static GOptionEntry commandLineOptions[] = {
   { NULL }
 };
 
+typedef enum {
+	STRING,
+	BOOLEAN,
+	INTEGER,
+	DOUBLE
+} SettingType;
+
+typedef struct {
+	gpointer setting;
+	const gchar *group_name;
+	const gchar *key;
+	SettingType type;
+} SettingDescription;
+
+static SettingDescription settingsList[] = {
+	&settings.fullscreen, "display", "fullscreen", BOOLEAN,
+	&settings.showSpeed, "display", "showSpeed", BOOLEAN,
+	&settings.pauseWhenInactive, "display", "pauseWhenInactive", BOOLEAN,
+	&settings.disableStatus, "display", "disableStatus", BOOLEAN,
+	&settings.biosFileName, "paths", "biosFileName", STRING,
+	&settings.batteryDir, "paths", "batteryDir", STRING,
+	&settings.saveDir, "paths", "saveDir", STRING,
+	&settings.soundVolume, "sound", "volume", DOUBLE,
+	&settings.soundSampleRate, "sound", "sampleRate", INTEGER
+};
+
 void settings_init() {
+	const gchar *userConfigDir = g_get_user_config_dir();
 	const gchar *userDataDir = g_get_user_data_dir();
 
 	// Setup default values
-	settings.configFileName = g_build_filename(userDataDir, CONF_DIR, "config", NULL);
+	settings.configFileName = g_build_filename(userConfigDir, CONF_DIR, "config", NULL);
 	settings.biosFileName = NULL;
 	settings.saveDir = g_build_filename(userDataDir, CONF_DIR, NULL);
 	settings.batteryDir = g_build_filename(userDataDir, CONF_DIR, NULL);
@@ -229,49 +256,37 @@ gboolean settings_read_config_file(GError **err) {
 		return TRUE;
 	}
 
-	if (!settings_read_boolean(file, "display", "fullscreen", &settings.fullscreen, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
+	g_message("Using configuration file '%s'", settings.configFileName);
 
-	if (!settings_read_boolean(file, "display", "showSpeed", &settings.showSpeed, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_boolean(file, "display", "pauseWhenInactive", &settings.pauseWhenInactive, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_boolean(file, "display", "disableStatus", &settings.disableStatus, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_string(file, "paths", "biosFileName", &settings.biosFileName, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_string(file, "paths", "batteryDir", &settings.batteryDir, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_string(file, "paths", "saveDir", &settings.saveDir, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_double(file, "sound", "volume", &settings.soundVolume, err)) {
-		g_key_file_free(file);
-		return FALSE;
-	}
-
-	if (!settings_read_integer(file, "sound", "sampleRate", &settings.soundSampleRate, err)) {
-		g_key_file_free(file);
-		return FALSE;
+	// Read settings according to the description list
+	for (int i = 0; i < G_N_ELEMENTS(settingsList); i++) {
+		SettingDescription desc = settingsList[i];
+		switch (desc.type) {
+		case BOOLEAN:
+			if (!settings_read_boolean(file, desc.group_name, desc.key, desc.setting, err)) {
+				g_key_file_free(file);
+				return FALSE;
+			}
+			break;
+		case STRING:
+			if (!settings_read_string(file, desc.group_name, desc.key, desc.setting, err)) {
+				g_key_file_free(file);
+				return FALSE;
+			}
+			break;
+		case INTEGER:
+			if (!settings_read_integer(file, desc.group_name, desc.key, desc.setting, err)) {
+				g_key_file_free(file);
+				return FALSE;
+			}
+			break;
+		case DOUBLE:
+			if (!settings_read_double(file, desc.group_name, desc.key, desc.setting, err)) {
+				g_key_file_free(file);
+				return FALSE;
+			}
+			break;
+		}
 	}
 
 	for (guint i = 0; i < G_N_ELEMENTS(buttons); i++) {
