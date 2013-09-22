@@ -60,7 +60,7 @@ SET(SRC_GBA
 	src/gba/CPU.cpp
 	src/gba/CPUArm.cpp
 	src/gba/CPUThumb.cpp
-	src/gba/Display.cpp
+	src/gba/Display.c
 	src/gba/GBA.cpp
 	src/gba/Gfx.cpp
 	src/gba/GfxHelpers.cpp
