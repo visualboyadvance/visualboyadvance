@@ -341,27 +341,15 @@ static void end_frame( blip_time_t time )
 
 static void flush_samples(Multi_Buffer * buffer)
 {
-	// We want to write the data frame by frame to support legacy audio drivers
-	// that don't use the length parameter of the write method.
-	// TODO: Update the Win32 audio drivers (DS, OAL, XA2), and flush all the
-	// samples at once to help reducing the audio delay on all platforms.
-	int soundBufferLen = ( soundSampleRate / 60 ) * 4;
+	// The number of bytes of available sound date
+	int soundBufferLen = buffer->samples_avail() * sizeof(blip_sample_t);
 
-	// soundBufferLen should have a whole number of sample pairs
-	assert( soundBufferLen % (2 * sizeof *soundFinalWave) == 0 );
+	// Ensure we won't overflow soundFinalWave
+	assert(soundBufferLen < sizeof(soundFinalWave));
 
-	// number of samples in output buffer
-	int const out_buf_size = soundBufferLen / sizeof *soundFinalWave;
+	buffer->read_samples((blip_sample_t*) soundFinalWave, buffer->samples_avail());
 
-	// Keep filling and writing soundFinalWave until it can't be fully filled
-	while ( buffer->samples_avail() >= out_buf_size )
-	{
-		buffer->read_samples( (blip_sample_t*) soundFinalWave, out_buf_size );
-		if (soundPaused)
-			soundPause(FALSE);
-
-		soundDriver->write(soundDriver, soundFinalWave, soundBufferLen);
-	}
+	soundDriver->write(soundDriver, soundFinalWave, soundBufferLen);
 }
 
 static void apply_filtering()
