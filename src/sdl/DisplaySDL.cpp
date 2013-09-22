@@ -22,6 +22,9 @@
 
 #include <SDL.h>
 
+static const int screenWidth = 240;
+static const int screenHeigth = 160;
+
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
@@ -75,17 +78,29 @@ static void display_sdl_draw_screen(DisplayDriver *driver, guint32 *pix) {
 	DriverData *data = (DriverData *)driver->driverData;
 
 	// TODO: Don't draw text on pix
-	display_sdl_draw_screen_message(driver, (guint8*) pix, 240 * 4,
-			10, 160 - 20, 3000);
+	display_sdl_draw_screen_message(driver, (guint8*) pix, screenWidth * sizeof(*pix),
+			10, screenHeigth - 20, 3000);
 
 	if (settings_show_speed())
-		display_sdl_draw_speed((guint8*) pix, 240 * 4, 10, 20);
+		display_sdl_draw_speed((guint8*) pix, screenWidth * sizeof(*pix), 10, 20);
 
 
-	SDL_UpdateTexture(data->screen, NULL, pix, 240 * 4);
+	SDL_UpdateTexture(data->screen, NULL, pix, screenWidth * sizeof(*pix));
 	// TODO: Error checking
 
-	SDL_RenderCopy(data->renderer, data->screen, NULL, NULL);
+	// Do letterboxing to preserve aspect ratio regardless of the window size
+	int windowWidth, windowHeight;
+	SDL_GetWindowSize(data->window, &windowWidth, &windowHeight);
+
+	double scale = MIN(windowHeight / (double)screenHeigth, windowWidth / (double)screenWidth);
+	SDL_Rect screenRect;
+	screenRect.w = screenWidth * scale;
+	screenRect.h = screenHeigth * scale;
+	screenRect.x = (windowWidth - screenRect.w) / 2;
+	screenRect.y = (windowHeight - screenRect.h) / 2;
+
+	SDL_RenderClear(data->renderer);
+	SDL_RenderCopy(data->renderer, data->screen, NULL, &screenRect);
 	// TODO: Error checking
 
 	SDL_RenderPresent(data->renderer);
@@ -96,13 +111,11 @@ gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	int width = 240;
-	int height = 160;
-
-	int flags = data->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+	int flags = SDL_WINDOW_RESIZABLE;
+	flags |= data->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 
 	data->window = SDL_CreateWindow("Visual Boy Advance",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeigth, flags);
 	if (data->window == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
 				"Failed to create window: %s", SDL_GetError());
@@ -117,7 +130,7 @@ gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 	}
 
 	data->screen = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_ARGB8888,
-			SDL_TEXTUREACCESS_STREAMING, width, height);
+			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeigth);
 	if (data->screen == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
 				"Failed to create texture: %s", SDL_GetError());
