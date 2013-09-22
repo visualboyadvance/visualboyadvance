@@ -24,19 +24,8 @@
 static const int width = 240;
 static const int height = 160;
 
-static u32 colorMap[0x10000];
-static guint32 *pix;
+static guint16 *pix;
 static DisplayDriver *displayDriver = NULL;
-
-void display_init_color_map(int redShift, int greenShift, int blueShift)
-{
-	for (int i = 0; i < 0x10000; i++)
-	{
-		colorMap[i] = ((i & 0x1f) << redShift) |
-		              (((i & 0x3e0) >> 5) << greenShift) |
-		              (((i & 0x7c00) >> 10) << blueShift);
-	}
-}
 
 void display_save_state(gzFile gzFile)
 {
@@ -61,7 +50,7 @@ void display_init(DisplayDriver *driver)
 
 	displayDriver = driver;
 
-	pix = (guint32 *)g_malloc(width * height * sizeof(guint32));
+	pix = (guint16 *)g_malloc(width * height * sizeof(guint16));
 }
 
 void display_clear()
@@ -71,28 +60,28 @@ void display_clear()
 
 void display_draw_line(int line, u32* src)
 {
-	u32 *dest = pix + width * line;
+	u16 *dest = pix + width * line;
 	for (int x = 0; x < width; )
 	{
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
 
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
 
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
 
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
-		*dest++ = colorMap[src[x++] & 0xFFFF];
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
+		*dest++ = src[x++] & 0xFFFF;
 	}
 }
 

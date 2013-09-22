@@ -33,8 +33,10 @@ struct DisplayDriver {
 
 	/**
 	 * Tell the driver the screen needs to be updated with new data
+	 * @param driver display driver
+	 * @param pix an array of 240*160 16bits BGR555 pixels
 	 */
-	void (*drawScreen)(DisplayDriver *driver, guint32 *pix);
+	void (*drawScreen)(DisplayDriver *driver, guint16 *pix);
 
 	/**
 	 * Opaque driver specific data

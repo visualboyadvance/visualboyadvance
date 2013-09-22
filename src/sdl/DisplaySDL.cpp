@@ -59,7 +59,7 @@ static void display_sdl_draw_screen_message(DisplayDriver *driver, guint8 *scree
 	if (data->screenMessage) {
 		if (((SDL_GetTicks() - data->screenMessageTime) < duration)
 				&& !settings_disable_status_messages()) {
-			text_draw(screen, pitch, x, y, data->screenMessageBuffer, FALSE);
+			text_draw(screen, pitch, x, y, data->screenMessageBuffer);
 		} else {
 			data->screenMessage = FALSE;
 		}
@@ -70,10 +70,10 @@ static void display_sdl_draw_speed(guint8 *screen, int pitch, int x, int y) {
 	char buffer[50];
 	sprintf(buffer, "%d%%", gba_get_speed());
 
-	text_draw(screen, pitch, x, y, buffer, TRUE);
+	text_draw(screen, pitch, x, y, buffer);
 }
 
-static void display_sdl_draw_screen(DisplayDriver *driver, guint32 *pix) {
+static void display_sdl_draw_screen(DisplayDriver *driver, guint16 *pix) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
@@ -81,9 +81,9 @@ static void display_sdl_draw_screen(DisplayDriver *driver, guint32 *pix) {
 	display_sdl_draw_screen_message(driver, (guint8*) pix, screenWidth * sizeof(*pix),
 			10, screenHeigth - 20, 3000);
 
-	if (settings_show_speed())
+	if (settings_show_speed()) {
 		display_sdl_draw_speed((guint8*) pix, screenWidth * sizeof(*pix), 10, 20);
-
+	}
 
 	SDL_UpdateTexture(data->screen, NULL, pix, screenWidth * sizeof(*pix));
 	// TODO: Error checking
@@ -129,7 +129,7 @@ gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 		return FALSE;
 	}
 
-	data->screen = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_ARGB8888,
+	data->screen = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_BGR555,
 			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeigth);
 	if (data->screen == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,

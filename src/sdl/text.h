@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-void text_draw(guint8 *screen, int pitch, int x, int y, const char *string, gboolean trans);
+void text_draw(guint8 *screen, int pitch, int x, int y, const char *string);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

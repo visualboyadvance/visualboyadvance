@@ -334,7 +334,6 @@ int main(int argc, char **argv)
 	}
 
 	display_init(displayDriver);
-	display_init_color_map(19, 11, 3);
 
 	// Init the sound driver
 	SoundDriver *soundDriver = sound_sdl_init(&err);

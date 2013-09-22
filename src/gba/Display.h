@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 void display_init(DisplayDriver *driver);
-void display_init_color_map(int redShift, int greenShift, int blueShift);
 void display_free();
 
 void display_read_state(gzFile gzFile);
