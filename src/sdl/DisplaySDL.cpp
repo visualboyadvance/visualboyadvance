@@ -23,7 +23,10 @@
 #include <SDL.h>
 
 typedef struct {
-	SDL_Surface *surface;
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *screen;
+
 	gboolean fullscreen;
 
 	gboolean screenMessage;
@@ -71,27 +74,24 @@ static void display_sdl_draw_screen(DisplayDriver *driver, guint32 *pix) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	guint8 *screen = (guint8*) data->surface->pixels;
-
-	SDL_LockSurface(data->surface);
-
-	for (guint l = 0; l < data->surface->h; l++) {
-		memcpy(screen, pix, data->surface->w * 4);
-		pix += data->surface->w;
-		screen += data->surface->pitch;
-	}
-
-	display_sdl_draw_screen_message(driver, (guint8*) data->surface->pixels, data->surface->pitch,
-			10, data->surface->h - 20, 3000);
+	// TODO: Don't draw text on pix
+	display_sdl_draw_screen_message(driver, (guint8*) pix, 240 * 4,
+			10, 160 - 20, 3000);
 
 	if (settings_show_speed())
-		display_sdl_draw_speed((guint8*) data->surface->pixels, data->surface->pitch, 10, 20);
+		display_sdl_draw_speed((guint8*) pix, 240 * 4, 10, 20);
 
-	SDL_UnlockSurface(data->surface);
-	SDL_Flip(data->surface);
+
+	SDL_UpdateTexture(data->screen, NULL, pix, 240 * 4);
+	// TODO: Error checking
+
+	SDL_RenderCopy(data->renderer, data->screen, NULL, NULL);
+	// TODO: Error checking
+
+	SDL_RenderPresent(data->renderer);
 }
 
-gboolean display_sdl_set_video_mode(DisplayDriver *driver, GError **err) {
+gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
@@ -99,13 +99,28 @@ gboolean display_sdl_set_video_mode(DisplayDriver *driver, GError **err) {
 	int width = 240;
 	int height = 160;
 
-	int flags = SDL_ANYFORMAT | SDL_HWSURFACE | SDL_DOUBLEBUF;
-	flags |= data->fullscreen ? SDL_FULLSCREEN : 0;
+	int flags = data->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 
-	data->surface = SDL_SetVideoMode(width, height, 32, flags);
-	if (data->surface == NULL) {
+	data->window = SDL_CreateWindow("Visual Boy Advance",
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+	if (data->window == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed to set video mode: %s", SDL_GetError());
+				"Failed to create window: %s", SDL_GetError());
+		return FALSE;
+	}
+
+	data->renderer = SDL_CreateRenderer(data->window, -1, SDL_RENDERER_ACCELERATED);
+	if (data->renderer == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to create renderer: %s", SDL_GetError());
+		return FALSE;
+	}
+
+	data->screen = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_STREAMING, width, height);
+	if (data->screen == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to create texture: %s", SDL_GetError());
 		return FALSE;
 	}
 
@@ -120,7 +135,9 @@ DisplayDriver *display_sdl_init(GError **err) {
 
 	DriverData *data = g_new(DriverData, 1);
 
-	data->surface = NULL;
+	data->window = NULL;
+	data->renderer = NULL;
+	data->screen = NULL;
 	data->fullscreen = settings_is_fullscreen();
 	data->screenMessage = FALSE;
 	data->screenMessageBuffer[0] = '\0';
@@ -128,7 +145,9 @@ DisplayDriver *display_sdl_init(GError **err) {
 
 	driver->driverData = data;
 
-	if (!display_sdl_set_video_mode(driver, err)) {
+	SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+	if (!display_sdl_create_window(driver, err)) {
 		g_free(driver->driverData);
 		g_free(driver);
 		return NULL;
@@ -140,6 +159,14 @@ DisplayDriver *display_sdl_init(GError **err) {
 void display_sdl_free(DisplayDriver *driver) {
 	if (driver == NULL)
 		return;
+
+	DriverData *data = (DriverData *)driver->driverData;
+
+	SDL_DestroyTexture(data->screen);
+	SDL_DestroyRenderer(data->renderer);
+	SDL_DestroyWindow(data->window);
+
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
 	g_free(driver->driverData);
 	g_free(driver);
@@ -157,17 +184,24 @@ gboolean display_sdl_toggle_fullscreen(DisplayDriver *driver, GError **err) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	gboolean oldFullscreen = data->fullscreen;
-
-	data->fullscreen = !data->fullscreen;
-
-	if (!display_sdl_set_video_mode(driver, err)) {
-		// Try to restore the previous video mode
-		data->fullscreen = oldFullscreen;
-		display_sdl_set_video_mode(driver, NULL);
-
+	if (SDL_SetWindowFullscreen(data->window, data->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP) < 0) {
 		return FALSE;
 	}
 
+	data->fullscreen = !data->fullscreen;
+
 	return TRUE;
+}
+
+void display_sdl_set_window_title(DisplayDriver *driver, const gchar *title) {
+	g_assert(driver != NULL);
+	DriverData *data = (DriverData *)driver->driverData;
+
+	if (title != NULL) {
+		gchar *fullTitle = g_strdup_printf("%s - Visual Boy Advance", title);
+		SDL_SetWindowTitle(data->window, fullTitle);
+		g_free (fullTitle);
+	} else {
+		SDL_SetWindowTitle(data->window, "Visual Boy Advance");
+	}
 }

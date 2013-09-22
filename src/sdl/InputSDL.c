@@ -44,13 +44,13 @@ static int autoFireCountdown = 0;
 static int autoFireMaxCount = 1;
 
 static uint32_t default_joypad[SETTINGS_NUM_BUTTONS] = {
-	SDLK_LEFT,  SDLK_RIGHT,
-	SDLK_UP,    SDLK_DOWN,
-	SDLK_z,     SDLK_x,
-	SDLK_RETURN,SDLK_BACKSPACE,
-	SDLK_a,     SDLK_s,
-	SDLK_SPACE,
-	SDLK_q,     SDLK_w,
+	SDL_SCANCODE_LEFT,  SDL_SCANCODE_RIGHT,
+	SDL_SCANCODE_UP,    SDL_SCANCODE_DOWN,
+	SDL_SCANCODE_Z,     SDL_SCANCODE_X,
+	SDL_SCANCODE_RETURN,SDL_SCANCODE_BACKSPACE,
+	SDL_SCANCODE_A,     SDL_SCANCODE_S,
+	SDL_SCANCODE_SPACE,
+	SDL_SCANCODE_Q,     SDL_SCANCODE_W,
 };
 
 static uint32_t joypad[SETTINGS_NUM_BUTTONS] = {
@@ -59,11 +59,11 @@ static uint32_t joypad[SETTINGS_NUM_BUTTONS] = {
 
 
 static uint32_t motion[4] = {
-	SDLK_KP4, SDLK_KP6, SDLK_KP8, SDLK_KP2
+	SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_6, SDL_SCANCODE_KP_8, SDL_SCANCODE_2
 };
 
 static uint32_t defaultMotion[4] = {
-	SDLK_KP4, SDLK_KP6, SDLK_KP8, SDLK_KP2
+	SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_6, SDL_SCANCODE_KP_8, SDL_SCANCODE_2
 };
 
 static int sensorX = 2047;
@@ -114,7 +114,7 @@ uint32_t input_sdl_get_event_code(const SDL_Event *event)
 	{
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
-		return event->key.keysym.sym;
+		return event->key.keysym.scancode;
 		break;
 	case SDL_JOYHATMOTION:
 		return hat_get_code(event);
@@ -495,7 +495,7 @@ static int input_get_sensor_y(InputDriver *driver)
 InputDriver *input_sdl_init(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_EVENTS)) {
 		g_set_error(err, INPUT_ERROR, G_INPUT_ERROR_FAILED,
 				"Failed to init joystick support: %s", SDL_GetError());
 		return NULL;
@@ -591,15 +591,15 @@ void input_sdl_free(InputDriver *driver) {
 
 void input_sdl_process_SDL_event(const SDL_Event *event)
 {
-//	fprintf(stdout, "%x\n", inputGetEventCode(event));
+	// fprintf(stdout, "%x\n", input_sdl_get_event_code(event));
 
 	switch (event->type)
 	{
 	case SDL_KEYDOWN:
-		key_update(event->key.keysym.sym, TRUE);
+		key_update(event->key.keysym.scancode, TRUE);
 		break;
 	case SDL_KEYUP:
-		key_update(event->key.keysym.sym, FALSE);
+		key_update(event->key.keysym.scancode, FALSE);
 		break;
 	case SDL_JOYHATMOTION:
 		hat_update(event->jhat.which,

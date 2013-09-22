@@ -123,6 +123,8 @@ SoundDriver *sound_sdl_init(GError **err) {
 
 	guint sampleRate = settings_sound_sample_rate();
 
+	SDL_InitSubSystem(SDL_INIT_AUDIO);
+
 	SDL_AudioSpec audio;
 	audio.freq = sampleRate;
 	audio.format = AUDIO_S16SYS;
@@ -170,6 +172,8 @@ void sound_sdl_free(SoundDriver *driver) {
 	ring_buffer_free(data->_rbuf);
 
 	SDL_CloseAudio();
+
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
 	emulating = iSave;
 

@@ -119,10 +119,10 @@ static void sdlReadBattery() {
 		display_sdl_show_screen_message(displayDriver, "Loaded battery");
 }
 
-#define MOD_KEYS    (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_META)
-#define MOD_NOCTRL  (KMOD_SHIFT|KMOD_ALT|KMOD_META)
-#define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_META)
-#define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_META)
+#define MOD_KEYS    (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
+#define MOD_NOCTRL  (KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
+#define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_GUI)
+#define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_GUI)
 
 static void sdlPollEvents()
 {
@@ -132,11 +132,18 @@ static void sdlPollEvents()
     case SDL_QUIT:
       emulating = 0;
       break;
-    case SDL_ACTIVEEVENT:
-      if(!paused && settings_pause_when_inactive() && (event.active.state & SDL_APPINPUTFOCUS)) {
-        inactive = !event.active.gain;
-        soundPause(inactive);
-      }
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+        if(!paused && settings_pause_when_inactive()) {
+          inactive = TRUE;
+          soundPause(inactive);
+        }
+    	break;
+    case SDL_WINDOWEVENT_FOCUS_GAINED:
+        if(!paused && settings_pause_when_inactive()) {
+          inactive = FALSE;
+          soundPause(inactive);
+        }
+    	break;
       break;
     case SDL_MOUSEMOTION:
     case SDL_MOUSEBUTTONUP:
@@ -373,9 +380,7 @@ int main(int argc, char **argv)
 
   emulating = 1;
 
-  gchar *windowTitle = g_strdup_printf("%s - VBA", cartridge_get_game_title());
-  SDL_WM_SetCaption(windowTitle, NULL);
-  g_free(windowTitle);
+  display_sdl_set_window_title(displayDriver, cartridge_get_game_title());
 
   while(emulating) {
     if(!paused && !inactive) {

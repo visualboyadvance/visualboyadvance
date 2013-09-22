@@ -65,6 +65,14 @@ gboolean display_sdl_toggle_fullscreen(DisplayDriver *driver, GError **err);
  */
 void display_sdl_show_screen_message(DisplayDriver *driver, const gchar *msg);
 
+/**
+ * Display an on screen text message
+ *
+ * @param driver display driver
+ * @param title title to be set
+ */
+void display_sdl_set_window_title(DisplayDriver *driver, const gchar *title);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
