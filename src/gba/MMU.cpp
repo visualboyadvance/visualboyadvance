@@ -167,13 +167,13 @@ bool init()
 
 void uninit()
 {
-	delete vram;
-	delete paletteRAM;
-	delete internalRAM;
-	delete workRAM;
-	delete bios;
-	delete oam;
-	delete ioMem;
+	delete[] vram;
+	delete[] paletteRAM;
+	delete[] internalRAM;
+	delete[] workRAM;
+	delete[] bios;
+	delete[] oam;
+	delete[] ioMem;
 }
 
 u32 read32(u32 address)

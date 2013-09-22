@@ -59,6 +59,7 @@ public:
 
 	void reset()
 	{
+		env_enabled = false;
 		env_delay = 0;
 		volume    = 0;
 		Gb_Osc::reset();
