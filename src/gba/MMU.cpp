@@ -1,5 +1,5 @@
-#include "../System.h"
 #include "../common/Port.h"
+#include "../common/Settings.h"
 #include "Cartridge.h"
 #include "CPU.h"
 #include "GBA.h"
@@ -181,7 +181,7 @@ u32 read32(u32 address)
  #ifdef GBA_LOGGING
 	if (address & 3)
 	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+		if (settings_log_channel_enabled(LOG_UNALIGNED_MEMORY))
  		{
 			g_message("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
  			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
@@ -206,7 +206,7 @@ u32 read16(u32 address)
  #ifdef GBA_LOGGING
  	if (address & 1)
 	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+		if (settings_log_channel_enabled(LOG_UNALIGNED_MEMORY))
 		{
 			g_message("Unaligned word read: %08x at %08x\n", address, CPU::armMode ?
 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
@@ -243,7 +243,7 @@ void write32(u32 address, u32 value)
 #ifdef GBA_LOGGING
 	if (address & 3)
 	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+		if (settings_log_channel_enabled(LOG_UNALIGNED_MEMORY))
 		{
 			g_message("Unaligned word write: %08x to %08x from %08x\n",
 			    value,
@@ -261,7 +261,7 @@ void write16(u32 address, u16 value)
 #ifdef GBA_LOGGING
 	if (address & 1)
 	{
-		if (systemVerbose & VERBOSE_UNALIGNED_MEMORY)
+		if (settings_log_channel_enabled(LOG_UNALIGNED_MEMORY))
 		{
 			g_message("Unaligned halfword write: %04x to %08x from %08x\n",
 			    value,
@@ -284,7 +284,7 @@ template<typename T>
 static T unreadable(u32 address)
 {
 #ifdef GBA_LOGGING
-		if (systemVerbose & VERBOSE_ILLEGAL_READ)
+		if (settings_log_channel_enabled(LOG_ILLEGAL_READ))
 		{
 			g_message("Illegal read: %08x at %08x\n", address, CPU::armMode ?
 			    CPU::armNextPC - 4 : CPU::armNextPC - 2);
@@ -409,7 +409,7 @@ template<typename T>
 static void unwritable(u32 address, T value)
 {
 #ifdef GBA_LOGGING
-	if (systemVerbose & VERBOSE_ILLEGAL_WRITE)
+	if (settings_log_channel_enabled(LOG_ILLEGAL_WRITE))
 	{
 		g_message("Illegal write: %02x to %08x from %08x\n",
 			value,

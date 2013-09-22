@@ -17,7 +17,6 @@
 
 #include "Display.h"
 
-#include "../System.h"
 #include "../common/Util.h"
 
 #include <string.h>

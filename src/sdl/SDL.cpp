@@ -24,8 +24,6 @@
 #include <sys/stat.h>
 #include <math.h>
 
-#include "../System.h"
-
 #include <SDL.h>
 
 #include "../gba/GBA.h"
@@ -43,8 +41,6 @@
 #include <glib.h>
 
 DisplayDriver *displayDriver = NULL;
-
-int systemVerbose = 0;
 
 int emulating = 0;
 

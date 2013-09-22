@@ -56,6 +56,8 @@ typedef struct {
 	guint soundSampleRate;
 	gdouble soundVolume;
 
+	guint logChannels;
+
 	guint32 joypad[G_N_ELEMENTS(buttons)];
 } Settings;
 
@@ -94,7 +96,8 @@ static SettingDescription settingsList[] = {
 	&settings.batteryDir, "paths", "batteryDir", STRING,
 	&settings.saveDir, "paths", "saveDir", STRING,
 	&settings.soundVolume, "sound", "volume", DOUBLE,
-	&settings.soundSampleRate, "sound", "sampleRate", INTEGER
+	&settings.soundSampleRate, "sound", "sampleRate", INTEGER,
+	&settings.logChannels, "system", "logChannels", INTEGER
 };
 
 void settings_init() {
@@ -114,6 +117,8 @@ void settings_init() {
 
 	settings.soundSampleRate = 44100;
 	settings.soundVolume = 1.0f;
+
+	settings.logChannels = 0;
 
 	for (guint i = 0; i < G_N_ELEMENTS(buttons); i++) {
 		settings.joypad[buttons[i].button] = 0;
@@ -413,6 +418,10 @@ gdouble settings_sound_volume() {
 
 guint settings_sound_sample_rate() {
 	return settings.soundSampleRate;
+}
+
+gboolean settings_log_channel_enabled(LogChannel channel) {
+	return settings.logChannels & (1 << channel);
 }
 
 guint32 settings_get_button_mapping(EKey button) {

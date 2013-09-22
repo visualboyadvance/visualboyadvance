@@ -109,6 +109,29 @@ gdouble settings_sound_volume();
 guint settings_sound_sample_rate();
 
 /**
+ * Available log channels
+ */
+typedef enum {
+	LOG_SWI = 1,
+	LOG_UNALIGNED_MEMORY,
+	LOG_ILLEGAL_WRITE,
+	LOG_ILLEGAL_READ,
+	LOG_DMA0,
+	LOG_DMA1,
+	LOG_DMA2,
+	LOG_DMA3,
+	LOG_UNDEFINED,
+	LOG_AGBPRINT,
+	LOG_SOUNDOUTPUT,
+} LogChannel;
+
+/**
+ * @param channel log channel
+ * @return TRUE if the specified log channel is enabled
+ */
+gboolean settings_log_channel_enabled(LogChannel channel);
+
+/**
  * @param button emulated button for which to query mapping information
  * @return button mapping code
  */

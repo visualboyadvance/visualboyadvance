@@ -2,7 +2,7 @@
 #include "CPU.h"
 #include "Globals.h"
 #include "MMU.h"
-#include "../System.h"
+#include "../common/Settings.h"
 
 namespace CPU
 {
@@ -14,7 +14,7 @@ static int clockTicks;
 static INSN_REGPARM void thumbUnknownInsn(u32 opcode)
 {
 #ifdef GBA_LOGGING
-	if (systemVerbose & VERBOSE_UNDEFINED)
+	if (settings_log_channel_enabled(LOG_UNDEFINED))
 		g_message("Undefined THUMB instruction %04x at %08x\n", opcode, armNextPC-2);
 #endif
 	CPUUndefinedException();

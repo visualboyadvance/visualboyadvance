@@ -2,7 +2,7 @@
 #include "GBA.h"
 #include "Globals.h"
 #include "MMU.h"
-#include "../System.h"
+#include "../common/Settings.h"
 
 #include <algorithm>
 
@@ -453,7 +453,7 @@ void CPUSoftwareInterrupt(int comment)
 	if (armState) comment >>= 16;
 
 #ifdef GBA_LOGGING
-	if (systemVerbose & VERBOSE_SWI)
+	if (settings_log_channel_enabled(LOG_SWI))
 	{
 		g_message("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
 		    armState ? armNextPC - 4: armNextPC -2,

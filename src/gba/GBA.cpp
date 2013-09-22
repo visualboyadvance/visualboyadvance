@@ -16,7 +16,7 @@
 #include "../common/Util.h"
 #include "../common/Port.h"
 #include "../common/Loader.h"
-#include "../System.h"
+#include "../common/Settings.h"
 
 #ifdef LINK_EMULATION
 #include "Link.h"
@@ -544,7 +544,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				break;
 			}
 #ifdef GBA_LOGGING
-			if (systemVerbose & VERBOSE_DMA0)
+			if (settings_log_channel_enabled(LOG_DMA0))
 			{
 				int count = (DM0CNT_L ? DM0CNT_L : 0x4000) << 1;
 				if (DM0CNT_H & 0x0400)
@@ -610,7 +610,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			if (reason == 3)
 			{
 #ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_DMA1)
+				if (settings_log_channel_enabled(LOG_DMA1))
 				{
 					g_message("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
 					    DM1CNT_H,
@@ -623,7 +623,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			else
 			{
 #ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_DMA1)
+				if (settings_log_channel_enabled(LOG_DMA1))
 				{
 					int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
 					if (DM1CNT_H & 0x0400)
@@ -690,7 +690,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			if (reason == 3)
 			{
 #ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_DMA2)
+				if (settings_log_channel_enabled(LOG_DMA2))
 				{
 					int count = (4) << 2;
 					g_message("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
@@ -704,7 +704,7 @@ void CPUCheckDMA(int reason, int dmamask)
 			else
 			{
 #ifdef GBA_LOGGING
-				if (systemVerbose & VERBOSE_DMA2)
+				if (settings_log_channel_enabled(LOG_DMA2))
 				{
 					int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
 					if (DM2CNT_H & 0x0400)
@@ -769,7 +769,7 @@ void CPUCheckDMA(int reason, int dmamask)
 				break;
 			}
 #ifdef GBA_LOGGING
-			if (systemVerbose & VERBOSE_DMA3)
+			if (settings_log_channel_enabled(LOG_DMA3))
 			{
 				int count = (DM3CNT_L ? DM3CNT_L : 0x10000) << 1;
 				if (DM3CNT_H & 0x0400)
