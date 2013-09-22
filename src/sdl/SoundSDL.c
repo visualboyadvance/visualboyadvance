@@ -43,12 +43,12 @@ static void sound_sdl_read(SoundDriver *driver, guint8 *stream, int len) {
 	if (!data->_initialized || len <= 0 || !emulating)
 		return;
 
-	SDL_mutexP(data->_mutex);
+	SDL_LockMutex(data->_mutex);
 
 	ring_buffer_read(data->_rbuf, stream, len);
 
 	SDL_CondSignal(data->_cond);
-	SDL_mutexV(data->_mutex);
+	SDL_UnlockMutex(data->_mutex);
 }
 
 static void sound_sdl_write(SoundDriver *driver, guint16 * finalWave, int length) {
@@ -61,7 +61,7 @@ static void sound_sdl_write(SoundDriver *driver, guint16 * finalWave, int length
 	if (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)
 		SDL_PauseAudio(0);
 
-	SDL_mutexP(data->_mutex);
+	SDL_LockMutex(data->_mutex);
 
 	unsigned int samples = length / 4;
 
@@ -82,14 +82,14 @@ static void sound_sdl_write(SoundDriver *driver, guint16 * finalWave, int length
 		else
 		{
 			// Drop the remaining of the audio data
-			SDL_mutexV(data->_mutex);
+			SDL_UnlockMutex(data->_mutex);
 			return;
 		}
 	}
 
 	ring_buffer_write(data->_rbuf, finalWave, samples * 4);
 
-	SDL_mutexV(data->_mutex);
+	SDL_UnlockMutex(data->_mutex);
 }
 
 static void sound_sdl_pause(SoundDriver *driver, gboolean pause) {
@@ -165,7 +165,7 @@ void sound_sdl_free(SoundDriver *driver) {
 	int iSave = emulating;
 	emulating = 0;
 	SDL_CondSignal(data->_cond);
-	SDL_mutexV(data->_mutex);
+	SDL_UnlockMutex(data->_mutex);
 
 	SDL_DestroyCond(data->_cond);
 	SDL_DestroyMutex(data->_mutex);
