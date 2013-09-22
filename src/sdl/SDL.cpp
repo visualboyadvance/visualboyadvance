@@ -35,44 +35,23 @@
 #include "../gba/Sound.h"
 #include "../common/Util.h"
 
-#include "text.h"
+#include "DisplaySDL.h"
 #include "InputSDL.h"
 #include "SoundSDL.h"
 #include "../common/Settings.h"
 
 #include <glib.h>
 
-static SDL_Surface *surface = NULL;
+DisplayDriver *displayDriver = NULL;
 
 int systemVerbose = 0;
-
-static int srcWidth = 0;
-static int srcHeight = 0;
 
 int emulating = 0;
 
 static bool paused = false;
 static bool inactive = false;
-static bool fullscreen = false;
 
 static int  mouseCounter = 0;
-
-static bool screenMessage = false;
-static char screenMessageBuffer[21];
-static u32  screenMessageTime = 0;
-
-static void sdlScreenMessage(const char *msg)
-{
-  screenMessage = true;
-  screenMessageTime = SDL_GetTicks();
-  if(strlen(msg) > 20) {
-    strncpy(screenMessageBuffer, msg, 20);
-    screenMessageBuffer[20] = 0;
-  } else
-    strcpy(screenMessageBuffer, msg);
-
-  g_message("%s", msg);
-}
 
 static void sdlChangeVolume(float d)
 {
@@ -85,7 +64,7 @@ static void sdlChangeVolume(float d)
 	if (fabs(newVolume - oldVolume) > 0.001) {
 		char tmp[32];
 		sprintf(tmp, "Volume: %i%%", (int)(newVolume*100.0+0.5));
-		sdlScreenMessage(tmp);
+		display_sdl_show_screen_message(displayDriver, tmp);
 		soundSetVolume(newVolume);
 	}
 }
@@ -102,7 +81,7 @@ static void sdlWriteState(int num)
 		message = g_strdup_printf("Wrote state %d", num + 1);
 	}
 
-	sdlScreenMessage(message);
+	display_sdl_show_screen_message(displayDriver, message);
 	g_free(message);
 }
 
@@ -117,7 +96,7 @@ static void sdlReadState(int num) {
 		message = g_strdup_printf("Loaded state %d", num + 1);
 	}
 
-	sdlScreenMessage(message);
+	display_sdl_show_screen_message(displayDriver, message);
 	g_free(message);
 }
 
@@ -132,7 +111,7 @@ static void sdlWriteBattery() {
 		message = g_strdup_printf("Wrote battery");
 	}
 
-	sdlScreenMessage(message);
+	display_sdl_show_screen_message(displayDriver, message);
 	g_free(message);
 }
 
@@ -141,28 +120,7 @@ static void sdlReadBattery() {
 	gboolean res = cartridge_read_battery(NULL);
 
 	if (res)
-		sdlScreenMessage("Loaded battery");
-}
-
-//void sdlReadDesktopVideoMode() {
-//  const SDL_VideoInfo* vInfo = SDL_GetVideoInfo();
-//  desktopWidth = vInfo->current_w;
-//  desktopHeight = vInfo->current_h;
-//}
-
-static void sdlInitVideo() {
-  int flags;
-
-  flags = SDL_ANYFORMAT | (fullscreen ? SDL_FULLSCREEN : 0);
-  flags |= SDL_HWSURFACE | SDL_DOUBLEBUF;
-
-  surface = SDL_SetVideoMode(srcWidth, srcHeight, 32, flags);
-
-  if(surface == NULL) {
-	  g_printerr("Failed to set video mode\n");
-    SDL_Quit();
-    exit(-1);
-  }
+		display_sdl_show_screen_message(displayDriver, "Loaded battery");
 }
 
 #define MOD_KEYS    (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_META)
@@ -187,7 +145,7 @@ static void sdlPollEvents()
     case SDL_MOUSEMOTION:
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:
-      if(fullscreen) {
+      if(display_sdl_is_fullscreen(displayDriver)) {
         SDL_ShowCursor(SDL_ENABLE);
         mouseCounter = 120;
       }
@@ -207,7 +165,7 @@ static void sdlPollEvents()
           if(emulating) {
             CPUReset();
 
-            sdlScreenMessage("Reset");
+            display_sdl_show_screen_message(displayDriver, "Reset");
           }
         }
         break;
@@ -234,8 +192,7 @@ static void sdlPollEvents()
       case SDLK_f:
         if(!(event.key.keysym.mod & MOD_NOCTRL) &&
            (event.key.keysym.mod & KMOD_CTRL)) {
-          fullscreen = !fullscreen;
-          sdlInitVideo();
+          display_sdl_toggle_fullscreen(displayDriver, NULL);
         }
         break;
       case SDLK_F1:
@@ -281,9 +238,9 @@ static void sdlPollEvents()
 	    k = KEY_BUTTON_L;
 
           if(input_sdl_toggle_autofire(k)) {
-            sdlScreenMessage(enableMessages[event.key.keysym.sym - SDLK_1]);
+        	  display_sdl_show_screen_message(displayDriver, enableMessages[event.key.keysym.sym - SDLK_1]);
           } else {
-            sdlScreenMessage(disableMessages[event.key.keysym.sym - SDLK_1]);
+        	  display_sdl_show_screen_message(displayDriver, disableMessages[event.key.keysym.sym - SDLK_1]);
           }
         }
         break;
@@ -363,6 +320,17 @@ int main(int argc, char **argv)
 	const gchar* savesDir = settings_get_save_dir();
 	g_mkdir_with_parents(savesDir, 0777);
 
+	// Init the display driver
+	displayDriver = display_sdl_init(&err);
+	if (displayDriver == NULL) {
+		g_printerr("%s\n", err->message);
+		settings_free();
+
+		g_clear_error(&err);
+		exit(1);
+	}
+
+	display_init(displayDriver);
 	display_init_color_map(19, 11, 3);
 
 	// Init the sound driver
@@ -407,12 +375,6 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-  srcWidth = 240;
-  srcHeight = 160;
-
-  fullscreen = settings_is_fullscreen();
-  sdlInitVideo();
-
   emulating = 1;
 
   gchar *windowTitle = g_strdup_printf("%s - VBA", cartridge_get_game_title());
@@ -435,13 +397,16 @@ int main(int argc, char **argv)
 
   emulating = 0;
   fprintf(stdout,"Shutting down\n");
+  sdlWriteBattery();
+
   soundShutdown();
+  cartridge_unload();
+  display_free();
+  CPUCleanUp();
+
   sound_sdl_free(soundDriver);
   input_sdl_free(inputDriver);
-
-  sdlWriteBattery();
-  cartridge_unload();
-  CPUCleanUp();
+  display_sdl_free(displayDriver);
 
   SDL_Quit();
 
@@ -450,48 +415,4 @@ int main(int argc, char **argv)
   g_free(filename);
 
   return 0;
-}
-
-static void drawScreenMessage(u8 *screen, int pitch, int x, int y, unsigned int duration)
-{
-  if(screenMessage) {
-    if(((SDL_GetTicks() - screenMessageTime) < duration) &&
-       !settings_disable_status_messages()) {
-      drawText(screen, pitch, x, y,
-               screenMessageBuffer, false);
-    } else {
-      screenMessage = false;
-    }
-  }
-}
-
-static void drawSpeed(u8 *screen, int pitch, int x, int y)
-{
-  char buffer[50];
-  sprintf(buffer, "%d%%", gba_get_speed());
-
-  drawText(screen, pitch, x, y, buffer, true);
-}
-
-void systemDrawScreen(u32 *pix)
-{
-  u8 *screen = (u8*)surface->pixels;
-
-    SDL_LockSurface(surface);
-
-    for (uint l = 0; l < srcHeight; l++) {
-    	memcpy(screen, pix, srcWidth * 4);
-    	pix += srcWidth;
-        screen += surface->pitch;
-    }
-
-    screen = (u8*)surface->pixels;
-
-  drawScreenMessage(screen, srcWidth * 4, 10, srcHeight - 20, 3000);
-
-  if (settings_show_speed())
-    drawSpeed(screen, srcWidth * 4, 10, 20);
-
-  SDL_UnlockSurface(surface);
-  SDL_Flip(surface);
 }

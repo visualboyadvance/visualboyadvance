@@ -1,6 +1,6 @@
-// VBA-M, A Nintendo Handheld Console Emulator
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
 // Copyright (C) 2008 VBA-M development team
-//
+
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2, or(at your option)
@@ -15,32 +15,50 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef __VBA_DISPLAY_DRIVER_H__
+#define __VBA_DISPLAY_DRIVER_H__
 
-#include <glib.h>
-#include <zlib.h>
-#include "../common/DisplayDriver.h"
+#include "glib.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void display_init(DisplayDriver *driver);
-void display_init_color_map(int redShift, int greenShift, int blueShift);
-void display_free();
+/**
+ * Sound driver abstract interface for the core to use to output sound.
+ */
+typedef struct DisplayDriver DisplayDriver;
+struct DisplayDriver {
 
-void display_read_state(gzFile gzFile);
-void display_save_state(gzFile gzFile);
+	/**
+	 * Tell the driver the screen needs to be updated with new data
+	 */
+	void (*drawScreen)(DisplayDriver *driver, guint32 *pix);
 
-void display_draw_line(int line, guint32* src);
-void display_draw_screen();
-void display_clear();
+	/**
+	 * Opaque driver specific data
+	 */
+	gpointer driverData;
+};
+
+/**
+ * Sound error domain
+ */
+#define DISPLAY_ERROR (display_error_quark ())
+GQuark display_error_quark();
+
+/**
+ * Loader error types
+ */
+typedef enum
+{
+	G_DISPLAY_ERROR_FAILED
+} DisplayError;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DISPLAY_H
+#endif // __VBA_DISPLAY_DRIVER_H__

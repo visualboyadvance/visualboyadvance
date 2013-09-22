@@ -3,8 +3,6 @@
 
 #include "common/Types.h"
 
-extern void systemDrawScreen(u32 *pix);
-
 #define VERBOSE_SWI                  1
 #define VERBOSE_UNALIGNED_MEMORY     2
 #define VERBOSE_ILLEGAL_WRITE        4

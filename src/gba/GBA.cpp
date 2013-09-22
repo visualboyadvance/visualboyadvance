@@ -370,8 +370,6 @@ void CPUCleanUp()
 	cartridge_free();
 
 	MMU::uninit();
-
-	display_free();
 }
 
 gboolean CPUInitMemory(GError **err) {
@@ -380,13 +378,6 @@ gboolean CPUInitMemory(GError **err) {
 	if (!MMU::init()) {
 		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
 				"Failed to allocate memory for %s", "MMU");
-		CPUCleanUp();
-		return FALSE;
-	}
-
-	if (!display_init()) {
-		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
-				"Failed to allocate memory for %s", "PIX");
 		CPUCleanUp();
 		return FALSE;
 	}

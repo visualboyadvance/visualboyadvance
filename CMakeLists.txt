@@ -40,6 +40,7 @@ ADD_DEFINITIONS (-DGBA_LOGGING)
 
 # Source files definition
 SET(SRC_MAIN
+	src/common/DisplayDriver.c
 	src/common/GameDB.c
 	src/common/GameInfos.c
 	src/common/InputDriver.c
@@ -85,9 +86,10 @@ SET(SRC_APU
 )
 
 SET(SRC_SDL
+	src/sdl/DisplaySDL.cpp
 	src/sdl/InputSDL.c
 	src/sdl/SDL.cpp
-	src/sdl/text.cpp
+	src/sdl/text.c
 	src/sdl/SoundSDL.c
 )
 

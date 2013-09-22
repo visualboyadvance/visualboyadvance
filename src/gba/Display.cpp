@@ -27,6 +27,7 @@ static const int height = 160;
 
 static u32 colorMap[0x10000];
 static guint32 *pix;
+static DisplayDriver *displayDriver = NULL;
 
 void display_init_color_map(int redShift, int greenShift, int blueShift)
 {
@@ -52,12 +53,16 @@ void display_free()
 {
 	g_free(pix);
 	pix = NULL;
+	displayDriver = NULL;
 }
 
-gboolean display_init()
+void display_init(DisplayDriver *driver)
 {
+	g_assert(driver != NULL);
+
+	displayDriver = driver;
+
 	pix = (guint32 *)g_malloc(width * height * sizeof(guint32));
-	return pix != 0;
 }
 
 void display_clear()
@@ -94,5 +99,5 @@ void display_draw_line(int line, u32* src)
 
 void display_draw_screen()
 {
-	systemDrawScreen(pix);
+	displayDriver->drawScreen(displayDriver, pix);
 }

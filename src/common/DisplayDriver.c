@@ -1,5 +1,6 @@
 // VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
-// Copyright (C) 2008 VBA-M development team
+// Copyright (C) 1999-2003 Forgotten
+// Copyright (C) 2005-2006 Forgotten and the VBA development team
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,23 +14,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software Foundation,
-// Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+// Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef __VBA_TEXT_H__
-#define __VBA_TEXT_H__
+#include "DisplayDriver.h"
 
-#include "glib.h"
-
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void text_draw(guint8 *screen, int pitch, int x, int y, const char *string, gboolean trans);
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
+GQuark display_error_quark() {
+	return g_quark_from_static_string("display_error_quark");
 }
-#endif
-
-#endif // __VBA_TEXT_H__
