@@ -16,6 +16,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "DisplaySDL.h"
+#include "GameScreen.h"
 #include "text.h"
 #include "../common/Settings.h"
 #include "../gba/GBA.h"
@@ -28,7 +29,8 @@ static const int screenHeigth = 160;
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	SDL_Texture *screen;
+	GSList *renderables;
+	GameScreen *screen;
 
 	gboolean fullscreen;
 
@@ -36,6 +38,25 @@ typedef struct {
 	char screenMessageBuffer[21];
 	guint32  screenMessageTime;
 } DriverData;
+
+static void display_sdl_render(DisplayDriver *driver) {
+	g_assert(driver != NULL);
+	DriverData *data = (DriverData *)driver->driverData;
+
+	// Clear the screen
+	SDL_RenderClear(data->renderer);
+
+	// Then render the renderables
+	GSList *it = data->renderables;
+	while (it != NULL) {
+		Renderable *renderable = (Renderable *)it->data;
+		renderable->render(renderable->entity);
+		it = g_slist_next(it);
+	}
+
+	SDL_RenderPresent(data->renderer);
+	// TODO: Error checking
+}
 
 void display_sdl_show_screen_message(DisplayDriver *driver, const gchar *msg) {
 	g_assert(driver != NULL);
@@ -85,28 +106,12 @@ static void display_sdl_draw_screen(DisplayDriver *driver, guint16 *pix) {
 		display_sdl_draw_speed((guint8*) pix, screenWidth * sizeof(*pix), 10, 20);
 	}
 
-	SDL_UpdateTexture(data->screen, NULL, pix, screenWidth * sizeof(*pix));
-	// TODO: Error checking
+	gamescreen_update(data->screen, pix);
 
-	// Do letterboxing to preserve aspect ratio regardless of the window size
-	int windowWidth, windowHeight;
-	SDL_GetWindowSize(data->window, &windowWidth, &windowHeight);
-
-	double scale = MIN(windowHeight / (double)screenHeigth, windowWidth / (double)screenWidth);
-	SDL_Rect screenRect;
-	screenRect.w = screenWidth * scale;
-	screenRect.h = screenHeigth * scale;
-	screenRect.x = (windowWidth - screenRect.w) / 2;
-	screenRect.y = (windowHeight - screenRect.h) / 2;
-
-	SDL_RenderClear(data->renderer);
-	SDL_RenderCopy(data->renderer, data->screen, NULL, &screenRect);
-	// TODO: Error checking
-
-	SDL_RenderPresent(data->renderer);
+	display_sdl_render(driver);
 }
 
-gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
+static gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
@@ -129,13 +134,7 @@ gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 		return FALSE;
 	}
 
-	data->screen = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_BGR555,
-			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeigth);
-	if (data->screen == NULL) {
-		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed to create texture: %s", SDL_GetError());
-		return FALSE;
-	}
+	data->screen = gamescreen_create(driver);
 
 	return TRUE;
 }
@@ -150,7 +149,9 @@ DisplayDriver *display_sdl_init(GError **err) {
 
 	data->window = NULL;
 	data->renderer = NULL;
+	data->renderables = NULL;
 	data->screen = NULL;
+
 	data->fullscreen = settings_is_fullscreen();
 	data->screenMessage = FALSE;
 	data->screenMessageBuffer[0] = '\0';
@@ -175,7 +176,7 @@ void display_sdl_free(DisplayDriver *driver) {
 
 	DriverData *data = (DriverData *)driver->driverData;
 
-	SDL_DestroyTexture(data->screen);
+	gamescreen_free(data->screen);
 	SDL_DestroyRenderer(data->renderer);
 	SDL_DestroyWindow(data->window);
 
@@ -217,4 +218,31 @@ void display_sdl_set_window_title(DisplayDriver *driver, const gchar *title) {
 	} else {
 		SDL_SetWindowTitle(data->window, "Visual Boy Advance");
 	}
+}
+
+Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity) {
+	g_assert(driver != NULL);
+	DriverData *data = (DriverData *)driver->driverData;
+
+	Renderable *renderable = g_new(Renderable, 1);
+	renderable->entity = entity;
+	renderable->driver = driver;
+	renderable->renderer = data->renderer;
+	renderable->window = data->window;
+	renderable->render = NULL;
+
+	data->renderables = g_slist_append(data->renderables, renderable);
+
+	return renderable;
+}
+
+void display_sdl_renderable_free(Renderable *renderable) {
+	if (renderable == NULL)
+		return;
+
+	DriverData *data = (DriverData *)renderable->driver->driverData;
+
+	data->renderables = g_slist_remove(data->renderables, renderable);
+
+	g_free(renderable);
 }

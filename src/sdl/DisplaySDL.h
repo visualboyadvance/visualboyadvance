@@ -19,6 +19,7 @@
 #define __VBA_DISPLAY_SDL_H__
 
 #include "../common/DisplayDriver.h"
+#include <SDL.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -72,6 +73,46 @@ void display_sdl_show_screen_message(DisplayDriver *driver, const gchar *msg);
  * @param title title to be set
  */
 void display_sdl_set_window_title(DisplayDriver *driver, const gchar *title);
+
+/**
+ * Component allowing an entity to be rendered on the screen
+ */
+typedef struct Renderable Renderable;
+struct Renderable {
+	/** Render function for the entity */
+	void (*render)(gpointer entity);
+
+	/** Pointer to the parent entity */
+	gpointer entity;
+
+	/** Display driver to be used for rendering */
+	DisplayDriver *driver;
+
+	/** Window to draw on */
+	SDL_Window *window;
+
+	/** Renderer to use for rendering */
+	SDL_Renderer *renderer;
+};
+
+/**
+ * Create a new renderable component and add it to an entity
+ *
+ * The entity is rendered at each frame until the renderable component is freed
+ *
+ * @param driver Display driver to use for rendering
+ * @param entity Entity this component applies to
+ */
+Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity);
+
+/**
+ * Free a renderable component
+ *
+ * This will stop the associated entity from rendering
+ *
+ * @param renderable teh renderable component to free
+ */
+void display_sdl_renderable_free(Renderable *renderable);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
