@@ -40,6 +40,16 @@ SoundDriver *sound_sdl_init(GError **err);
  */
 void sound_sdl_free(SoundDriver *driver);
 
+/**
+ * Enable or disable sound synchronization
+ *
+ * Disabling sound synch makes the emulation speed unlimited
+ *
+ * @param enable value to set
+ * @param driver SDL sound driver
+ */
+void sound_sdl_enable_sync(SoundDriver *driver, gboolean enable);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

@@ -18,7 +18,6 @@
 
 #include "Globals.h"
 
-gboolean speedup = FALSE;
 int layerEnable = 0xff00;
 
 u8 *bios = 0;

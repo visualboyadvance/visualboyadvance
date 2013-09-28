@@ -190,11 +190,14 @@ static int input_get_sensor_y(InputDriver *driver)
 InputDriver *input_sdl_init(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
-	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS)) {
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS)) {
 		g_set_error(err, INPUT_ERROR, G_INPUT_ERROR_FAILED,
 				"Failed to init joystick support: %s", SDL_GetError());
 		return NULL;
 	}
+
+	SDL_JoystickEventState(SDL_ENABLE);
+	SDL_GameControllerEventState(SDL_ENABLE);
 
 	// Apply the button mapping from settings
 	for (guint i = 0; i < G_N_ELEMENTS(settings_buttons); i++) {
@@ -237,6 +240,12 @@ void input_sdl_process_SDL_event(const SDL_Event *event)
 		break;
 	case SDL_KEYUP:
 		key_update(event->key.keysym.scancode, FALSE);
+		break;
+	case SDL_CONTROLLERDEVICEADDED:
+		fprintf(stderr, "controller added %d", event->cdevice.which);
+		break;
+	case SDL_JOYDEVICEADDED:
+		fprintf(stderr, "joystick added %d", event->jdevice.which);
 		break;
 	}
 }

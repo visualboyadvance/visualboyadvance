@@ -27,7 +27,6 @@
 extern "C" {
 #endif
 
-extern gboolean speedup;
 extern int layerEnable;
 
 extern u8 *bios;

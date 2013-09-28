@@ -22,7 +22,6 @@
 #include <SDL.h>
 
 extern int emulating;
-extern gboolean speedup;
 
 typedef struct {
 	struct ring_buffer *_rbuf;
@@ -31,6 +30,7 @@ typedef struct {
 	SDL_mutex * _mutex;
 
 	gboolean _initialized;
+	gboolean sync;
 } DriverData;
 
 // Hold up to 100 ms of data in the ring buffer
@@ -75,7 +75,7 @@ static void sound_sdl_write(SoundDriver *driver, guint16 * finalWave, int length
 
 		// If emulating and not in speed up mode, synchronize to audio
 		// by waiting till there is enough room in the buffer
-		if (emulating && !speedup)
+		if (emulating && data->sync)
 		{
 			SDL_CondWait(data->_cond, data->_mutex);
 		}
@@ -145,6 +145,7 @@ SoundDriver *sound_sdl_init(GError **err) {
 	data->_cond = SDL_CreateCond();
 	data->_mutex = SDL_CreateMutex();
 	data->_initialized = TRUE;
+	data->sync = TRUE;
 
 	driver->driverData = data;
 
@@ -179,4 +180,11 @@ void sound_sdl_free(SoundDriver *driver) {
 
 	g_free(data);
 	g_free(driver);
+}
+
+void sound_sdl_enable_sync(SoundDriver *driver, gboolean enable) {
+	g_assert(driver != NULL);
+	DriverData *data = (DriverData *)driver->driverData;
+
+	data->sync = enable;
 }

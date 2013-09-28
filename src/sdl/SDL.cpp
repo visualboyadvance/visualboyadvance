@@ -42,6 +42,7 @@
 #include <glib.h>
 
 DisplayDriver *displayDriver = NULL;
+SoundDriver *soundDriver = NULL;
 
 int emulating = 0;
 
@@ -209,6 +210,16 @@ static gboolean sdlProcessEvent(const SDL_Event *event) {
 				return TRUE;
 			}
 			break;
+		case SDLK_SPACE:
+			sound_sdl_enable_sync(soundDriver, TRUE);
+			return TRUE;
+		}
+		break;
+	case SDL_KEYDOWN:
+		switch (event->key.keysym.sym) {
+		case SDLK_SPACE:
+			sound_sdl_enable_sync(soundDriver, FALSE);
+			return TRUE;
 		}
 		break;
 	}
@@ -305,7 +316,7 @@ int main(int argc, char **argv)
 	display_init(displayDriver);
 
 	// Init the sound driver
-	SoundDriver *soundDriver = sound_sdl_init(&err);
+	soundDriver = sound_sdl_init(&err);
 	if (soundDriver == NULL) {
 		g_printerr("%s\n", err->message);
 		settings_free();
