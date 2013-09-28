@@ -67,31 +67,10 @@ uint32_t input_sdl_get_keymap(EKey key);
 void input_sdl_set_motion_keymap(EKey key, uint32_t code);
 
 /**
- * Toggle Auto fire for the specified button. Only A, B, R, L are supported.
- * @param key Emulated joypad button
- * @return Auto fire enabled
- */
-gboolean input_sdl_toggle_autofire(EKey key);
-
-/**
- * Get Auto fire status for the specified button. Only A, B, R, L are supported.
- * @param key Emulated joypad button
- * @return Auto fire enabled
- */
-gboolean input_sdl_get_autofire(EKey key);
-
-/**
  * Update the emulated pads state with a SDL event
  * @param SDL_Event An event that has just occured
  */
 void input_sdl_process_SDL_event(const SDL_Event *event);
-
-/**
- * Get the keymap code corresponding to a SDL event
- * @param SDL_Event An event that has just occured
- * @return Keymap code
- */
-uint32_t input_sdl_get_event_code(const SDL_Event *event);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

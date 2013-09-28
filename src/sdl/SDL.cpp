@@ -214,40 +214,6 @@ static void sdlPollEvents()
         	sdlReadState(event.key.keysym.sym - SDLK_F1);
 	}
         break;
-      case SDLK_1:
-      case SDLK_2:
-      case SDLK_3:
-      case SDLK_4:
-        if(!(event.key.keysym.mod & MOD_NOALT) &&
-           (event.key.keysym.mod & KMOD_ALT)) {
-          const char *disableMessages[4] =
-            { "autofire A disabled",
-              "autofire B disabled",
-              "autofire R disabled",
-              "autofire L disabled"};
-          const char *enableMessages[4] =
-            { "autofire A",
-              "autofire B",
-              "autofire R",
-              "autofire L"};
-
-	  EKey k = KEY_BUTTON_A;
-	  if (event.key.keysym.sym == SDLK_1)
-	    k = KEY_BUTTON_A;
-	  else if (event.key.keysym.sym == SDLK_2)
-	    k = KEY_BUTTON_B;
-	  else if (event.key.keysym.sym == SDLK_3)
-	    k = KEY_BUTTON_R;
-	  else if (event.key.keysym.sym == SDLK_4)
-	    k = KEY_BUTTON_L;
-
-          if(input_sdl_toggle_autofire(k)) {
-        	  display_sdl_show_screen_message(displayDriver, enableMessages[event.key.keysym.sym - SDLK_1]);
-          } else {
-        	  display_sdl_show_screen_message(displayDriver, disableMessages[event.key.keysym.sym - SDLK_1]);
-          }
-        }
-        break;
       default:
         break;
       }

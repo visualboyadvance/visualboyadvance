@@ -35,10 +35,7 @@ static struct {
 	{ "button-select",  KEY_BUTTON_SELECT  },
 	{ "button-start",   KEY_BUTTON_START   },
 	{ "trigger-left",   KEY_BUTTON_L       },
-	{ "trigger-right",  KEY_BUTTON_R       },
-	{ "shortcut-speed", KEY_BUTTON_SPEED   },
-	{ "autofire-a",     KEY_BUTTON_AUTO_A  },
-	{ "autofire-b",     KEY_BUTTON_AUTO_B  }
+	{ "trigger-right",  KEY_BUTTON_R       }
 };
 
 // Available settings
