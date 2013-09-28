@@ -125,102 +125,104 @@ static void sdlReadBattery() {
 #define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_GUI)
 #define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_GUI)
 
-static void sdlPollEvents()
-{
-  SDL_Event event;
-  while(SDL_PollEvent(&event)) {
-    switch(event.type) {
-    case SDL_QUIT:
-      emulating = 0;
-      break;
-    case SDL_WINDOWEVENT_FOCUS_LOST:
-        if(!paused && settings_pause_when_inactive()) {
-          inactive = TRUE;
-          soundPause(inactive);
-        }
-    	break;
-    case SDL_WINDOWEVENT_FOCUS_GAINED:
-        if(!paused && settings_pause_when_inactive()) {
-          inactive = FALSE;
-          soundPause(inactive);
-        }
-    	break;
-      break;
-    case SDL_MOUSEMOTION:
-    case SDL_MOUSEBUTTONUP:
-    case SDL_MOUSEBUTTONDOWN:
-      if(display_sdl_is_fullscreen(displayDriver)) {
-        SDL_ShowCursor(SDL_ENABLE);
-        mouseCounter = 120;
-      }
-      break;
-    case SDL_JOYHATMOTION:
-    case SDL_JOYBUTTONDOWN:
-    case SDL_JOYBUTTONUP:
-    case SDL_JOYAXISMOTION:
-    case SDL_KEYDOWN:
-      input_sdl_process_SDL_event(&event);
-      break;
-    case SDL_KEYUP:
-      switch(event.key.keysym.sym) {
-      case SDLK_r:
-        if(!(event.key.keysym.mod & MOD_NOCTRL) &&
-           (event.key.keysym.mod & KMOD_CTRL)) {
-          if(emulating) {
-            CPUReset();
+static gboolean sdlProcessEvent(const SDL_Event *event) {
+	switch (event->type) {
+	case SDL_QUIT:
+		emulating = 0;
+		return TRUE;
+	case SDL_WINDOWEVENT_FOCUS_LOST:
+		if (!paused && settings_pause_when_inactive()) {
+			inactive = TRUE;
+			soundPause(inactive);
+		}
+		return FALSE;
+	case SDL_WINDOWEVENT_FOCUS_GAINED:
+		if (!paused && settings_pause_when_inactive()) {
+			inactive = FALSE;
+			soundPause(inactive);
+		}
+		return FALSE;
+	case SDL_MOUSEMOTION:
+	case SDL_MOUSEBUTTONUP:
+	case SDL_MOUSEBUTTONDOWN:
+		if (display_sdl_is_fullscreen(displayDriver)) {
+			SDL_ShowCursor(SDL_ENABLE);
+			mouseCounter = 120;
+		}
+		return FALSE;
+	case SDL_KEYUP:
+		switch (event->key.keysym.sym) {
+		case SDLK_r:
+			if (!(event->key.keysym.mod & MOD_NOCTRL)
+					&& (event->key.keysym.mod & KMOD_CTRL)) {
+				if (emulating) {
+					CPUReset();
 
-            display_sdl_show_screen_message(displayDriver, "Reset");
-          }
-        }
-        break;
-	break;
+					display_sdl_show_screen_message(displayDriver, "Reset");
+				}
 
-      case SDLK_KP_DIVIDE:
-        sdlChangeVolume(-0.1);
-        break;
-      case SDLK_KP_MULTIPLY:
-        sdlChangeVolume(0.1);
-        break;
+				return TRUE;
+			}
+			break;
 
-      case SDLK_p:
-        if(!(event.key.keysym.mod & MOD_NOCTRL) &&
-           (event.key.keysym.mod & KMOD_CTRL)) {
-          paused = !paused;
-          soundPause(paused);
-	  g_message(paused?"Pause on":"Pause off");
-        }
-        break;
-      case SDLK_ESCAPE:
-        emulating = 0;
-        break;
-      case SDLK_f:
-        if(!(event.key.keysym.mod & MOD_NOCTRL) &&
-           (event.key.keysym.mod & KMOD_CTRL)) {
-          display_sdl_toggle_fullscreen(displayDriver, NULL);
-        }
-        break;
-      case SDLK_F1:
-      case SDLK_F2:
-      case SDLK_F3:
-      case SDLK_F4:
-      case SDLK_F5:
-      case SDLK_F6:
-      case SDLK_F7:
-      case SDLK_F8:
-        if(!(event.key.keysym.mod & MOD_NOSHIFT) &&
-           (event.key.keysym.mod & KMOD_SHIFT)) {
-        	sdlWriteState(event.key.keysym.sym - SDLK_F1);
-        } else if(!(event.key.keysym.mod & MOD_KEYS)) {
-        	sdlReadState(event.key.keysym.sym - SDLK_F1);
+		case SDLK_KP_DIVIDE:
+			sdlChangeVolume(-0.1);
+			return TRUE;
+		case SDLK_KP_MULTIPLY:
+			sdlChangeVolume(0.1);
+			return TRUE;
+
+		case SDLK_p:
+			if (!(event->key.keysym.mod & MOD_NOCTRL)
+					&& (event->key.keysym.mod & KMOD_CTRL)) {
+				paused = !paused;
+				soundPause(paused);
+				g_message(paused ? "Pause on" : "Pause off");
+
+				return TRUE;
+			}
+			break;
+		case SDLK_ESCAPE:
+			emulating = 0;
+			return TRUE;
+		case SDLK_f:
+			if (!(event->key.keysym.mod & MOD_NOCTRL)
+					&& (event->key.keysym.mod & KMOD_CTRL)) {
+				display_sdl_toggle_fullscreen(displayDriver, NULL);
+				return TRUE;
+			}
+			break;
+		case SDLK_F1:
+		case SDLK_F2:
+		case SDLK_F3:
+		case SDLK_F4:
+		case SDLK_F5:
+		case SDLK_F6:
+		case SDLK_F7:
+		case SDLK_F8:
+			if (!(event->key.keysym.mod & MOD_NOSHIFT)
+					&& (event->key.keysym.mod & KMOD_SHIFT)) {
+				sdlWriteState(event->key.keysym.sym - SDLK_F1);
+				return TRUE;
+			} else if (!(event->key.keysym.mod & MOD_KEYS)) {
+				sdlReadState(event->key.keysym.sym - SDLK_F1);
+				return TRUE;
+			}
+			break;
+		}
+		break;
 	}
-        break;
-      default:
-        break;
-      }
-      input_sdl_process_SDL_event(&event);
-      break;
-    }
-  }
+
+	return FALSE;
+}
+
+static void sdlPollEvents() {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		if (!sdlProcessEvent(&event)) {
+			input_sdl_process_SDL_event(&event);
+		}
+	}
 }
 
 static gboolean loadROM(const char *file, GError **err) {
