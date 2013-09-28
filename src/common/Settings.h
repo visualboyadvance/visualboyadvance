@@ -93,6 +93,9 @@ const gchar *settings_get_bios();
 /** @return whether to start display fullscreen */
 gboolean settings_is_fullscreen();
 
+/** @return default zoom level */
+guint settings_zoom_factor();
+
 /** @return whether to pause the game when the window is inactive */
 gboolean settings_pause_when_inactive();
 

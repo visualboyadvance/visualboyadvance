@@ -49,6 +49,8 @@ typedef struct {
 	gchar *batteryDir;
 
 	gboolean fullscreen;
+	guint zoomFactor;
+
 	gboolean pauseWhenInactive;
 	gboolean showSpeed;
 	gboolean disableStatus;
@@ -89,6 +91,7 @@ typedef struct {
 
 static SettingDescription settingsList[] = {
 	&settings.fullscreen, "display", "fullscreen", BOOLEAN,
+	&settings.zoomFactor, "display", "zoomFactor", INTEGER,
 	&settings.showSpeed, "display", "showSpeed", BOOLEAN,
 	&settings.pauseWhenInactive, "display", "pauseWhenInactive", BOOLEAN,
 	&settings.disableStatus, "display", "disableStatus", BOOLEAN,
@@ -111,6 +114,8 @@ void settings_init() {
 	settings.batteryDir = g_build_filename(userDataDir, CONF_DIR, NULL);
 
 	settings.fullscreen = FALSE;
+	settings.zoomFactor = 3;
+
 	settings.pauseWhenInactive = FALSE;
 	settings.showSpeed = FALSE;
 	settings.disableStatus = FALSE;
@@ -398,6 +403,10 @@ const gchar *settings_get_bios() {
 
 gboolean settings_is_fullscreen() {
 	return settings.fullscreen;
+}
+
+guint settings_zoom_factor() {
+	return settings.zoomFactor;
 }
 
 gboolean settings_pause_when_inactive() {

@@ -94,11 +94,13 @@ static gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
+	guint zoomFactor = settings_zoom_factor();
+
 	int flags = SDL_WINDOW_RESIZABLE;
 	flags |= data->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 
 	data->window = SDL_CreateWindow("Visual Boy Advance",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeigth, flags);
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth * zoomFactor, screenHeigth * zoomFactor, flags);
 	if (data->window == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
 				"Failed to create window: %s", SDL_GetError());
