@@ -54,16 +54,68 @@ static uint32_t defaultMotion[4] = {
 static int sensorX = 2047;
 static int sensorY = 2047;
 
-uint32_t input_sdl_get_event_code(const SDL_Event *event)
-{
-	switch (event->type)
-	{
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
-		return event->key.keysym.scancode;
+static GSList *gamecontrollers;
+
+static void controller_open(gint32 index) {
+	SDL_GameController *c = SDL_GameControllerOpen(index);
+	gamecontrollers = g_slist_append(gamecontrollers, c);
+}
+
+static void controllers_close_removed() {
+	GSList *it = gamecontrollers;
+	while (it != NULL) {
+		SDL_GameController *controller = (SDL_GameController *)it->data;
+		it = g_slist_next(it);
+
+		if (!SDL_GameControllerGetAttached(controller)) {
+			SDL_GameControllerClose(controller);
+			gamecontrollers = g_slist_remove(gamecontrollers, controller);
+		}
+	}
+}
+
+static void controllers_close_all() {
+	GSList *it = gamecontrollers;
+	while (it != NULL) {
+		SDL_GameController *controller = (SDL_GameController *)it->data;
+		it = g_slist_next(it);
+
+		SDL_GameControllerClose(controller);
+		gamecontrollers = g_slist_remove(gamecontrollers, controller);
+	}
+}
+
+static void controller_update_button(guint8 button, gboolean down) {
+	switch (button) {
+	case SDL_CONTROLLER_BUTTON_A:
+		sdlButtons[KEY_BUTTON_A] = down;
 		break;
-	default:
-		return 0;
+	case SDL_CONTROLLER_BUTTON_B:
+		sdlButtons[KEY_BUTTON_B] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+		sdlButtons[KEY_DOWN] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+		sdlButtons[KEY_LEFT] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+		sdlButtons[KEY_RIGHT] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_UP:
+		sdlButtons[KEY_UP] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_START:
+		sdlButtons[KEY_BUTTON_START] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_BACK:
+		sdlButtons[KEY_BUTTON_SELECT] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+		sdlButtons[KEY_BUTTON_L] = down;
+		break;
+	case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+		sdlButtons[KEY_BUTTON_R] = down;
 		break;
 	}
 }
@@ -83,7 +135,7 @@ void input_sdl_set_motion_keymap(EKey key, uint32_t code)
 	motion[key] = code;
 }
 
-static void key_update(uint32_t key, gboolean down)
+static void key_update(SDL_Scancode key, gboolean down)
 {
 	for (int i = 0 ; i < SETTINGS_NUM_BUTTONS; i++) {
 		if (key == joypad[i])
@@ -196,8 +248,12 @@ InputDriver *input_sdl_init(GError **err) {
 		return NULL;
 	}
 
-	SDL_JoystickEventState(SDL_ENABLE);
-	SDL_GameControllerEventState(SDL_ENABLE);
+	// Open available controllers
+	for (int i = 0; i < SDL_NumJoysticks(); i++) {
+		if (SDL_IsGameController(i)) {
+			controller_open(i);
+		}
+	}
 
 	// Apply the button mapping from settings
 	for (guint i = 0; i < G_N_ELEMENTS(settings_buttons); i++) {
@@ -225,14 +281,14 @@ void input_sdl_free(InputDriver *driver) {
 	if (driver == NULL)
 		return;
 
+	controllers_close_all();
+
 	g_free(driver->driverData);
 	g_free(driver);
 }
 
 void input_sdl_process_SDL_event(const SDL_Event *event)
 {
-	// fprintf(stdout, "%x\n", input_sdl_get_event_code(event));
-
 	switch (event->type)
 	{
 	case SDL_KEYDOWN:
@@ -242,10 +298,16 @@ void input_sdl_process_SDL_event(const SDL_Event *event)
 		key_update(event->key.keysym.scancode, FALSE);
 		break;
 	case SDL_CONTROLLERDEVICEADDED:
-		fprintf(stderr, "controller added %d", event->cdevice.which);
+		controller_open(event->cdevice.which);
 		break;
-	case SDL_JOYDEVICEADDED:
-		fprintf(stderr, "joystick added %d", event->jdevice.which);
+	case SDL_CONTROLLERDEVICEREMOVED:
+		controllers_close_removed();
+		break;
+	case SDL_CONTROLLERBUTTONDOWN:
+		controller_update_button(event->cbutton.button, TRUE);
+		break;
+	case SDL_CONTROLLERBUTTONUP:
+		controller_update_button(event->cbutton.button, FALSE);
 		break;
 	}
 }
