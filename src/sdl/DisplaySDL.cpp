@@ -17,11 +17,12 @@
 
 #include "DisplaySDL.h"
 #include "GameScreen.h"
-#include "text.h"
+#include "OSD.h"
 #include "../common/Settings.h"
 #include "../gba/GBA.h"
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 
 static const int screenWidth = 240;
 static const int screenHeigth = 160;
@@ -31,12 +32,10 @@ typedef struct {
 	SDL_Renderer *renderer;
 	GSList *renderables;
 	GameScreen *screen;
+	TextOSD *speed;
+	TextOSD *status;
 
 	gboolean fullscreen;
-
-	gboolean screenMessage;
-	char screenMessageBuffer[21];
-	guint32  screenMessageTime;
 } DriverData;
 
 static void display_sdl_render(DisplayDriver *driver) {
@@ -50,62 +49,41 @@ static void display_sdl_render(DisplayDriver *driver) {
 	GSList *it = data->renderables;
 	while (it != NULL) {
 		Renderable *renderable = (Renderable *)it->data;
-		renderable->render(renderable->entity);
+		if (renderable->render) {
+			renderable->render(renderable->entity);
+		}
 		it = g_slist_next(it);
 	}
 
 	SDL_RenderPresent(data->renderer);
-	// TODO: Error checking
 }
 
 void display_sdl_show_screen_message(DisplayDriver *driver, const gchar *msg) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	data->screenMessage = TRUE;
-	data->screenMessageTime = SDL_GetTicks();
-	if (strlen(msg) > 20) {
-		strncpy(data->screenMessageBuffer, msg, 20);
-		data->screenMessageBuffer[20] = 0;
-	} else
-		strcpy(data->screenMessageBuffer, msg);
+	if (data->status != NULL) {
+		text_osd_set_message(data->status, msg);
+		text_osd_set_auto_clear(data->status, 3000);
+	}
 
 	g_message("%s", msg);
 }
 
-static void display_sdl_draw_screen_message(DisplayDriver *driver, guint8 *screen, int pitch, int x, int y, unsigned int duration) {
-	g_assert(driver != NULL);
-	DriverData *data = (DriverData *)driver->driverData;
+static void display_sdl_update_speed(TextOSD *speed) {
+	if (speed == NULL)
+		return;
 
-	if (data->screenMessage) {
-		if (((SDL_GetTicks() - data->screenMessageTime) < duration)
-				&& !settings_disable_status_messages()) {
-			text_draw(screen, pitch, x, y, data->screenMessageBuffer);
-		} else {
-			data->screenMessage = FALSE;
-		}
-	}
-}
-
-static void display_sdl_draw_speed(guint8 *screen, int pitch, int x, int y) {
 	char buffer[50];
 	sprintf(buffer, "%d%%", gba_get_speed());
-
-	text_draw(screen, pitch, x, y, buffer);
+	text_osd_set_message(speed, buffer);
 }
 
 static void display_sdl_draw_screen(DisplayDriver *driver, guint16 *pix) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	// TODO: Don't draw text on pix
-	display_sdl_draw_screen_message(driver, (guint8*) pix, screenWidth * sizeof(*pix),
-			10, screenHeigth - 20, 3000);
-
-	if (settings_show_speed()) {
-		display_sdl_draw_speed((guint8*) pix, screenWidth * sizeof(*pix), 10, 20);
-	}
-
+	display_sdl_update_speed(data->speed);
 	gamescreen_update(data->screen, pix);
 
 	display_sdl_render(driver);
@@ -134,7 +112,31 @@ static gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 		return FALSE;
 	}
 
-	data->screen = gamescreen_create(driver);
+	data->screen = gamescreen_create(driver, err);
+	if (data->screen == NULL) {
+		return FALSE;
+	}
+
+	if (settings_show_speed()) {
+		data->speed = text_osd_create(driver, " ", err);
+		if (data->speed == NULL) {
+			return FALSE;
+		}
+
+		text_osd_set_color(data->speed, 255, 0, 0);
+		text_osd_set_position(data->speed, 10, 10);
+		text_osd_set_opacity(data->speed, 75);
+	}
+
+	if (!settings_disable_status_messages()) {
+		data->status = text_osd_create(driver, " ", err);
+		if (data->status == NULL) {
+			return FALSE;
+		}
+
+		text_osd_set_color(data->status, 255, 0, 0);
+		text_osd_set_position(data->status, 10, -10);
+	}
 
 	return TRUE;
 }
@@ -151,19 +153,22 @@ DisplayDriver *display_sdl_init(GError **err) {
 	data->renderer = NULL;
 	data->renderables = NULL;
 	data->screen = NULL;
+	data->speed = NULL;
 
 	data->fullscreen = settings_is_fullscreen();
-	data->screenMessage = FALSE;
-	data->screenMessageBuffer[0] = '\0';
-	data->screenMessageTime = 0;
 
 	driver->driverData = data;
 
 	SDL_InitSubSystem(SDL_INIT_VIDEO);
 
+	if (TTF_Init()) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to initialize true type rendering: %s", TTF_GetError());
+		return FALSE;
+	}
+
 	if (!display_sdl_create_window(driver, err)) {
-		g_free(driver->driverData);
-		g_free(driver);
+		display_sdl_free(driver);
 		return NULL;
 	}
 
@@ -177,10 +182,14 @@ void display_sdl_free(DisplayDriver *driver) {
 	DriverData *data = (DriverData *)driver->driverData;
 
 	gamescreen_free(data->screen);
+	text_osd_free(data->speed);
+
 	SDL_DestroyRenderer(data->renderer);
 	SDL_DestroyWindow(data->window);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+	TTF_Quit();
 
 	g_free(driver->driverData);
 	g_free(driver);

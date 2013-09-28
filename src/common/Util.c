@@ -18,6 +18,24 @@
 
 #include "Util.h"
 
+gchar *data_get_file_path(const gchar *filename) {
+	// Use the data file from the source folder if it exists
+	// to make vbam runnable without installation
+	gchar *dataFilePath = g_build_filename("data", filename, NULL);
+	if (!g_file_test(dataFilePath, G_FILE_TEST_EXISTS))
+	{
+		g_free(dataFilePath);
+		dataFilePath = g_build_filename("data", "sdl", filename, NULL);
+	}
+	if (!g_file_test(dataFilePath, G_FILE_TEST_EXISTS))
+	{
+		g_free(dataFilePath);
+		dataFilePath = g_build_filename(PKGDATADIR, filename, NULL);
+	}
+
+	return dataFilePath;
+}
+
 void utilWriteInt(gzFile gzFile, int i)
 {
   utilGzWrite(gzFile, &i, sizeof(int));

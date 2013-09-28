@@ -1,0 +1,205 @@
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
+// Copyright (C) 2008 VBA-M development team
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#include "OSD.h"
+#include "Timer.h"
+#include "../common/Util.h"
+
+#include <SDL_ttf.h>
+
+struct TextOSD {
+	Renderable *renderable;
+	Timeout *autoclear;
+
+	gchar *message;
+	SDL_Color color;
+	gint size;
+	gint opacity;
+
+	gint x;
+	gint y;
+
+	SDL_Texture *texture;
+};
+
+static gboolean text_update_texture(TextOSD *text, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
+
+	SDL_DestroyTexture(text->texture);
+
+	gchar *fontFile = data_get_file_path("DroidSans-Bold.ttf");
+	TTF_Font *font = TTF_OpenFont(fontFile, 10);
+	g_free(fontFile);
+
+	if (font == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to load font: %s", TTF_GetError());
+		return FALSE;
+	}
+
+	SDL_Surface *surface = TTF_RenderText_Blended(font, text->message, text->color);
+	if (surface == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed render text: %s", TTF_GetError());
+		return FALSE;
+	}
+
+	text->texture = SDL_CreateTextureFromSurface(text->renderable->renderer, surface);
+	if (text->texture == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed create texture : %s", TTF_GetError());
+		return FALSE;
+	}
+
+	if (text->opacity != 100) {
+		SDL_SetTextureAlphaMod(text->texture, text->opacity * 255 / 100);
+	}
+
+	SDL_FreeSurface(surface);
+	TTF_CloseFont(font);
+
+	return TRUE;
+}
+
+static void text_osd_render(gpointer entity) {
+	TextOSD *text = entity;
+
+	if (text->texture == NULL) {
+		text_update_texture(text, NULL);
+	}
+
+	int textWidth, textHeight;
+	SDL_QueryTexture(text->texture, NULL, NULL, &textWidth, &textHeight);
+
+	int windowWidth, windowHeight;
+	SDL_GetWindowSize(text->renderable->window, &windowWidth, &windowHeight);
+
+	SDL_Rect screenRect;
+	screenRect.w = textWidth;
+	screenRect.h = textHeight;
+
+	if (text->x >= 0) {
+		screenRect.x = text->x;
+	} else {
+		screenRect.x = windowWidth - textWidth + text->x;
+	}
+
+	if (text->y >= 0) {
+		screenRect.y = text->y;
+	} else {
+		screenRect.y = windowHeight - textHeight + text->y;
+	}
+
+	SDL_RenderCopy(text->renderable->renderer, text->texture, NULL, &screenRect);
+}
+
+TextOSD *text_osd_create(DisplayDriver *driver, const gchar *message, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	TextOSD *text = g_new(TextOSD, 1);
+	text->renderable = display_sdl_renderable_create(driver, text);
+	text->renderable->render = text_osd_render;
+	text->autoclear = NULL;
+
+	text->message = g_strdup(message);
+	text->size = 10;
+	text->opacity = 100;
+	text->color.r = 0;
+	text->color.g = 0;
+	text->color.b = 0;
+	text->x = 0;
+	text->y = 0;
+	text->texture = NULL;
+
+	// Render here to perform error checking
+	if (!text_update_texture(text, err)) {
+		text_osd_free(text);
+		return NULL;
+	}
+
+	return text;
+}
+
+void text_osd_free(TextOSD *text) {
+	if (text == NULL)
+		return;
+
+	SDL_DestroyTexture(text->texture);
+
+	display_sdl_renderable_free(text->renderable);
+	timeout_free(text->autoclear);
+
+	g_free(text->message);
+	g_free(text);
+}
+
+void text_osd_set_message(TextOSD *text, const gchar *message) {
+	g_assert(text != NULL);
+
+	if (g_strcmp0(message, text->message) == 0)
+		return; // Nothing to update
+
+	g_free(text->message);
+	text->message = g_strdup(message);
+
+	SDL_DestroyTexture(text->texture);
+	text->texture = NULL;
+}
+
+void text_osd_set_color(TextOSD *text, guint8 r, guint8 g, guint8 b) {
+	g_assert(text != NULL);
+
+	text->color.r = r;
+	text->color.g = g;
+	text->color.b = b;
+
+	SDL_DestroyTexture(text->texture);
+	text->texture = NULL;
+}
+
+void text_osd_set_position(TextOSD *text, gint x, gint y) {
+	g_assert(text != NULL);
+
+	text->x = x;
+	text->y = y;
+}
+
+void text_osd_set_opacity(TextOSD *text, gint opacity) {
+	g_assert(text != NULL);
+	g_assert(opacity >= 0 && opacity <= 100);
+
+	text->opacity = opacity;
+
+	SDL_DestroyTexture(text->texture);
+	text->texture = NULL;
+}
+
+static void text_osd_autoclear(gpointer entity) {
+	TextOSD *text = entity;
+	text_osd_set_message(text, " ");
+}
+
+void text_osd_set_auto_clear(TextOSD *text, guint duration) {
+	g_assert(text != NULL);
+
+	timeout_free(text->autoclear);
+
+	text->autoclear = timeout_create(text);
+	text->autoclear->action = text_osd_autoclear;
+
+	timeout_set_duration(text->autoclear, duration);
+}

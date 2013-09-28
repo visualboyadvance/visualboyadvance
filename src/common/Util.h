@@ -21,11 +21,21 @@
 
 #include "Types.h"
 #include <zlib.h>
+#include <glib.h>
+
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Finds the complete path of a data file distributed with VBA
+ *
+ * @param filename Name of the file to find
+ * @return newly allocated string containint the path to the file
+ */
+gchar *data_get_file_path(const gchar *filename);
 
 // save game
 typedef struct {

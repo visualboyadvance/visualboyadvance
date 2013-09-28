@@ -36,7 +36,7 @@ typedef struct GameScreen GameScreen;
  *
  * @param driver display driver to use for rendering
  */
-GameScreen *gamescreen_create(DisplayDriver *driver);
+GameScreen *gamescreen_create(DisplayDriver *driver, GError **err);
 
 /**
  * Free a game screen

@@ -52,7 +52,8 @@ void gamescreen_render(gpointer entity) {
 	SDL_RenderCopy(screen->renderable->renderer, screen->texture, NULL, &screenRect);
 }
 
-GameScreen *gamescreen_create(DisplayDriver *driver) {
+GameScreen *gamescreen_create(DisplayDriver *driver, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 	g_assert(driver != NULL);
 
 	GameScreen *screen = g_new(GameScreen, 1);
@@ -63,12 +64,12 @@ GameScreen *gamescreen_create(DisplayDriver *driver) {
 	screen->texture = SDL_CreateTexture(screen->renderable->renderer, SDL_PIXELFORMAT_BGR555,
 			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeigth);
 
-	// TODO
-//	if (screen->texture == NULL) {
-//		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-//				"Failed to create texture: %s", SDL_GetError());
-//		return NULL;
-//	}
+	if (screen->texture == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to create texture: %s", SDL_GetError());
+		gamescreen_free(screen);
+		return NULL;
+	}
 
 	return screen;
 }

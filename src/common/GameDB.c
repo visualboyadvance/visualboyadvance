@@ -19,6 +19,7 @@
 
 #include "GameDB.h"
 #include "Loader.h"
+#include "Util.h"
 
 typedef struct {
 	GameInfos *game;
@@ -152,25 +153,11 @@ static void on_text(GMarkupParseContext *context,
 	}
 }
 
-static gchar *game_db_get_file_path(const gchar *filename)
-{
-	// Use the data file from the source folder if it exists
-	// to make vbam runnable without installation
-	gchar *dataFilePath = g_build_filename("data", filename, NULL);
-	if (!g_file_test(dataFilePath, G_FILE_TEST_EXISTS))
-	{
-		g_free(dataFilePath);
-		dataFilePath = g_build_filename(PKGDATADIR, filename, NULL);
-	}
-
-	return dataFilePath;
-}
-
 GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
-	gchar *dbFilePath = game_db_get_file_path("game-db.xml");
+	gchar *dbFilePath = data_get_file_path("game-db.xml");
 	gchar *xmlData = NULL;
 	gsize  length = 0;
 

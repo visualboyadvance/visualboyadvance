@@ -36,6 +36,7 @@
 #include "DisplaySDL.h"
 #include "InputSDL.h"
 #include "SoundSDL.h"
+#include "Timer.h"
 #include "../common/Settings.h"
 
 #include <glib.h>
@@ -387,6 +388,7 @@ int main(int argc, char **argv)
     } else {
       SDL_Delay(500);
     }
+    timers_update();
     sdlPollEvents();
     if(mouseCounter) {
       mouseCounter--;
