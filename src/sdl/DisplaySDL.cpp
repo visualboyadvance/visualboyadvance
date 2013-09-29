@@ -108,6 +108,9 @@ static gboolean display_sdl_create_window(DisplayDriver *driver, GError **err) {
 		return FALSE;
 	}
 
+	// Let 480*320 be our minimum screen size
+	SDL_SetWindowMinimumSize(data->window, screenWidth * 2, screenHeigth * 2);
+
 	data->renderer = SDL_CreateRenderer(data->window, -1, SDL_RENDERER_ACCELERATED);
 	if (data->renderer == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
