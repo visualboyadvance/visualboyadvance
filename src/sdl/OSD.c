@@ -30,10 +30,27 @@ struct TextOSD {
 	gint size;
 	gint opacity;
 
-	gint x;
-	gint y;
-
+	/** Texture to render */
 	SDL_Texture *texture;
+
+	/** Screen position x */
+	gint x;
+
+	/** Screen position y */
+	gint y;
+};
+
+struct ImageOSD {
+	Renderable *renderable;
+
+	/** Texture to render */
+	SDL_Texture *texture;
+
+	/** Screen position x */
+	gint x;
+
+	/** Screen position y */
+	gint y;
 };
 
 static gboolean text_update_texture(TextOSD *text, GError **err) {
@@ -192,6 +209,16 @@ void text_osd_set_opacity(TextOSD *text, gint opacity) {
 	text->texture = NULL;
 }
 
+void text_osd_set_size(TextOSD *text, gint size) {
+	g_assert(text != NULL);
+	g_assert(size > 0);
+
+	text->size = size;
+
+	SDL_DestroyTexture(text->texture);
+	text->texture = NULL;
+}
+
 static void text_osd_autoclear(gpointer entity) {
 	TextOSD *text = entity;
 	text_osd_set_message(text, " ");
@@ -206,4 +233,48 @@ void text_osd_set_auto_clear(TextOSD *text, guint duration) {
 	text->autoclear->action = text_osd_autoclear;
 
 	timeout_set_duration(text->autoclear, duration);
+}
+
+static void image_osd_render(gpointer entity) {
+	ImageOSD *image = entity;
+
+	osd_render(image->renderable, image->texture, image->x, image->y);
+}
+
+ImageOSD *image_osd_create(DisplayDriver *driver, const gchar *file, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	ImageOSD *image = g_new(ImageOSD, 1);
+	image->renderable = display_sdl_renderable_create(driver, image);
+	image->renderable->render = image_osd_render;
+
+	image->x = 0;
+	image->y = 0;
+	image->texture = display_sdl_load_png(driver, file, err);
+
+
+	// Render here to perform error checking
+	if (image->texture == NULL) {
+		image_osd_free(image);
+		return NULL;
+	}
+
+	return image;
+}
+
+void image_osd_free(ImageOSD *image) {
+	if (image == NULL)
+		return;
+
+	SDL_DestroyTexture(image->texture);
+
+	display_sdl_renderable_free(image->renderable);
+	g_free(image);
+}
+
+void image_osd_set_position(ImageOSD *image, gint x, gint y) {
+	g_assert(image != NULL);
+
+	image->x = x;
+	image->y = y;
 }

@@ -34,6 +34,7 @@ typedef struct TextOSD TextOSD;
  *
  * @param driver The driver to use to render the text
  * @param message The message to display
+ * @param err return location for a GError, or NULL
  * @return TextOSD entity or NULL if the creation failed
  */
 TextOSD *text_osd_create(DisplayDriver *driver, const gchar *message, GError **err);
@@ -87,11 +88,51 @@ void text_osd_set_position(TextOSD *text, gint x, gint y);
 void text_osd_set_opacity(TextOSD *text, gint opacity);
 
 /**
+ * Set the size of text to render
+ *
+ * @param text TextOSD entity
+ * @param size Height in px of the font
+ */
+void text_osd_set_size(TextOSD *text, gint size);
+
+/**
  * Free a text OSD entity
  *
  * @param text TextOSD entity
  */
 void text_osd_free(TextOSD *text);
+
+/** Opaque ImageOSD entity */
+typedef struct ImageOSD ImageOSD;
+
+/**
+ * Create a new ImageOSD entity
+ *
+ * @param driver The driver to use to render the image
+ * @param file Filename of the image file to open. Only PNG images are supported.
+ * @param err return location for a GError, or NULL
+ * @return ImageOSD entity or NULL if the creation failed
+ */
+ImageOSD *image_osd_create(DisplayDriver *driver, const gchar *file, GError **err);
+
+/**
+ * Set the position of the ImageOSD on the screen
+ *
+ * If the x or y parameters are negative the positioning is relative to the
+ * opposite side of the window.
+ *
+ * @param image ImageOSD entity
+ * @param x number of pixels away from the left side of the window the text is drawn at
+ * @param y number of pixels away from the top side of the window the text is drawn at
+ */
+void image_osd_set_position(ImageOSD *image, gint x, gint y);
+
+/**
+ * Free a image OSD entity
+ *
+ * @param image ImageOSD entity
+ */
+void image_osd_free(ImageOSD *image);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
