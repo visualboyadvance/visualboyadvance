@@ -88,8 +88,8 @@ SET(SRC_APU
 )
 
 SET(SRC_SDL
-	src/sdl/DisplaySDL.cpp
-	src/sdl/GameScreen.c
+	src/sdl/DisplaySDL.c
+	src/sdl/GameScreen.cpp
 	src/sdl/InputSDL.c
 	src/sdl/OSD.c
 	src/sdl/SDL.cpp

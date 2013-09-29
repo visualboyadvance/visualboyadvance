@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-void display_init(DisplayDriver *driver);
+void display_init(const DisplayDriver *driver);
 void display_free();
 
 void display_read_state(gzFile gzFile);

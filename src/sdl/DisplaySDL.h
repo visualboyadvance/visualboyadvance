@@ -18,61 +18,55 @@
 #ifndef __VBA_DISPLAY_SDL_H__
 #define __VBA_DISPLAY_SDL_H__
 
-#include "../common/DisplayDriver.h"
 #include <SDL.h>
+#include <glib.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * Initialize an SDL window, and returns the associated display driver
- *
- * @param err return location for a GError, or NULL
- * @return SDL display driver or NULL if case of error
- */
-DisplayDriver *display_sdl_init(GError **err);
+typedef struct Display Display;
 
 /**
- * Free a SDL display driver. If driver is NULL, it simply returns.
+ * Initialize an SDL window, and returns the associated display display
  *
- * @param driver SDL display driver to be freed
+ * @param err return location for a GError, or NULL
+ * @return SDL display display or NULL if case of error
  */
-void display_sdl_free(DisplayDriver *driver);
+Display *display_sdl_init(GError **err);
+
+/**
+ * Free a SDL display display. If display is NULL, it simply returns.
+ *
+ * @param display SDL display display to be freed
+ */
+void display_sdl_free(Display *display);
 
 /**
  * Current fullscreen state accessor
  *
- * @param driver display driver
+ * @param display display display
  * @return whether display is fullscreen
  */
-gboolean display_sdl_is_fullscreen(DisplayDriver *driver);
+gboolean display_sdl_is_fullscreen(Display *display);
 
 /**
  * Toggle between windowed and fullscreen mode
  *
- * @param driver display driver
+ * @param display display display
  * @param err return location for a GError, or NULL
  * @return FALSE in case of error
  */
-gboolean display_sdl_toggle_fullscreen(DisplayDriver *driver, GError **err);
+gboolean display_sdl_toggle_fullscreen(Display *display, GError **err);
 
 /**
  * Display an on screen text message
  *
- * @param driver display driver
- * @param msg message to be displayed
- */
-void display_sdl_show_screen_message(DisplayDriver *driver, const gchar *msg);
-
-/**
- * Display an on screen text message
- *
- * @param driver display driver
+ * @param display display display
  * @param title title to be set
  */
-void display_sdl_set_window_title(DisplayDriver *driver, const gchar *title);
+void display_sdl_set_window_title(Display *display, const gchar *title);
 
 /**
  * Component allowing an entity to be rendered on the screen
@@ -85,8 +79,8 @@ struct Renderable {
 	/** Pointer to the parent entity */
 	gpointer entity;
 
-	/** Display driver to be used for rendering */
-	DisplayDriver *driver;
+	/** Display display to be used for rendering */
+	Display *display;
 
 	/** Renderer to use for rendering */
 	SDL_Renderer *renderer;
@@ -97,10 +91,10 @@ struct Renderable {
  *
  * The entity is rendered at each frame until the renderable component is freed
  *
- * @param driver Display driver to use for rendering
+ * @param display Display display to use for rendering
  * @param entity Entity this component applies to
  */
-Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity);
+Renderable *display_sdl_renderable_create(Display *display, gpointer entity);
 
 /**
  * Free a renderable component
@@ -112,16 +106,23 @@ Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity
 void display_sdl_renderable_free(Renderable *renderable);
 
 /**
+ * Render all the renderables
+ *
+ * @param display Display to render
+ */
+void display_sdl_render(Display *display);
+
+/**
  * Loads a given PNG file pointed to by filename into an SDL_Texture.
  *
  * Call SDL_DestroyTexture on the result to release.
  *
- * @param driver The driver the texture belongs to
+ * @param display The display the texture belongs to
  * @param filename Filename of the PNG image
  * @param err return location for a GError, or NULL
  * @return a pointer to the texture on success, NULL on failure.
  */
-SDL_Texture *display_sdl_load_png(DisplayDriver *driver, const gchar *filename, GError **err);
+SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GError **err);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

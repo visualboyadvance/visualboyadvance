@@ -27,6 +27,11 @@
 extern "C" {
 #endif
 
+#define MOD_KEYS    (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
+#define MOD_NOCTRL  (KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
+#define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_GUI)
+#define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_GUI)
+
 /**
  * Init the joysticks needed by the keymap. Verify that the keymap is compatible
  * with the joysticks. If it's not the case, revert to the default keymap.

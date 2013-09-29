@@ -17,6 +17,7 @@
 
 #include "OSD.h"
 #include "Timer.h"
+#include "../common/DisplayDriver.h"
 #include "../common/Util.h"
 
 #include <SDL_ttf.h>
@@ -128,11 +129,11 @@ static void text_osd_render(gpointer entity) {
 	osd_render(text->renderable, text->texture, text->x, text->y);
 }
 
-TextOSD *text_osd_create(DisplayDriver *driver, const gchar *message, GError **err) {
+TextOSD *text_osd_create(Display *display, const gchar *message, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	TextOSD *text = g_new(TextOSD, 1);
-	text->renderable = display_sdl_renderable_create(driver, text);
+	text->renderable = display_sdl_renderable_create(display, text);
 	text->renderable->render = text_osd_render;
 	text->autoclear = NULL;
 
@@ -240,16 +241,16 @@ static void image_osd_render(gpointer entity) {
 	osd_render(image->renderable, image->texture, image->x, image->y);
 }
 
-ImageOSD *image_osd_create(DisplayDriver *driver, const gchar *file, GError **err) {
+ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	ImageOSD *image = g_new(ImageOSD, 1);
-	image->renderable = display_sdl_renderable_create(driver, image);
+	image->renderable = display_sdl_renderable_create(display, image);
 	image->renderable->render = image_osd_render;
 
 	image->x = 0;
 	image->y = 0;
-	image->texture = display_sdl_load_png(driver, file, err);
+	image->texture = display_sdl_load_png(display, file, err);
 
 
 	// Render here to perform error checking

@@ -32,12 +32,12 @@ typedef struct TextOSD TextOSD;
 /**
  * Create a new TextOSD entity
  *
- * @param driver The driver to use to render the text
+ * @param display The display to use to render the text
  * @param message The message to display
  * @param err return location for a GError, or NULL
  * @return TextOSD entity or NULL if the creation failed
  */
-TextOSD *text_osd_create(DisplayDriver *driver, const gchar *message, GError **err);
+TextOSD *text_osd_create(Display *display, const gchar *message, GError **err);
 
 /**
  * Update the message of a TextOSD
@@ -108,12 +108,12 @@ typedef struct ImageOSD ImageOSD;
 /**
  * Create a new ImageOSD entity
  *
- * @param driver The driver to use to render the image
+ * @param display The display to use to render the image
  * @param file Filename of the image file to open. Only PNG images are supported.
  * @param err return location for a GError, or NULL
  * @return ImageOSD entity or NULL if the creation failed
  */
-ImageOSD *image_osd_create(DisplayDriver *driver, const gchar *file, GError **err);
+ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err);
 
 /**
  * Set the position of the ImageOSD on the screen

@@ -19,6 +19,7 @@
 #define __VBA_GAMESCREEN_SDL_H__
 
 #include "../common/DisplayDriver.h"
+#include "DisplaySDL.h"
 #include <glib.h>
 
 /* Set up for C function definitions, even when using C++ */
@@ -34,24 +35,60 @@ typedef struct GameScreen GameScreen;
 /**
  * Create a game screen entity
  *
- * @param driver display driver to use for rendering
+ * @param display Display to use for rendering
  */
-GameScreen *gamescreen_create(DisplayDriver *driver, GError **err);
+GameScreen *gamescreen_create(Display *display, GError **err);
 
 /**
  * Free a game screen
  *
- * @param screen Game screen to free
+ * @param game Game screen to free
  */
-void gamescreen_free(GameScreen *screen);
+void gamescreen_free(GameScreen *game);
 
 /**
- * Update a game screen with pixel data
+ * Display an on screen text message
  *
- * @param screen Game screen to update
- * @param pix 240x160px RGB555 pixel data
+ * @param display display display
+ * @param msg message to be displayed
  */
-void gamescreen_update(GameScreen *screen, guint16 *pix);
+void gamescreen_show_status_message(GameScreen *game, const gchar *msg);
+
+/**
+ * Create a display driver to update the screen
+ *
+ * @param game Game screen
+ */
+const DisplayDriver *gamescreen_get_display_driver(GameScreen *game);
+
+/**
+ * Process an SDL event to update the game screen
+ *
+ * @param game Game screen
+ * @param SDL_Event An event that has just occured
+ */
+gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event);
+
+/**
+ * Main loop element allowing the game to advance
+ *
+ * @param game Game screen
+ */
+void gamescreen_update(GameScreen *game);
+
+/**
+ * Write the battery and display a status message
+ *
+ * @param game Game screen
+ */
+void gamescreen_write_battery(GameScreen *game);
+
+/**
+ * Load the battery and display a status message
+ *
+ * @param game Game screen
+ */
+void gamescreen_read_battery(GameScreen *game);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -16,197 +16,43 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <math.h>
-
 #include <SDL.h>
 
 #include "../gba/GBA.h"
 #include "../gba/Cartridge.h"
 #include "../gba/Display.h"
-#include "../gba/Savestate.h"
 #include "../gba/Sound.h"
-#include "../common/Util.h"
 
 #include "DisplaySDL.h"
 #include "InputSDL.h"
 #include "SoundSDL.h"
 #include "Timer.h"
+#include "GameScreen.h"
 #include "../common/Settings.h"
 
 #include <glib.h>
 
-DisplayDriver *displayDriver = NULL;
-SoundDriver *soundDriver = NULL;
+static GameScreen *game = NULL;
+static Display *display = NULL;
+static SoundDriver *soundDriver = NULL;
 
 static gboolean emulating = FALSE;
 
-static bool paused = false;
-static bool inactive = false;
-
-static int  mouseCounter = 0;
-
-static void sdlChangeVolume(float d)
-{
-	float oldVolume = soundGetVolume();
-	float newVolume = oldVolume + d;
-
-	if (newVolume < 0.0) newVolume = 0.0;
-	if (newVolume > SETTINGS_SOUND_MAX_VOLUME) newVolume = SETTINGS_SOUND_MAX_VOLUME;
-
-	if (fabs(newVolume - oldVolume) > 0.001) {
-		char tmp[32];
-		sprintf(tmp, "Volume: %i%%", (int)(newVolume*100.0+0.5));
-		display_sdl_show_screen_message(displayDriver, tmp);
-		soundSetVolume(newVolume);
-	}
-}
-
-static void sdlWriteState(int num)
-{
-	gchar *message = NULL;
-	GError *err = NULL;
-
-	if (!savestate_save_slot(num, &err)) {
-		message = strdup(err->message);
-		g_clear_error(&err);
-	} else {
-		message = g_strdup_printf("Wrote state %d", num + 1);
-	}
-
-	display_sdl_show_screen_message(displayDriver, message);
-	g_free(message);
-}
-
-static void sdlReadState(int num) {
-	gchar *message = NULL;
-	GError *err = NULL;
-
-	if (!savestate_load_slot(num, &err)) {
-		message = strdup(err->message);
-		g_clear_error(&err);
-	} else {
-		message = g_strdup_printf("Loaded state %d", num + 1);
-	}
-
-	display_sdl_show_screen_message(displayDriver, message);
-	g_free(message);
-}
-
-static void sdlWriteBattery() {
-	gchar *message = NULL;
-	GError *err = NULL;
-
-	if (!cartridge_write_battery(&err)) {
-		message = strdup(err->message);
-		g_clear_error(&err);
-	} else {
-		message = g_strdup_printf("Wrote battery");
-	}
-
-	display_sdl_show_screen_message(displayDriver, message);
-	g_free(message);
-}
-
-static void sdlReadBattery() {
-	// Ignore errors, we don't care loading battery failed
-	gboolean res = cartridge_read_battery(NULL);
-
-	if (res)
-		display_sdl_show_screen_message(displayDriver, "Loaded battery");
-}
-
-#define MOD_KEYS    (KMOD_CTRL|KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
-#define MOD_NOCTRL  (KMOD_SHIFT|KMOD_ALT|KMOD_GUI)
-#define MOD_NOALT   (KMOD_CTRL|KMOD_SHIFT|KMOD_GUI)
-#define MOD_NOSHIFT (KMOD_CTRL|KMOD_ALT|KMOD_GUI)
-
-static gboolean sdlProcessEvent(const SDL_Event *event) {
+static gboolean main_process_event(const SDL_Event *event) {
 	switch (event->type) {
 	case SDL_QUIT:
 		emulating = FALSE;
 		return TRUE;
-	case SDL_WINDOWEVENT_FOCUS_LOST:
-		if (!paused && settings_pause_when_inactive()) {
-			inactive = TRUE;
-			soundPause(inactive);
-		}
-		return FALSE;
-	case SDL_WINDOWEVENT_FOCUS_GAINED:
-		if (!paused && settings_pause_when_inactive()) {
-			inactive = FALSE;
-			soundPause(inactive);
-		}
-		return FALSE;
-	case SDL_MOUSEMOTION:
-	case SDL_MOUSEBUTTONUP:
-	case SDL_MOUSEBUTTONDOWN:
-		if (display_sdl_is_fullscreen(displayDriver)) {
-			SDL_ShowCursor(SDL_ENABLE);
-			mouseCounter = 120;
-		}
-		return FALSE;
 	case SDL_KEYUP:
 		switch (event->key.keysym.sym) {
-		case SDLK_r:
-			if (!(event->key.keysym.mod & MOD_NOCTRL)
-					&& (event->key.keysym.mod & KMOD_CTRL)) {
-				if (emulating) {
-					CPUReset();
 
-					display_sdl_show_screen_message(displayDriver, "Reset");
-				}
-
-				return TRUE;
-			}
-			break;
-
-		case SDLK_KP_DIVIDE:
-			sdlChangeVolume(-0.1);
-			return TRUE;
-		case SDLK_KP_MULTIPLY:
-			sdlChangeVolume(0.1);
-			return TRUE;
-
-		case SDLK_p:
-			if (!(event->key.keysym.mod & MOD_NOCTRL)
-					&& (event->key.keysym.mod & KMOD_CTRL)) {
-				paused = !paused;
-				soundPause(paused);
-				g_message(paused ? "Pause on" : "Pause off");
-
-				return TRUE;
-			}
-			break;
 		case SDLK_ESCAPE:
 			emulating = FALSE;
 			return TRUE;
 		case SDLK_f:
 			if (!(event->key.keysym.mod & MOD_NOCTRL)
 					&& (event->key.keysym.mod & KMOD_CTRL)) {
-				display_sdl_toggle_fullscreen(displayDriver, NULL);
-				return TRUE;
-			}
-			break;
-		case SDLK_F1:
-		case SDLK_F2:
-		case SDLK_F3:
-		case SDLK_F4:
-		case SDLK_F5:
-		case SDLK_F6:
-		case SDLK_F7:
-		case SDLK_F8:
-			if (!(event->key.keysym.mod & MOD_NOSHIFT)
-					&& (event->key.keysym.mod & KMOD_SHIFT)) {
-				sdlWriteState(event->key.keysym.sym - SDLK_F1);
-				return TRUE;
-			} else if (!(event->key.keysym.mod & MOD_KEYS)) {
-				sdlReadState(event->key.keysym.sym - SDLK_F1);
+				display_sdl_toggle_fullscreen(display, NULL);
 				return TRUE;
 			}
 			break;
@@ -227,12 +73,14 @@ static gboolean sdlProcessEvent(const SDL_Event *event) {
 	return FALSE;
 }
 
-static void sdlPollEvents() {
+static void events_poll() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		if (!sdlProcessEvent(&event)) {
-			input_sdl_process_SDL_event(&event);
+		if (main_process_event(&event)) {
+			continue;
 		}
+
+		gamescreen_process_event(game, &event);
 	}
 }
 
@@ -304,8 +152,8 @@ int main(int argc, char **argv)
 	g_mkdir_with_parents(savesDir, 0777);
 
 	// Init the display driver
-	displayDriver = display_sdl_init(&err);
-	if (displayDriver == NULL) {
+	display = display_sdl_init(&err);
+	if (display == NULL) {
 		g_printerr("%s\n", err->message);
 		settings_free();
 
@@ -313,7 +161,17 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	display_init(displayDriver);
+	// Init the game screen
+	game = gamescreen_create(display, &err);
+	if (game == NULL) {
+		g_printerr("%s\n", err->message);
+		settings_free();
+
+		g_clear_error(&err);
+		exit(1);
+	}
+
+	display_init(gamescreen_get_display_driver(game));
 
 	// Init the sound driver
 	soundDriver = sound_sdl_init(&err);
@@ -347,38 +205,31 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	sdlReadBattery();
+	gamescreen_read_battery(game);
 
 	emulating = TRUE;
 
-	display_sdl_set_window_title(displayDriver, cartridge_get_game_title());
+	display_sdl_set_window_title(display, cartridge_get_game_title());
 
 	while (emulating) {
-		if (!paused && !inactive) {
-			CPULoop(250000);
-		} else {
-			SDL_Delay(500);
-		}
+		gamescreen_update(game);
+		display_sdl_render(display);
 		timers_update();
-		sdlPollEvents();
-		if (mouseCounter) {
-			mouseCounter--;
-			if (mouseCounter == 0)
-				SDL_ShowCursor(SDL_DISABLE);
-		}
+		events_poll();
 	}
 
 	fprintf(stdout, "Shutting down\n");
-	sdlWriteBattery();
+	gamescreen_write_battery(game);
 
 	soundShutdown();
 	cartridge_unload();
 	display_free();
 	CPUCleanUp();
 
+	gamescreen_free(game);
 	sound_sdl_free(soundDriver);
 	input_sdl_free(inputDriver);
-	display_sdl_free(displayDriver);
+	display_sdl_free(display);
 
 	SDL_Quit();
 

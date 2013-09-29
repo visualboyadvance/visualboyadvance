@@ -25,7 +25,7 @@ static const int width = 240;
 static const int height = 160;
 
 static guint16 *pix;
-static DisplayDriver *displayDriver = NULL;
+static const DisplayDriver *displayDriver = NULL;
 
 void display_save_state(gzFile gzFile)
 {
@@ -44,7 +44,7 @@ void display_free()
 	displayDriver = NULL;
 }
 
-void display_init(DisplayDriver *driver)
+void display_init(const DisplayDriver *driver)
 {
 	g_assert(driver != NULL);
 
