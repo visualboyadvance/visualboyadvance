@@ -75,6 +75,32 @@ static gboolean text_update_texture(TextOSD *text, GError **err) {
 	return TRUE;
 }
 
+static void osd_render(Renderable *renderable, SDL_Texture *texture, gint x, gint y) {
+	int textWidth, textHeight;
+	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
+
+	int windowWidth, windowHeight;
+	SDL_GetRendererOutputSize(renderable->renderer, &windowWidth, &windowHeight);
+
+	SDL_Rect screenRect;
+	screenRect.w = textWidth;
+	screenRect.h = textHeight;
+
+	if (x >= 0) {
+		screenRect.x = x;
+	} else {
+		screenRect.x = windowWidth - textWidth + x;
+	}
+
+	if (y >= 0) {
+		screenRect.y = y;
+	} else {
+		screenRect.y = windowHeight - textHeight + y;
+	}
+
+	SDL_RenderCopy(renderable->renderer, texture, NULL, &screenRect);
+}
+
 static void text_osd_render(gpointer entity) {
 	TextOSD *text = entity;
 
@@ -82,29 +108,7 @@ static void text_osd_render(gpointer entity) {
 		text_update_texture(text, NULL);
 	}
 
-	int textWidth, textHeight;
-	SDL_QueryTexture(text->texture, NULL, NULL, &textWidth, &textHeight);
-
-	int windowWidth, windowHeight;
-	SDL_GetRendererOutputSize(text->renderable->renderer, &windowWidth, &windowHeight);
-
-	SDL_Rect screenRect;
-	screenRect.w = textWidth;
-	screenRect.h = textHeight;
-
-	if (text->x >= 0) {
-		screenRect.x = text->x;
-	} else {
-		screenRect.x = windowWidth - textWidth + text->x;
-	}
-
-	if (text->y >= 0) {
-		screenRect.y = text->y;
-	} else {
-		screenRect.y = windowHeight - textHeight + text->y;
-	}
-
-	SDL_RenderCopy(text->renderable->renderer, text->texture, NULL, &screenRect);
+	osd_render(text->renderable, text->texture, text->x, text->y);
 }
 
 TextOSD *text_osd_create(DisplayDriver *driver, const gchar *message, GError **err) {
