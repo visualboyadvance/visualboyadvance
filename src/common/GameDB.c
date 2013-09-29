@@ -26,6 +26,8 @@ typedef struct {
 
 	gboolean isInGameTag;
 	gboolean isInTitleTag;
+	gboolean isInRegionTag;
+	gboolean isInPublisherTag;
 	gboolean isInCodeTag;
 	gboolean foundCode;
 	gboolean gameLoaded;
@@ -71,6 +73,14 @@ static void on_start_element(GMarkupParseContext *context,
 	else if (g_strcmp0(element_name, "code") == 0)
 	{
 		db->isInCodeTag = TRUE;
+	}
+	else if (g_strcmp0(element_name, "region") == 0)
+	{
+		db->isInRegionTag = TRUE;
+	}
+	else if (g_strcmp0(element_name, "publisher") == 0)
+	{
+		db->isInPublisherTag = TRUE;
 	}
 	else if (g_strcmp0(element_name, "sram") == 0)
 	{
@@ -123,6 +133,14 @@ static void on_end_element(GMarkupParseContext *context,
 	{
 		db->isInCodeTag = FALSE;
 	}
+	else if (g_strcmp0(element_name, "region") == 0)
+	{
+		db->isInRegionTag = FALSE;
+	}
+	else if (g_strcmp0(element_name, "publisher") == 0)
+	{
+		db->isInPublisherTag = FALSE;
+	}
 }
 
 static void on_text(GMarkupParseContext *context,
@@ -142,6 +160,16 @@ static void on_text(GMarkupParseContext *context,
 		g_free(db->game->title);
 		db->game->title = g_strdup(text);
 	}
+	else if (db->isInGameTag && db->isInRegionTag)
+	{
+		g_free(db->game->region);
+		db->game->region = g_strdup(text);
+	}
+	else if (db->isInGameTag && db->isInPublisherTag)
+	{
+		g_free(db->game->publisher);
+		db->game->publisher = g_strdup(text);
+	}
 	else if (db->isInGameTag && db->isInCodeTag)
 	{
 		if (g_strcmp0(text, db->lookupCode) == 0) {
@@ -157,7 +185,7 @@ GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
-	gchar *dbFilePath = data_get_file_path("game-db.xml");
+	gchar *dbFilePath = data_get_file_path("db", "game-db.xml");
 	gchar *xmlData = NULL;
 	gsize  length = 0;
 
@@ -175,6 +203,8 @@ GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 	db->isInGameTag = FALSE;
 	db->isInTitleTag = FALSE;
 	db->isInCodeTag = FALSE;
+	db->isInRegionTag = FALSE;
+	db->isInPublisherTag = FALSE;
 
 	GMarkupParser parser;
 	parser.start_element = &on_start_element;

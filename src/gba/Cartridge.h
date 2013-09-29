@@ -34,6 +34,8 @@ gboolean cartridge_load_rom(const gchar *filename, GError **err);
 void cartridge_unload();
 void cartridge_get_game_name(u8 *romname);
 const gchar *cartridge_get_game_title();
+const gchar *cartridge_get_game_region();
+const gchar *cartridge_get_game_publisher();
 gboolean cartridge_is_present();
 
 gboolean cartridge_read_battery(GError **err);

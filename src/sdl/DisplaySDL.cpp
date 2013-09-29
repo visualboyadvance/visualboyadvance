@@ -23,6 +23,7 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <png.h>
 
 static const int screenWidth = 240;
 static const int screenHeigth = 160;
@@ -239,7 +240,6 @@ Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity
 	renderable->entity = entity;
 	renderable->driver = driver;
 	renderable->renderer = data->renderer;
-	renderable->window = data->window;
 	renderable->render = NULL;
 
 	data->renderables = g_slist_append(data->renderables, renderable);
@@ -256,4 +256,44 @@ void display_sdl_renderable_free(Renderable *renderable) {
 	data->renderables = g_slist_remove(data->renderables, renderable);
 
 	g_free(renderable);
+}
+
+SDL_Texture *display_sdl_load_png(DisplayDriver *driver, const gchar *filename, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+	g_assert(driver != NULL);
+	DriverData *data = (DriverData *) driver->driverData;
+
+	png_image image;
+	memset(&image, 0, sizeof(image));
+	image.version = PNG_IMAGE_VERSION;
+
+	if (!png_image_begin_read_from_file(&image, filename)) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to load png: %s", image.message);
+		return NULL;
+	}
+
+	png_bytep buffer = (png_bytep) g_malloc(PNG_IMAGE_SIZE(image));
+	image.format = PNG_FORMAT_RGBA;
+
+	if (!png_image_finish_read(&image, NULL, buffer, 0, NULL)) {
+		g_free(buffer);
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to load png: %s", image.message);
+		return NULL;
+	}
+
+	SDL_Texture *texture = SDL_CreateTexture(data->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, image.width, image.height);
+	if (texture == NULL) {
+		g_free(buffer);
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed create texture : %s", SDL_GetError());
+		return NULL;
+	}
+
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+	SDL_UpdateTexture(texture, NULL, buffer, image.width * sizeof(guint32));
+
+	g_free(buffer);
+	return texture;
 }

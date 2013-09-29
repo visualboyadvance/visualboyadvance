@@ -69,6 +69,22 @@ const gchar *cartridge_get_game_title() {
 	return game->title;
 }
 
+const gchar *cartridge_get_game_region() {
+	if (!cartridge_is_present()) {
+		return NULL;
+	}
+
+	return game->region;
+}
+
+const gchar *cartridge_get_game_publisher() {
+	if (!cartridge_is_present()) {
+		return NULL;
+	}
+
+	return game->publisher;
+}
+
 gboolean cartridge_is_present() {
 	return game != NULL;
 }

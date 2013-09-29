@@ -41,8 +41,8 @@ static gboolean text_update_texture(TextOSD *text, GError **err) {
 
 	SDL_DestroyTexture(text->texture);
 
-	gchar *fontFile = data_get_file_path("DroidSans-Bold.ttf");
-	TTF_Font *font = TTF_OpenFont(fontFile, 10);
+	gchar *fontFile = data_get_file_path("fonts", "DroidSans-Bold.ttf");
+	TTF_Font *font = TTF_OpenFont(fontFile, text->size);
 	g_free(fontFile);
 
 	if (font == NULL) {
@@ -61,7 +61,7 @@ static gboolean text_update_texture(TextOSD *text, GError **err) {
 	text->texture = SDL_CreateTextureFromSurface(text->renderable->renderer, surface);
 	if (text->texture == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed create texture : %s", TTF_GetError());
+				"Failed create texture : %s", SDL_GetError());
 		return FALSE;
 	}
 
@@ -86,7 +86,7 @@ static void text_osd_render(gpointer entity) {
 	SDL_QueryTexture(text->texture, NULL, NULL, &textWidth, &textHeight);
 
 	int windowWidth, windowHeight;
-	SDL_GetWindowSize(text->renderable->window, &windowWidth, &windowHeight);
+	SDL_GetRendererOutputSize(text->renderable->renderer, &windowWidth, &windowHeight);
 
 	SDL_Rect screenRect;
 	screenRect.w = textWidth;

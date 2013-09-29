@@ -88,9 +88,6 @@ struct Renderable {
 	/** Display driver to be used for rendering */
 	DisplayDriver *driver;
 
-	/** Window to draw on */
-	SDL_Window *window;
-
 	/** Renderer to use for rendering */
 	SDL_Renderer *renderer;
 };
@@ -113,6 +110,18 @@ Renderable *display_sdl_renderable_create(DisplayDriver *driver, gpointer entity
  * @param renderable teh renderable component to free
  */
 void display_sdl_renderable_free(Renderable *renderable);
+
+/**
+ * Loads a given PNG file pointed to by filename into an SDL_Texture.
+ *
+ * Call SDL_DestroyTexture on the result to release.
+ *
+ * @param driver The driver the texture belongs to
+ * @param filename Filename of the PNG image
+ * @param err return location for a GError, or NULL
+ * @return a pointer to the texture on success, NULL on failure.
+ */
+SDL_Texture *display_sdl_load_png(DisplayDriver *driver, const gchar *filename, GError **err);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

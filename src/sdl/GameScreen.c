@@ -40,7 +40,7 @@ void gamescreen_render(gpointer entity) {
 
 	// Do letterboxing to preserve aspect ratio regardless of the window size
 	int windowWidth, windowHeight;
-	SDL_GetWindowSize(screen->renderable->window, &windowWidth, &windowHeight);
+	SDL_GetRendererOutputSize(screen->renderable->renderer, &windowWidth, &windowHeight);
 
 	double scale = MIN(windowHeight / (double)screenHeigth, windowWidth / (double)screenWidth);
 	SDL_Rect screenRect;

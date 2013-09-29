@@ -30,6 +30,8 @@ GameInfos *game_infos_new() {
 	game->flashSize = 0x10000;
 	game->title = NULL;
 	game->code = NULL;
+	game->region = NULL;
+	game->publisher = NULL;
 
 	return game;
 }
@@ -41,5 +43,7 @@ void game_infos_free(GameInfos *game)
 
 	g_free(game->code);
 	g_free(game->title);
+	g_free(game->region);
+	g_free(game->publisher);
 	g_free(game);
 }

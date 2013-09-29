@@ -35,7 +35,7 @@ extern "C" {
  * @param filename Name of the file to find
  * @return newly allocated string containint the path to the file
  */
-gchar *data_get_file_path(const gchar *filename);
+gchar *data_get_file_path(const gchar *folder, const gchar *filename);
 
 // save game
 typedef struct {

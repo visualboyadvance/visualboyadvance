@@ -35,6 +35,8 @@ typedef struct
 	int flashSize;
 
 	gchar *title;
+	gchar *region;
+	gchar *publisher;
 	gchar *code;
 } GameInfos;
 
