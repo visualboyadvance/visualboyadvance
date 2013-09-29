@@ -21,8 +21,6 @@
 
 #include <SDL.h>
 
-extern int emulating;
-
 typedef struct {
 	struct ring_buffer *_rbuf;
 
@@ -40,7 +38,7 @@ static void sound_sdl_read(SoundDriver *driver, guint8 *stream, int len) {
 	g_assert(driver != NULL);
 	DriverData *data = (DriverData *)driver->driverData;
 
-	if (!data->_initialized || len <= 0 || !emulating)
+	if (!data->_initialized || len <= 0)
 		return;
 
 	SDL_LockMutex(data->_mutex);
@@ -75,7 +73,7 @@ static void sound_sdl_write(SoundDriver *driver, guint16 * finalWave, int length
 
 		// If emulating and not in speed up mode, synchronize to audio
 		// by waiting till there is enough room in the buffer
-		if (emulating && data->sync)
+		if (data->sync)
 		{
 			SDL_CondWait(data->_cond, data->_mutex);
 		}
@@ -163,8 +161,6 @@ void sound_sdl_free(SoundDriver *driver) {
 
 	SDL_mutexP(data->_mutex);
 
-	int iSave = emulating;
-	emulating = 0;
 	SDL_CondSignal(data->_cond);
 	SDL_UnlockMutex(data->_mutex);
 
@@ -175,8 +171,6 @@ void sound_sdl_free(SoundDriver *driver) {
 	SDL_CloseAudio();
 
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-
-	emulating = iSave;
 
 	g_free(data);
 	g_free(driver);
