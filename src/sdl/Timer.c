@@ -19,14 +19,23 @@
 
 #include <SDL.h>
 
+struct Timeout {
+	TimerAction action;
+	guint32 time;
+	gboolean expired;
+
+	gpointer entity;
+};
+
 static GSList *timeouts = NULL;
 
-Timeout *timeout_create(gpointer entity) {
+Timeout *timeout_create(gpointer entity, TimerAction action) {
 
 	Timeout *timeout = g_new(Timeout, 1);
 	timeout->entity = entity;
-	timeout->action = NULL;
+	timeout->action = action;
 	timeout->time = 0;
+	timeout->expired = TRUE;
 
 	timeouts = g_slist_append(timeouts, timeout);
 
@@ -47,6 +56,7 @@ void timeout_set_duration(Timeout *timeout, guint32 millis) {
 	g_assert(millis > 0);
 
 	timeout->time = SDL_GetTicks() + millis;
+	timeout->expired = FALSE;
 }
 
 void timers_update() {
@@ -54,8 +64,9 @@ void timers_update() {
 	while (it != NULL) {
 		Timeout *timeout = (Timeout *)it->data;
 		it = g_slist_next(it);
-		if (timeout->action && SDL_GetTicks() >= timeout->time) {
+		if (SDL_GetTicks() >= timeout->time && !timeout->expired && timeout->action) {
 			timeout->action(timeout->entity);
+			timeout->expired = TRUE;
 		}
 	}
 }

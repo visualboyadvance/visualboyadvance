@@ -29,13 +29,7 @@ extern "C" {
  * Component allowing an entity to run an action at a given time
  */
 typedef struct Timeout Timeout;
-struct Timeout {
-	void (*action)(gpointer entity);
-
-	guint32 time;
-
-	gpointer entity;
-};
+typedef void (*TimerAction)(gpointer);
 
 /**
  * Create a new timeout component and add it to an entity
@@ -44,7 +38,7 @@ struct Timeout {
  *
  * @param entity Entity this component applies to
  */
-Timeout *timeout_create(gpointer entity);
+Timeout *timeout_create(gpointer entity, TimerAction action);
 
 /**
  * Set the duration of a Timeout

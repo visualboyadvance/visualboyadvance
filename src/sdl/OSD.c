@@ -229,8 +229,7 @@ void text_osd_set_auto_clear(TextOSD *text, guint duration) {
 
 	timeout_free(text->autoclear);
 
-	text->autoclear = timeout_create(text);
-	text->autoclear->action = text_osd_autoclear;
+	text->autoclear = timeout_create(text, text_osd_autoclear);
 
 	timeout_set_duration(text->autoclear, duration);
 }
