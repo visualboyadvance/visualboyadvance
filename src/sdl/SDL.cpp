@@ -44,7 +44,7 @@
 DisplayDriver *displayDriver = NULL;
 SoundDriver *soundDriver = NULL;
 
-int emulating = 0;
+static gboolean emulating = FALSE;
 
 static bool paused = false;
 static bool inactive = false;
@@ -129,7 +129,7 @@ static void sdlReadBattery() {
 static gboolean sdlProcessEvent(const SDL_Event *event) {
 	switch (event->type) {
 	case SDL_QUIT:
-		emulating = 0;
+		emulating = FALSE;
 		return TRUE;
 	case SDL_WINDOWEVENT_FOCUS_LOST:
 		if (!paused && settings_pause_when_inactive()) {
@@ -184,7 +184,7 @@ static gboolean sdlProcessEvent(const SDL_Event *event) {
 			}
 			break;
 		case SDLK_ESCAPE:
-			emulating = 0;
+			emulating = FALSE;
 			return TRUE;
 		case SDLK_f:
 			if (!(event->key.keysym.mod & MOD_NOCTRL)
@@ -345,55 +345,46 @@ int main(int argc, char **argv)
 
 		g_clear_error(&err);
 		exit(1);
-    }
+	}
 
-  sdlReadBattery();
+	sdlReadBattery();
 
-  int flags = SDL_INIT_VIDEO|SDL_INIT_AUDIO|
-    SDL_INIT_TIMER|SDL_INIT_NOPARACHUTE;
+	emulating = TRUE;
 
-  if(SDL_Init(flags)) {
-	  g_printerr("Failed to init SDL: %s\n", SDL_GetError());
-    exit(-1);
-  }
+	display_sdl_set_window_title(displayDriver, cartridge_get_game_title());
 
-  emulating = 1;
+	while (emulating) {
+		if (!paused && !inactive) {
+			CPULoop(250000);
+		} else {
+			SDL_Delay(500);
+		}
+		timers_update();
+		sdlPollEvents();
+		if (mouseCounter) {
+			mouseCounter--;
+			if (mouseCounter == 0)
+				SDL_ShowCursor(SDL_DISABLE);
+		}
+	}
 
-  display_sdl_set_window_title(displayDriver, cartridge_get_game_title());
+	fprintf(stdout, "Shutting down\n");
+	sdlWriteBattery();
 
-  while(emulating) {
-    if(!paused && !inactive) {
-      CPULoop(250000);
-    } else {
-      SDL_Delay(500);
-    }
-    timers_update();
-    sdlPollEvents();
-    if(mouseCounter) {
-      mouseCounter--;
-      if(mouseCounter == 0)
-        SDL_ShowCursor(SDL_DISABLE);
-    }
-  }
+	soundShutdown();
+	cartridge_unload();
+	display_free();
+	CPUCleanUp();
 
-  emulating = 0;
-  fprintf(stdout,"Shutting down\n");
-  sdlWriteBattery();
+	sound_sdl_free(soundDriver);
+	input_sdl_free(inputDriver);
+	display_sdl_free(displayDriver);
 
-  soundShutdown();
-  cartridge_unload();
-  display_free();
-  CPUCleanUp();
+	SDL_Quit();
 
-  sound_sdl_free(soundDriver);
-  input_sdl_free(inputDriver);
-  display_sdl_free(displayDriver);
+	settings_free();
 
-  SDL_Quit();
+	g_free(filename);
 
-  settings_free();
-
-  g_free(filename);
-
-  return 0;
+	return 0;
 }
