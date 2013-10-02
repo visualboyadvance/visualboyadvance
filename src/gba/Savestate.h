@@ -61,7 +61,7 @@ gboolean savestate_save_to_file(const gchar *file, GError **err);
 
 /**
  * Load a save state from a slot
- * @param file file name
+ * @param num slot number
  * @param err return location for a GError, or NULL
  * @return success
  */
@@ -69,7 +69,7 @@ gboolean savestate_load_slot(gint num, GError **err);
 
 /**
  * Save a save state to a slot
- * @param file file name
+ * @param num slot number
  * @param err return location for a GError, or NULL
  * @return success
  */

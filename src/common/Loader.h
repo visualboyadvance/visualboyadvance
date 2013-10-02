@@ -73,9 +73,10 @@ void loader_free(RomLoader *loader);
  * Load a ROM to memory
  *
  * @param loader a loader
- * @param return location to the output buffer
+ * @param data location to the output buffer
  * @param size input buffer size and output load data size
  * @param err return location for a GError, or NULL
+ * @return TRUE if successful, FALSE otherwise
  */
 gboolean loader_load(RomLoader *loader, guint8 *data, int *size, GError **err);
 

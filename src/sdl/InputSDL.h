@@ -50,7 +50,6 @@ void input_sdl_free(InputDriver *driver);
 
 /**
  * Define which key controls an emulated joypad button
- * @param pad Emulated joypad index (there may be up to 4 joypads for the SGB)
  * @param key Emulated joypad button
  * @param code Code defining an actual joypad / keyboard button
  */
@@ -58,9 +57,8 @@ void input_sdl_set_keymap(EKey key, uint32_t code);
 
 /**
  * Get which key is associated to which emulated joypad button
- * @param pad Emulated joypad index (there may be up to 4 joypads for the SGB)
  * @param key Emulated joypad button
- * @retunr Code defining an actual joypad / keyboard button
+ * @return Code defining an actual joypad / keyboard button
  */
 uint32_t input_sdl_get_keymap(EKey key);
 
@@ -73,7 +71,7 @@ void input_sdl_set_motion_keymap(EKey key, uint32_t code);
 
 /**
  * Update the emulated pads state with a SDL event
- * @param SDL_Event An event that has just occured
+ * @param event An event that has just occured
  */
 void input_sdl_process_SDL_event(const SDL_Event *event);
 

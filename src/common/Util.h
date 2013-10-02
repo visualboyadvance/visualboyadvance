@@ -32,8 +32,9 @@ extern "C" {
 /**
  * Finds the complete path of a data file distributed with VBA
  *
+ * @param folder The name of the folder where the file is
  * @param filename Name of the file to find
- * @return newly allocated string containint the path to the file
+ * @return newly allocated string containing the path to the file
  */
 gchar *data_get_file_path(const gchar *folder, const gchar *filename);
 

@@ -36,6 +36,8 @@ typedef struct GameScreen GameScreen;
  * Create a game screen entity
  *
  * @param display Display to use for rendering
+ * @param err return location for a GError, or NULL
+ * @return Newly allocated GameScreen object
  */
 GameScreen *gamescreen_create(Display *display, GError **err);
 
@@ -49,7 +51,7 @@ void gamescreen_free(GameScreen *game);
 /**
  * Display an on screen text message
  *
- * @param display display display
+ * @param game Game screen
  * @param msg message to be displayed
  */
 void gamescreen_show_status_message(GameScreen *game, const gchar *msg);
@@ -65,7 +67,7 @@ const DisplayDriver *gamescreen_get_display_driver(GameScreen *game);
  * Process an SDL event to update the game screen
  *
  * @param game Game screen
- * @param SDL_Event An event that has just occured
+ * @param event An event that has just occured
  */
 gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event);
 

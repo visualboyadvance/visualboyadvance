@@ -37,6 +37,7 @@ typedef void (*TimerAction)(gpointer);
  * The action runs automatically when the timeout expires
  *
  * @param entity Entity this component applies to
+ * @param action function to be called when the time runs out
  */
 Timeout *timeout_create(gpointer entity, TimerAction action);
 
@@ -49,10 +50,9 @@ Timeout *timeout_create(gpointer entity, TimerAction action);
 void timeout_set_duration(Timeout *timeout, guint32 millis);
 
 /**
- * Set the duration of a Timeout
+ * Free a TimeOut
  *
- * @param timeout Timeout to modify
- * @param millis Duration in milliseconds before action is run
+ * @param timeout Timeout to free
  */
 void timeout_free(Timeout *timeout);
 
