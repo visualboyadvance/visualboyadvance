@@ -283,6 +283,8 @@ void input_sdl_free(InputDriver *driver) {
 
 	controllers_close_all();
 
+	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS);
+
 	g_free(driver->driverData);
 	g_free(driver);
 }

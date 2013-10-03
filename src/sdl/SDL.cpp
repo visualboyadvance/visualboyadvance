@@ -231,8 +231,6 @@ int main(int argc, char **argv)
 	input_sdl_free(inputDriver);
 	display_sdl_free(display);
 
-	SDL_Quit();
-
 	settings_free();
 
 	g_free(filename);
