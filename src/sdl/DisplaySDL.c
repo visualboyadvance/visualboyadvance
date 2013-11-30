@@ -29,10 +29,17 @@ static const int screenHeigth = 160;
 struct Display {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	GSList *renderables;
+	GNode *renderables;
 
 	gboolean fullscreen;
 };
+
+static gboolean display_sdl_render_node(GNode *node, gpointer data) {
+	Renderable *renderable = (Renderable *)node->data;
+	if (renderable && renderable->render) {
+		renderable->render(renderable->entity);
+	}
+}
 
 void display_sdl_render(Display *display) {
 	g_assert(display != NULL);
@@ -41,14 +48,7 @@ void display_sdl_render(Display *display) {
 	SDL_RenderClear(display->renderer);
 
 	// Then render the renderables
-	GSList *it = display->renderables;
-	while (it != NULL) {
-		Renderable *renderable = (Renderable *)it->data;
-		if (renderable->render) {
-			renderable->render(renderable->entity);
-		}
-		it = g_slist_next(it);
-	}
+	g_node_traverse(display->renderables, G_PRE_ORDER, G_TRAVERSE_ALL, -1, display_sdl_render_node, NULL);
 
 	SDL_RenderPresent(display->renderer);
 }
@@ -86,13 +86,6 @@ static gboolean display_sdl_create_window(Display *display, GError **err) {
 Display *display_sdl_init(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
-	Display *display = g_new(Display, 1);
-	display->window = NULL;
-	display->renderer = NULL;
-	display->renderables = NULL;
-
-	display->fullscreen = settings_is_fullscreen();
-
 	SDL_InitSubSystem(SDL_INIT_VIDEO);
 
 	if (TTF_Init()) {
@@ -100,6 +93,12 @@ Display *display_sdl_init(GError **err) {
 				"Failed to initialize true type rendering: %s", TTF_GetError());
 		return FALSE;
 	}
+
+	Display *display = g_new(Display, 1);
+	display->window = NULL;
+	display->renderer = NULL;
+	display->renderables = g_node_new(NULL);
+	display->fullscreen = settings_is_fullscreen();
 
 	if (!display_sdl_create_window(display, err)) {
 		display_sdl_free(display);
@@ -119,6 +118,8 @@ void display_sdl_free(Display *display) {
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
 	TTF_Quit();
+
+	g_node_destroy(display->renderables);
 
 	g_free(display);
 }
@@ -154,7 +155,7 @@ void display_sdl_set_window_title(Display *display, const gchar *title) {
 	}
 }
 
-Renderable *display_sdl_renderable_create(Display *display, gpointer entity) {
+Renderable *display_sdl_renderable_create(Display *display, gpointer entity, Renderable *parent) {
 	g_assert(display != NULL);
 
 	Renderable *renderable = g_new(Renderable, 1);
@@ -162,8 +163,13 @@ Renderable *display_sdl_renderable_create(Display *display, gpointer entity) {
 	renderable->display = display;
 	renderable->renderer = display->renderer;
 	renderable->render = NULL;
+	renderable->parent = parent;
+	renderable->x = 0;
+	renderable->y = 0;
+	renderable->width = 0;
+	renderable->height = 0;
 
-	display->renderables = g_slist_append(display->renderables, renderable);
+	g_node_append_data(display->renderables, renderable);
 
 	return renderable;
 }
@@ -174,9 +180,58 @@ void display_sdl_renderable_free(Renderable *renderable) {
 
 	Display *display = renderable->display;
 
-	display->renderables = g_slist_remove(display->renderables, renderable);
+	GNode *node = g_node_find_child(display->renderables, G_TRAVERSE_ALL, renderable);
+
+	g_assert(node != NULL && G_NODE_IS_LEAF(node));
+
+	g_node_destroy(node);
 
 	g_free(renderable);
+}
+
+void display_sdl_renderable_set_position(Renderable *renderable, gint x, gint y) {
+	g_assert(renderable != NULL);
+
+	renderable->x = x;
+	renderable->y = y;
+}
+
+void display_sdl_renderable_set_size(Renderable *renderable, gint width, gint height) {
+	g_assert(renderable != NULL);
+
+	renderable->width = width;
+	renderable->height = height;
+}
+
+void display_sdl_renderable_get_absolute_position(Renderable *renderable, gint *x, gint *y) {
+	g_assert(renderable != NULL && x != NULL && y != NULL);
+
+	if (renderable->parent == NULL) {
+		int windowWidth, windowHeight;
+		SDL_GetRendererOutputSize(renderable->renderer, &windowWidth, &windowHeight);
+
+		if (renderable->x >= 0) {
+			*x = renderable->x;
+		} else {
+			*x = windowWidth + renderable->x - renderable->width;
+		}
+
+		if (renderable->y >= 0) {
+			*y = renderable->y;
+		} else {
+			*y = windowHeight + renderable->y - renderable->height;
+		}
+
+	} else {
+		// TODO: Allow right / bottom alignment for nested renderables
+		g_assert(renderable->x >= 0 && renderable->y >= 0);
+
+		gint parentX, parentY;
+		display_sdl_renderable_get_absolute_position(renderable->parent, &parentX, &parentY);
+
+		*x = parentX + renderable->x;
+		*y = parentY + renderable->y;
+	}
 }
 
 SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GError **err) {

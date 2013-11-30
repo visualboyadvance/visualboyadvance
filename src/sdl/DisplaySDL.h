@@ -82,6 +82,18 @@ struct Renderable {
 	/** Display display to be used for rendering */
 	Display *display;
 
+	Renderable *parent;
+
+	/** Screen position x */
+	gint x;
+
+	/** Screen position y */
+	gint y;
+
+	gint width;
+
+	gint height;
+
 	/** Renderer to use for rendering */
 	SDL_Renderer *renderer;
 };
@@ -93,8 +105,39 @@ struct Renderable {
  *
  * @param display Display display to use for rendering
  * @param entity Entity this component applies to
+ * @param parent Renderable the renderable to be created renders over
  */
-Renderable *display_sdl_renderable_create(Display *display, gpointer entity);
+Renderable *display_sdl_renderable_create(Display *display, gpointer entity, Renderable *parent);
+
+/**
+ * Set the position of the Renderable on the screen
+ *
+ * If the x or y parameters are negative the positioning is relative to the
+ * opposite side of the parent.
+ *
+ * @param renderable Renderable component
+ * @param x number of pixels away from the left side of the parent the renderable is drawn at
+ * @param y number of pixels away from the top side of the parent the renderable is drawn at
+ */
+void display_sdl_renderable_set_position(Renderable *renderable, gint x, gint y);
+
+/**
+ * Set the size of the Renderable
+ *
+ * @param renderable Renderable component
+ * @param width maximum width of the text message
+ * @param height height of the text message, used to compute the font size
+ */
+void display_sdl_renderable_set_size(Renderable *renderable, gint width, gint height);
+
+/**
+ * Compute the absolute unscaled position of a Renderable
+ *
+ * @param renderable Renderable component
+ * @param x Returns the number of pixels to the top of the window
+ * @param y Returns the number of pixels to the left of the window
+ */
+void display_sdl_renderable_get_absolute_position(Renderable *renderable, gint *x, gint *y);
 
 /**
  * Free a renderable component

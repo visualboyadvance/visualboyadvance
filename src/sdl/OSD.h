@@ -88,12 +88,13 @@ void text_osd_set_position(TextOSD *text, gint x, gint y);
 void text_osd_set_opacity(TextOSD *text, gint opacity);
 
 /**
- * Set the size of text to render
+ * Set the size of the TextOSD
  *
  * @param text TextOSD entity
- * @param size Height in px of the font
+ * @param width Maximum width of the text message
+ * @param height Height of the text message, used to compute the font size
  */
-void text_osd_set_size(TextOSD *text, gint size);
+void text_osd_set_size(TextOSD *text, gint width, gint height);
 
 /**
  * Free a text OSD entity

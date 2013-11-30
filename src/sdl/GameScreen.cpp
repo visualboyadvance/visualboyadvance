@@ -94,7 +94,7 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	game->status = NULL;
 	game->speed = NULL;
 	game->display = display;
-	game->renderable = display_sdl_renderable_create(display, game);
+	game->renderable = display_sdl_renderable_create(display, game, NULL);
 	game->renderable->render = gamescreen_render;
 	game->mouseTimeout = timeout_create(game, gamescreen_mouse_hide);
 	game->paused = FALSE;
@@ -113,22 +113,26 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	if (settings_show_speed()) {
 		game->speed = text_osd_create(display, " ", err);
 		if (game->speed == NULL) {
-			return FALSE;
+			gamescreen_free(game);
+			return NULL;
 		}
 
 		text_osd_set_color(game->speed, 255, 0, 0);
 		text_osd_set_position(game->speed, 10, 10);
+		text_osd_set_size(game->speed, 240, 13);
 		text_osd_set_opacity(game->speed, 75);
 	}
 
 	if (!settings_disable_status_messages()) {
 		game->status = text_osd_create(display, " ", err);
 		if (game->status == NULL) {
-			return FALSE;
+			gamescreen_free(game);
+			return NULL;
 		}
 
 		text_osd_set_color(game->status, 255, 0, 0);
 		text_osd_set_position(game->status, 10, -10);
+		text_osd_set_size(game->status, 240, 13);
 	}
 
 	return game;

@@ -28,17 +28,10 @@ struct TextOSD {
 
 	gchar *message;
 	SDL_Color color;
-	gint size;
 	gint opacity;
 
 	/** Texture to render */
 	SDL_Texture *texture;
-
-	/** Screen position x */
-	gint x;
-
-	/** Screen position y */
-	gint y;
 };
 
 struct ImageOSD {
@@ -46,13 +39,11 @@ struct ImageOSD {
 
 	/** Texture to render */
 	SDL_Texture *texture;
-
-	/** Screen position x */
-	gint x;
-
-	/** Screen position y */
-	gint y;
 };
+
+static guint text_compute_size(TextOSD *text) {
+	return text->renderable->height;
+}
 
 static gboolean text_update_texture(TextOSD *text, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
@@ -60,7 +51,7 @@ static gboolean text_update_texture(TextOSD *text, GError **err) {
 	SDL_DestroyTexture(text->texture);
 
 	gchar *fontFile = data_get_file_path("fonts", "DroidSans-Bold.ttf");
-	TTF_Font *font = TTF_OpenFont(fontFile, text->size);
+	TTF_Font *font = TTF_OpenFont(fontFile, text_compute_size(text));
 	g_free(fontFile);
 
 	if (font == NULL) {
@@ -93,28 +84,21 @@ static gboolean text_update_texture(TextOSD *text, GError **err) {
 	return TRUE;
 }
 
-static void osd_render(Renderable *renderable, SDL_Texture *texture, gint x, gint y) {
+static void osd_render(Renderable *renderable, SDL_Texture *texture) {
 	int textWidth, textHeight;
 	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
 
 	int windowWidth, windowHeight;
 	SDL_GetRendererOutputSize(renderable->renderer, &windowWidth, &windowHeight);
 
+	gint x, y;
+	display_sdl_renderable_get_absolute_position(renderable, &x, &y);
+
 	SDL_Rect screenRect;
 	screenRect.w = textWidth;
 	screenRect.h = textHeight;
-
-	if (x >= 0) {
-		screenRect.x = x;
-	} else {
-		screenRect.x = windowWidth - textWidth + x;
-	}
-
-	if (y >= 0) {
-		screenRect.y = y;
-	} else {
-		screenRect.y = windowHeight - textHeight + y;
-	}
+	screenRect.x = x;
+	screenRect.y = y;
 
 	SDL_RenderCopy(renderable->renderer, texture, NULL, &screenRect);
 }
@@ -126,25 +110,22 @@ static void text_osd_render(gpointer entity) {
 		text_update_texture(text, NULL);
 	}
 
-	osd_render(text->renderable, text->texture, text->x, text->y);
+	osd_render(text->renderable, text->texture);
 }
 
 TextOSD *text_osd_create(Display *display, const gchar *message, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	TextOSD *text = g_new(TextOSD, 1);
-	text->renderable = display_sdl_renderable_create(display, text);
+	text->renderable = display_sdl_renderable_create(display, text, NULL);
 	text->renderable->render = text_osd_render;
 	text->autoclear = NULL;
 
 	text->message = g_strdup(message);
-	text->size = 10;
 	text->opacity = 100;
 	text->color.r = 0;
 	text->color.g = 0;
 	text->color.b = 0;
-	text->x = 0;
-	text->y = 0;
 	text->texture = NULL;
 
 	// Render here to perform error checking
@@ -196,8 +177,7 @@ void text_osd_set_color(TextOSD *text, guint8 r, guint8 g, guint8 b) {
 void text_osd_set_position(TextOSD *text, gint x, gint y) {
 	g_assert(text != NULL);
 
-	text->x = x;
-	text->y = y;
+	display_sdl_renderable_set_position(text->renderable, x, y);
 }
 
 void text_osd_set_opacity(TextOSD *text, gint opacity) {
@@ -210,15 +190,23 @@ void text_osd_set_opacity(TextOSD *text, gint opacity) {
 	text->texture = NULL;
 }
 
-void text_osd_set_size(TextOSD *text, gint size) {
+void text_osd_set_size(TextOSD *text, gint width, gint height) {
 	g_assert(text != NULL);
-	g_assert(size > 0);
-
-	text->size = size;
+	display_sdl_renderable_set_size(text->renderable, width, height);
 
 	SDL_DestroyTexture(text->texture);
 	text->texture = NULL;
 }
+
+//void text_osd_set_size(TextOSD *text, gint size) {
+//	g_assert(text != NULL);
+//	g_assert(size > 0);
+//
+//	text->size = size;
+//
+//	SDL_DestroyTexture(text->texture);
+//	text->texture = NULL;
+//}
 
 static void text_osd_autoclear(gpointer entity) {
 	TextOSD *text = entity;
@@ -238,18 +226,16 @@ void text_osd_set_auto_clear(TextOSD *text, guint duration) {
 static void image_osd_render(gpointer entity) {
 	ImageOSD *image = entity;
 
-	osd_render(image->renderable, image->texture, image->x, image->y);
+	osd_render(image->renderable, image->texture);
 }
 
 ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	ImageOSD *image = g_new(ImageOSD, 1);
-	image->renderable = display_sdl_renderable_create(display, image);
+	image->renderable = display_sdl_renderable_create(display, image, NULL);
 	image->renderable->render = image_osd_render;
 
-	image->x = 0;
-	image->y = 0;
 	image->texture = display_sdl_load_png(display, file, err);
 
 
@@ -275,6 +261,5 @@ void image_osd_free(ImageOSD *image) {
 void image_osd_set_position(ImageOSD *image, gint x, gint y) {
 	g_assert(image != NULL);
 
-	image->x = x;
-	image->y = y;
+	display_sdl_renderable_set_position(image->renderable, x, y);
 }
