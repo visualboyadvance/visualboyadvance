@@ -68,6 +68,13 @@ static gboolean main_process_event(const SDL_Event *event) {
 			return TRUE;
 		}
 		break;
+	case SDL_WINDOWEVENT:
+		switch (event->window.event) {
+		case SDL_WINDOWEVENT_RESIZED:
+			display_sdl_resize(display);
+			return TRUE;
+		}
+		break;
 	}
 
 	return FALSE;

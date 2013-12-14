@@ -27,7 +27,7 @@
 #include "../common/Settings.h"
 
 static const int screenWidth = 240;
-static const int screenHeigth = 160;
+static const int screenHeight = 160;
 
 struct GameScreen {
 	Renderable *renderable;
@@ -66,16 +66,11 @@ void gamescreen_render(gpointer entity) {
 	g_assert(entity != NULL);
 	GameScreen *game = (GameScreen *)entity;
 
-	// Do letterboxing to preserve aspect ratio regardless of the window size
-	int windowWidth, windowHeight;
-	SDL_GetRendererOutputSize(game->renderable->renderer, &windowWidth, &windowHeight);
 
-	double scale = MIN(windowHeight / (double)screenHeigth, windowWidth / (double)screenWidth);
 	SDL_Rect screenRect;
-	screenRect.w = screenWidth * scale;
-	screenRect.h = screenHeigth * scale;
-	screenRect.x = (windowWidth - screenRect.w) / 2;
-	screenRect.y = (windowHeight - screenRect.h) / 2;
+	screenRect.w = display_sdl_scale(game->display, screenWidth);
+	screenRect.h = display_sdl_scale(game->display, screenHeight);
+	display_sdl_renderable_get_absolute_position(game->renderable, &screenRect.x, &screenRect.y);
 
 	SDL_RenderCopy(game->renderable->renderer, game->screen, NULL, &screenRect);
 }
@@ -100,8 +95,11 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	game->paused = FALSE;
 	game->inactive = FALSE;
 
+	display_sdl_renderable_set_size(game->renderable, screenWidth, screenHeight);
+	display_sdl_renderable_set_alignment(game->renderable, ALIGN_CENTER, ALIGN_MIDDLE);
+
 	game->screen = SDL_CreateTexture(game->renderable->renderer, SDL_PIXELFORMAT_BGR555,
-			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeigth);
+			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeight);
 
 	if (game->screen == NULL) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
@@ -118,8 +116,8 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 		}
 
 		text_osd_set_color(game->speed, 255, 0, 0);
-		text_osd_set_position(game->speed, 10, 10);
-		text_osd_set_size(game->speed, 240, 13);
+		text_osd_set_position(game->speed, 5, 5);
+		text_osd_set_size(game->speed, 240, 5);
 		text_osd_set_opacity(game->speed, 75);
 	}
 
@@ -131,8 +129,9 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 		}
 
 		text_osd_set_color(game->status, 255, 0, 0);
-		text_osd_set_position(game->status, 10, -10);
-		text_osd_set_size(game->status, 240, 13);
+		text_osd_set_alignment(game->status, ALIGN_LEFT, ALIGN_BOTTOM);
+		text_osd_set_position(game->status, 5, 5);
+		text_osd_set_size(game->status, 240, 5);
 	}
 
 	return game;

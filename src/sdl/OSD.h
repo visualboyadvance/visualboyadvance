@@ -97,6 +97,15 @@ void text_osd_set_opacity(TextOSD *text, gint opacity);
 void text_osd_set_size(TextOSD *text, gint width, gint height);
 
 /**
+ * Set the alignment of the TextOSD within its parent
+ *
+ * @param text TextOSD entity
+ * @param horizontal Horizontal alignment, can be ALIGN_LEFT, ALIGN_CENTER or ALIGN_RIGHT
+ * @param vertical Vertical alignment, can be ALIGN_TOP, ALIGN_MIDDLE or ALIGN_BOTTOM
+ */
+void text_osd_set_alignment(TextOSD *text, HorizontalAlignment horizontal, VerticalAlignment vertical);
+
+/**
  * Free a text OSD entity
  *
  * @param text TextOSD entity

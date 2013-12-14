@@ -42,7 +42,7 @@ struct ImageOSD {
 };
 
 static guint text_compute_size(TextOSD *text) {
-	return text->renderable->height;
+	return display_sdl_scale(text->renderable->display, text->renderable->height);
 }
 
 static gboolean text_update_texture(TextOSD *text, GError **err) {
@@ -88,9 +88,6 @@ static void osd_render(Renderable *renderable, SDL_Texture *texture) {
 	int textWidth, textHeight;
 	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
 
-	int windowWidth, windowHeight;
-	SDL_GetRendererOutputSize(renderable->renderer, &windowWidth, &windowHeight);
-
 	gint x, y;
 	display_sdl_renderable_get_absolute_position(renderable, &x, &y);
 
@@ -113,12 +110,21 @@ static void text_osd_render(gpointer entity) {
 	osd_render(text->renderable, text->texture);
 }
 
+static void text_osd_resize(gpointer entity) {
+	TextOSD *text = entity;
+
+	SDL_DestroyTexture(text->texture);
+	text->texture = NULL;
+}
+
+
 TextOSD *text_osd_create(Display *display, const gchar *message, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	TextOSD *text = g_new(TextOSD, 1);
 	text->renderable = display_sdl_renderable_create(display, text, NULL);
 	text->renderable->render = text_osd_render;
+	text->renderable->resize = text_osd_resize;
 	text->autoclear = NULL;
 
 	text->message = g_strdup(message);
@@ -180,6 +186,12 @@ void text_osd_set_position(TextOSD *text, gint x, gint y) {
 	display_sdl_renderable_set_position(text->renderable, x, y);
 }
 
+void text_osd_set_alignment(TextOSD *text, HorizontalAlignment horizontal, VerticalAlignment vertical) {
+	g_assert(text != NULL);
+
+	display_sdl_renderable_set_alignment(text->renderable, horizontal, vertical);
+}
+
 void text_osd_set_opacity(TextOSD *text, gint opacity) {
 	g_assert(text != NULL);
 	g_assert(opacity >= 0 && opacity <= 100);
@@ -197,16 +209,6 @@ void text_osd_set_size(TextOSD *text, gint width, gint height) {
 	SDL_DestroyTexture(text->texture);
 	text->texture = NULL;
 }
-
-//void text_osd_set_size(TextOSD *text, gint size) {
-//	g_assert(text != NULL);
-//	g_assert(size > 0);
-//
-//	text->size = size;
-//
-//	SDL_DestroyTexture(text->texture);
-//	text->texture = NULL;
-//}
 
 static void text_osd_autoclear(gpointer entity) {
 	TextOSD *text = entity;

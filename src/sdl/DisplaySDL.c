@@ -53,6 +53,20 @@ void display_sdl_render(Display *display) {
 	SDL_RenderPresent(display->renderer);
 }
 
+static gboolean display_sdl_resize_node(GNode *node, gpointer data) {
+	Renderable *renderable = (Renderable *)node->data;
+	if (renderable && renderable->resize) {
+		renderable->resize(renderable->entity);
+	}
+}
+
+void display_sdl_resize(Display *display) {
+	g_assert(display != NULL);
+
+	// Resize all the renderers
+	g_node_traverse(display->renderables, G_PRE_ORDER, G_TRAVERSE_ALL, -1, display_sdl_resize_node, NULL);
+}
+
 static gboolean display_sdl_create_window(Display *display, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 	g_assert(display != NULL);
@@ -163,11 +177,14 @@ Renderable *display_sdl_renderable_create(Display *display, gpointer entity, Ren
 	renderable->display = display;
 	renderable->renderer = display->renderer;
 	renderable->render = NULL;
+	renderable->resize = NULL;
 	renderable->parent = parent;
 	renderable->x = 0;
 	renderable->y = 0;
 	renderable->width = 0;
 	renderable->height = 0;
+	renderable->horizontalAlignment = ALIGN_LEFT;
+	renderable->verticalAlignment = ALIGN_TOP;
 
 	g_node_append_data(display->renderables, renderable);
 
@@ -203,34 +220,68 @@ void display_sdl_renderable_set_size(Renderable *renderable, gint width, gint he
 	renderable->height = height;
 }
 
+void display_sdl_renderable_set_alignment(Renderable *renderable, HorizontalAlignment horizontal, VerticalAlignment vertical) {
+	g_assert(renderable != NULL);
+
+	renderable->horizontalAlignment = horizontal;
+	renderable->verticalAlignment = vertical;
+}
+
+gint display_sdl_scale(Display *display, gint unscaled) {
+	g_assert(display != NULL);
+
+	int windowWidth, windowHeight;
+	SDL_GetRendererOutputSize(display->renderer, &windowWidth, &windowHeight);
+
+	// Do letterboxing to preserve aspect ratio regardless of the window size
+	double scale = MIN(windowHeight / (double)screenHeigth, windowWidth / (double)screenWidth);
+
+	return unscaled * scale;
+}
+
 void display_sdl_renderable_get_absolute_position(Renderable *renderable, gint *x, gint *y) {
 	g_assert(renderable != NULL && x != NULL && y != NULL);
 
-	if (renderable->parent == NULL) {
-		int windowWidth, windowHeight;
-		SDL_GetRendererOutputSize(renderable->renderer, &windowWidth, &windowHeight);
-
-		if (renderable->x >= 0) {
-			*x = renderable->x;
-		} else {
-			*x = windowWidth + renderable->x - renderable->width;
-		}
-
-		if (renderable->y >= 0) {
-			*y = renderable->y;
-		} else {
-			*y = windowHeight + renderable->y - renderable->height;
-		}
-
-	} else {
-		// TODO: Allow right / bottom alignment for nested renderables
-		g_assert(renderable->x >= 0 && renderable->y >= 0);
-
-		gint parentX, parentY;
+	gint parentX, parentY, parentWidth, parentHeight;
+	if (renderable->parent != NULL) {
 		display_sdl_renderable_get_absolute_position(renderable->parent, &parentX, &parentY);
 
-		*x = parentX + renderable->x;
-		*y = parentY + renderable->y;
+		parentWidth = display_sdl_scale(renderable->display, renderable->parent->width);
+		parentHeight = display_sdl_scale(renderable->display, renderable->parent->height);
+	} else {
+		parentX = 0;
+		parentY = 0;
+
+		SDL_GetRendererOutputSize(renderable->renderer, &parentWidth, &parentHeight);
+	}
+
+	guint scaledX = display_sdl_scale(renderable->display, renderable->x);
+	guint scaledY = display_sdl_scale(renderable->display, renderable->y);
+	guint scaledWidth = display_sdl_scale(renderable->display, renderable->width);
+	guint scaledHeight = display_sdl_scale(renderable->display, renderable->height);
+
+	switch (renderable->horizontalAlignment) {
+	case ALIGN_LEFT:
+		*x = parentX + scaledX;
+		break;
+	case ALIGN_CENTER:
+		*x = parentX + scaledX + (parentWidth - scaledWidth) / 2;
+		break;
+	case ALIGN_RIGHT:
+		*x = parentX + parentWidth - scaledX - scaledWidth;
+		break;
+	}
+
+	switch (renderable->verticalAlignment) {
+	case ALIGN_TOP:
+		*y = parentY + scaledY;
+		break;
+	case ALIGN_MIDDLE:
+		*y = parentY + scaledY + (parentHeight - scaledHeight) / 2;
+		break;
+	case ALIGN_BOTTOM:
+		*y = parentY + parentHeight - scaledY - scaledHeight;
+		break;
 	}
 }
 
