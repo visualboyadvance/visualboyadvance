@@ -20,6 +20,7 @@
 #include "InputSDL.h"
 #include "OSD.h"
 #include "Timer.h"
+#include "VBA.h"
 #include "../gba/Cartridge.h"
 #include "../gba/GBA.h"
 #include "../gba/Savestate.h"
@@ -40,7 +41,6 @@ struct GameScreen {
 	TextOSD *status;
 	Timeout *mouseTimeout;
 
-	gboolean paused;
 	gboolean inactive;
 };
 
@@ -92,7 +92,6 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	game->renderable = display_sdl_renderable_create(display, game, NULL);
 	game->renderable->render = gamescreen_render;
 	game->mouseTimeout = timeout_create(game, gamescreen_mouse_hide);
-	game->paused = FALSE;
 	game->inactive = FALSE;
 
 	display_sdl_renderable_set_size(game->renderable, screenWidth, screenHeight);
@@ -253,13 +252,13 @@ void gamescreen_read_battery(GameScreen *game) {
 gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
 	switch (event->type) {
 	case SDL_WINDOWEVENT_FOCUS_LOST:
-		if (!game->paused && settings_pause_when_inactive()) {
+		if (!vba_is_paused() && settings_pause_when_inactive()) {
 			game->inactive = TRUE;
 			soundPause(game->inactive);
 		}
 		return FALSE;
 	case SDL_WINDOWEVENT_FOCUS_GAINED:
-		if (!game->paused && settings_pause_when_inactive()) {
+		if (!vba_is_paused() && settings_pause_when_inactive()) {
 			game->inactive = FALSE;
 			soundPause(game->inactive);
 		}
@@ -274,16 +273,6 @@ gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
 		return FALSE;
 	case SDL_KEYUP:
 		switch (event->key.keysym.sym) {
-		case SDLK_p:
-			if (!(event->key.keysym.mod & MOD_NOCTRL)
-					&& (event->key.keysym.mod & KMOD_CTRL)) {
-				game->paused = !game->paused;
-				soundPause(game->paused);
-				g_message(game->paused ? "Pause on" : "Pause off");
-
-				return TRUE;
-			}
-			break;
 		case SDLK_r:
 			if (!(event->key.keysym.mod & MOD_NOCTRL)
 					&& (event->key.keysym.mod & KMOD_CTRL)) {
@@ -326,7 +315,7 @@ gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
 }
 
 void gamescreen_update(GameScreen *game) {
-	if (!game->paused && !game->inactive) {
+	if (!game->inactive) {
 		CPULoop(250000);
 	} else {
 		SDL_Delay(500);

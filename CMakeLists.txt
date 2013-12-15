@@ -92,7 +92,8 @@ SET(SRC_SDL
 	src/sdl/GameScreen.cpp
 	src/sdl/InputSDL.c
 	src/sdl/OSD.c
-	src/sdl/SDL.cpp
+	src/sdl/PauseScreen.c
+	src/sdl/VBA.cpp
 	src/sdl/Timer.c
 	src/sdl/SoundSDL.c
 )

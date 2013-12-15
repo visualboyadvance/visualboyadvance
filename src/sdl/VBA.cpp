@@ -27,16 +27,20 @@
 #include "InputSDL.h"
 #include "SoundSDL.h"
 #include "Timer.h"
+#include "VBA.h"
 #include "GameScreen.h"
+#include "PauseScreen.h"
 #include "../common/Settings.h"
 
 #include <glib.h>
 
 static GameScreen *game = NULL;
+static PauseScreen *pauseScreen = NULL;
 static Display *display = NULL;
 static SoundDriver *soundDriver = NULL;
 
 static gboolean emulating = FALSE;
+static gboolean paused = FALSE;
 
 static gboolean main_process_event(const SDL_Event *event) {
 	switch (event->type) {
@@ -53,6 +57,13 @@ static gboolean main_process_event(const SDL_Event *event) {
 			if (!(event->key.keysym.mod & MOD_NOCTRL)
 					&& (event->key.keysym.mod & KMOD_CTRL)) {
 				display_sdl_toggle_fullscreen(display, NULL);
+				return TRUE;
+			}
+			break;
+		case SDLK_p:
+			if (!(event->key.keysym.mod & MOD_NOCTRL)
+					&& (event->key.keysym.mod & KMOD_CTRL)) {
+				vba_toggle_pause();
 				return TRUE;
 			}
 			break;
@@ -87,7 +98,11 @@ static void events_poll() {
 			continue;
 		}
 
-		gamescreen_process_event(game, &event);
+		if (!vba_is_paused()) {
+			gamescreen_process_event(game, &event);
+		} else {
+			pausescreen_process_event(pauseScreen, &event);
+		}
 	}
 }
 
@@ -219,7 +234,11 @@ int main(int argc, char **argv)
 	display_sdl_set_window_title(display, cartridge_get_game_title());
 
 	while (emulating) {
-		gamescreen_update(game);
+		if (!vba_is_paused()) {
+			gamescreen_update(game);
+		} else {
+			pausescreen_update(pauseScreen);
+		}
 		display_sdl_render(display);
 		timers_update();
 		events_poll();
@@ -243,4 +262,22 @@ int main(int argc, char **argv)
 	g_free(filename);
 
 	return 0;
+}
+
+gboolean vba_toggle_pause() {
+	paused = !paused;
+	soundPause(paused);
+
+	if (paused) {
+		pauseScreen = pausescreen_create(display, NULL);
+	} else {
+		pausescreen_free(pauseScreen);
+		pauseScreen = NULL;
+	}
+
+	return paused;
+}
+
+gboolean vba_is_paused() {
+	return paused;
 }
