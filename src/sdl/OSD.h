@@ -173,6 +173,8 @@ typedef struct RectOSD RectOSD;
  * @param display The display to use to render the rectangle
  * @param x number of pixels away from the left side of the window the rectangle is drawn at
  * @param y number of pixels away from the top side of the window the rectangle is drawn at
+ * @param w Maximum width of the rectangle
+ * @param h Maximum height of the rectangle
  * @param err return location for a GError, or NULL
  * @return RectOSD entity or NULL if the creation failed
  */
