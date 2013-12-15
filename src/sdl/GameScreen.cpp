@@ -53,7 +53,7 @@ static void gamescreen_update_speed(TextOSD *speed) {
 	text_osd_set_message(speed, buffer);
 }
 
-static void gamescreen_update(GameScreen *game, guint16 *pix) {
+static void gamescreen_update_texture(GameScreen *game, guint16 *pix) {
 	g_assert(game != NULL);
 
 	SDL_UpdateTexture(game->screen, NULL, pix, screenWidth * sizeof(*pix));
@@ -62,7 +62,7 @@ static void gamescreen_update(GameScreen *game, guint16 *pix) {
 	gamescreen_update_speed(game->speed);
 }
 
-void gamescreen_render(gpointer entity) {
+static void gamescreen_render(gpointer entity) {
 	g_assert(entity != NULL);
 	GameScreen *game = (GameScreen *)entity;
 
@@ -161,10 +161,10 @@ void gamescreen_free(GameScreen *game) {
 	g_free(game);
 }
 
-static void display_sdl_draw_screen(const DisplayDriver *driver, guint16 *pix) {
+static void gamescreen_draw_screen(const DisplayDriver *driver, guint16 *pix) {
 	g_assert(driver != NULL);
 
-	gamescreen_update((GameScreen*)driver->driverData, pix);
+	gamescreen_update_texture((GameScreen*)driver->driverData, pix);
 }
 
 const DisplayDriver *gamescreen_get_display_driver(GameScreen *game) {
@@ -175,13 +175,13 @@ const DisplayDriver *gamescreen_get_display_driver(GameScreen *game) {
 
 	DisplayDriver *driver = g_new(DisplayDriver, 1);
 
-	driver->drawScreen = display_sdl_draw_screen;
+	driver->drawScreen = gamescreen_draw_screen;
 	driver->driverData = game;
 
 	return driver;
 }
 
-static void game_screen_change_volume(GameScreen *game, float d)
+static void gamescreen_change_volume(GameScreen *game, float d)
 {
 	float oldVolume = soundGetVolume();
 	float newVolume = oldVolume + d;
@@ -295,10 +295,10 @@ gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
 			break;
 
 		case SDLK_KP_DIVIDE:
-			game_screen_change_volume(game, -0.1);
+			gamescreen_change_volume(game, -0.1);
 			return TRUE;
 		case SDLK_KP_MULTIPLY:
-			game_screen_change_volume(game, 0.1);
+			gamescreen_change_volume(game, 0.1);
 			return TRUE;
 		case SDLK_F1:
 		case SDLK_F2:
