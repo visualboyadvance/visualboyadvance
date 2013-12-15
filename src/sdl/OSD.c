@@ -41,6 +41,13 @@ struct ImageOSD {
 	SDL_Texture *texture;
 };
 
+struct RectOSD {
+	Renderable *renderable;
+
+	SDL_Color color;
+	gint opacity;
+};
+
 static guint text_compute_size(TextOSD *text) {
 	return display_sdl_scale(text->renderable->display, text->renderable->height);
 }
@@ -88,14 +95,28 @@ static void osd_render(Renderable *renderable, SDL_Texture *texture) {
 	int textWidth, textHeight;
 	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
 
+	int rendWidth = display_sdl_scale(renderable->display, renderable->width);
+	int rendHeight = display_sdl_scale(renderable->display, renderable->height);
+
 	gint x, y;
 	display_sdl_renderable_get_absolute_position(renderable, &x, &y);
 
 	SDL_Rect screenRect;
 	screenRect.w = textWidth;
 	screenRect.h = textHeight;
-	screenRect.x = x;
-	screenRect.y = y;
+	screenRect.y = y + (rendHeight - textHeight) / 2;
+
+	switch (renderable->horizontalAlignment) {
+	case ALIGN_LEFT:
+		screenRect.x = x;
+		break;
+	case ALIGN_CENTER:
+		screenRect.x = x + (rendWidth - textWidth) / 2;
+		break;
+	case ALIGN_RIGHT:
+		screenRect.x = x + rendWidth - textWidth;
+		break;
+	}
 
 	SDL_RenderCopy(renderable->renderer, texture, NULL, &screenRect);
 }
@@ -118,11 +139,11 @@ static void text_osd_resize(gpointer entity) {
 }
 
 
-TextOSD *text_osd_create(Display *display, const gchar *message, GError **err) {
+TextOSD *text_osd_create(Display *display, const gchar *message, const Renderable *parent, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	TextOSD *text = g_new(TextOSD, 1);
-	text->renderable = display_sdl_renderable_create(display, text, NULL);
+	text->renderable = display_sdl_renderable_create(display, text, parent);
 	text->renderable->render = text_osd_render;
 	text->renderable->resize = text_osd_resize;
 	text->autoclear = NULL;
@@ -264,4 +285,69 @@ void image_osd_set_position(ImageOSD *image, gint x, gint y) {
 	g_assert(image != NULL);
 
 	display_sdl_renderable_set_position(image->renderable, x, y);
+}
+
+static void rect_osd_render(gpointer entity) {
+	RectOSD *rect = entity;
+	Renderable* renderable = rect->renderable;
+
+	gint x, y;
+	display_sdl_renderable_get_absolute_position(renderable, &x, &y);
+
+	SDL_Rect screenRect;
+	screenRect.x = x;
+	screenRect.y = y;
+	screenRect.w = display_sdl_scale(renderable->display, renderable->width);
+	screenRect.h = display_sdl_scale(renderable->display, renderable->height);
+
+	SDL_SetRenderDrawColor(renderable->renderer, rect->color.r, rect->color.g, rect->color.b, rect->opacity * 255 / 100);
+	SDL_SetRenderDrawBlendMode(renderable->renderer, SDL_BLENDMODE_BLEND);
+	SDL_RenderFillRect(renderable->renderer, &screenRect);
+}
+
+RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	RectOSD *rect = g_new(RectOSD, 1);
+	rect->renderable = display_sdl_renderable_create(display, rect, NULL);
+	rect->renderable->render = rect_osd_render;
+	rect->renderable->x = x;
+	rect->renderable->y = y;
+	rect->renderable->width = w;
+	rect->renderable->height = h;
+
+	rect->opacity = 100;
+	rect->color.r = 0;
+	rect->color.g = 0;
+	rect->color.b = 0;
+
+	return rect;
+}
+
+void rect_osd_free(RectOSD *rect) {
+	if (rect == NULL)
+		return;
+
+	display_sdl_renderable_free(rect->renderable);
+
+	g_free(rect);
+}
+
+void rect_osd_set_opacity(RectOSD *rect, gint opacity) {
+	g_assert(rect != NULL);
+	g_assert(opacity >= 0 && opacity <= 100);
+
+	rect->opacity = opacity;
+}
+
+void rect_osd_set_alignment(RectOSD *rect, HorizontalAlignment horizontal, VerticalAlignment vertical) {
+	g_assert(rect != NULL);
+
+	display_sdl_renderable_set_alignment(rect->renderable, horizontal, vertical);
+}
+
+const Renderable *rect_osd_get_renderable(RectOSD *rect) {
+	g_assert(rect != NULL);
+
+	return rect->renderable;
 }

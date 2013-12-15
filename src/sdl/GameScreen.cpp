@@ -109,7 +109,7 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	}
 
 	if (settings_show_speed()) {
-		game->speed = text_osd_create(display, " ", err);
+		game->speed = text_osd_create(display, " ", NULL, err);
 		if (game->speed == NULL) {
 			gamescreen_free(game);
 			return NULL;
@@ -122,7 +122,7 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	}
 
 	if (!settings_disable_status_messages()) {
-		game->status = text_osd_create(display, " ", err);
+		game->status = text_osd_create(display, " ", NULL, err);
 		if (game->status == NULL) {
 			gamescreen_free(game);
 			return NULL;

@@ -34,10 +34,11 @@ typedef struct TextOSD TextOSD;
  *
  * @param display The display to use to render the text
  * @param message The message to display
+ * @param parent Renderable the TextOSD to be created renders over
  * @param err return location for a GError, or NULL
  * @return TextOSD entity or NULL if the creation failed
  */
-TextOSD *text_osd_create(Display *display, const gchar *message, GError **err);
+TextOSD *text_osd_create(Display *display, const gchar *message, const Renderable *parent, GError **err);
 
 /**
  * Update the message of a TextOSD
@@ -132,17 +133,62 @@ ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err);
  * opposite side of the window.
  *
  * @param image ImageOSD entity
- * @param x number of pixels away from the left side of the window the text is drawn at
- * @param y number of pixels away from the top side of the window the text is drawn at
+ * @param x number of pixels away from the left side of the window the image is drawn at
+ * @param y number of pixels away from the top side of the window the image is drawn at
  */
 void image_osd_set_position(ImageOSD *image, gint x, gint y);
 
 /**
- * Free a image OSD entity
+ * Free an image OSD entity
  *
  * @param image ImageOSD entity
  */
 void image_osd_free(ImageOSD *image);
+
+/** Opaque RectOSD entity */
+typedef struct RectOSD RectOSD;
+
+/**
+ * Create a new RectOSD entity
+ *
+ * @param display The display to use to render the rectangle
+ * @param x number of pixels away from the left side of the window the rectangle is drawn at
+ * @param y number of pixels away from the top side of the window the rectangle is drawn at
+ * @param err return location for a GError, or NULL
+ * @return RectOSD entity or NULL if the creation failed
+ */
+RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, GError **err);
+
+/**
+ * Set the opacity of the RectOSD
+ *
+ * @param rect RectOSD entity
+ * @param opacity Opacity between 0 and 100
+ */
+void rect_osd_set_opacity(RectOSD *rect, gint opacity);
+
+/**
+ * Return the Renderable component of a RectOSD
+ *
+ * @param rect RectOSD entity
+ */
+const Renderable *rect_osd_get_renderable(RectOSD *rect);
+
+/**
+ * Set the alignment of the RectOSD within its parent
+ *
+ * @param rect RectOSD entity
+ * @param horizontal Horizontal alignment, can be ALIGN_LEFT, ALIGN_CENTER or ALIGN_RIGHT
+ * @param vertical Vertical alignment, can be ALIGN_TOP, ALIGN_MIDDLE or ALIGN_BOTTOM
+ */
+void rect_osd_set_alignment(RectOSD *rect, HorizontalAlignment horizontal, VerticalAlignment vertical);
+
+/**
+ * Free a rectangle OSD entity
+ *
+ * @param rect RectOSD entity
+ */
+void rect_osd_free(RectOSD *rect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

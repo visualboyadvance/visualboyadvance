@@ -99,7 +99,7 @@ struct Renderable {
 	/** Display display to be used for rendering */
 	Display *display;
 
-	Renderable *parent;
+	const Renderable *parent;
 
 	/** Screen position x */
 	gint x;
@@ -132,7 +132,7 @@ struct Renderable {
  * @param entity Entity this component applies to
  * @param parent Renderable the renderable to be created renders over
  */
-Renderable *display_sdl_renderable_create(Display *display, gpointer entity, Renderable *parent);
+Renderable *display_sdl_renderable_create(Display *display, gpointer entity, const Renderable *parent);
 
 /**
  * Set the position of the Renderable on the screen
@@ -162,7 +162,7 @@ void display_sdl_renderable_set_size(Renderable *renderable, gint width, gint he
  * @param x Returns the number of pixels to the top of the window
  * @param y Returns the number of pixels to the left of the window
  */
-void display_sdl_renderable_get_absolute_position(Renderable *renderable, gint *x, gint *y);
+void display_sdl_renderable_get_absolute_position(const Renderable *renderable, gint *x, gint *y);
 
 /**
  * Set the alignment of a Renderable within its parent

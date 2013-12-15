@@ -39,6 +39,8 @@ static gboolean display_sdl_render_node(GNode *node, gpointer data) {
 	if (renderable && renderable->render) {
 		renderable->render(renderable->entity);
 	}
+
+	return FALSE;
 }
 
 void display_sdl_render(Display *display) {
@@ -58,6 +60,8 @@ static gboolean display_sdl_resize_node(GNode *node, gpointer data) {
 	if (renderable && renderable->resize) {
 		renderable->resize(renderable->entity);
 	}
+
+	return FALSE;
 }
 
 void display_sdl_resize(Display *display) {
@@ -169,7 +173,7 @@ void display_sdl_set_window_title(Display *display, const gchar *title) {
 	}
 }
 
-Renderable *display_sdl_renderable_create(Display *display, gpointer entity, Renderable *parent) {
+Renderable *display_sdl_renderable_create(Display *display, gpointer entity, const Renderable *parent) {
 	g_assert(display != NULL);
 
 	Renderable *renderable = g_new(Renderable, 1);
@@ -239,7 +243,7 @@ gint display_sdl_scale(Display *display, gint unscaled) {
 	return unscaled * scale;
 }
 
-void display_sdl_renderable_get_absolute_position(Renderable *renderable, gint *x, gint *y) {
+void display_sdl_renderable_get_absolute_position(const Renderable *renderable, gint *x, gint *y) {
 	g_assert(renderable != NULL && x != NULL && y != NULL);
 
 	gint parentX, parentY, parentWidth, parentHeight;
