@@ -117,7 +117,6 @@ ADD_LIBRARY (
 
 ADD_EXECUTABLE (
 	vba
-	WIN32
 	${SRC_SDL}
 )
 

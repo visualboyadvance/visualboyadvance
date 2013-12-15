@@ -252,17 +252,15 @@ static void image_osd_render(gpointer entity) {
 	osd_render(image->renderable, image->texture);
 }
 
-ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err) {
+ImageOSD *image_osd_create(Display *display, const gchar *file, const Renderable *parent, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	ImageOSD *image = g_new(ImageOSD, 1);
-	image->renderable = display_sdl_renderable_create(display, image, NULL);
+	image->renderable = display_sdl_renderable_create(display, image, parent);
 	image->renderable->render = image_osd_render;
 
 	image->texture = display_sdl_load_png(display, file, err);
 
-
-	// Render here to perform error checking
 	if (image->texture == NULL) {
 		image_osd_free(image);
 		return NULL;
@@ -285,6 +283,17 @@ void image_osd_set_position(ImageOSD *image, gint x, gint y) {
 	g_assert(image != NULL);
 
 	display_sdl_renderable_set_position(image->renderable, x, y);
+}
+
+void image_osd_set_size(ImageOSD *image, gint width, gint height) {
+	g_assert(image != NULL);
+	display_sdl_renderable_set_size(image->renderable, width, height);
+}
+
+void image_osd_set_alignment(ImageOSD *image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
+	g_assert(image != NULL);
+
+	display_sdl_renderable_set_alignment(image->renderable, horizontal, vertical);
 }
 
 static void rect_osd_render(gpointer entity) {

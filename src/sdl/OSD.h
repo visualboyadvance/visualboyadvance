@@ -121,10 +121,11 @@ typedef struct ImageOSD ImageOSD;
  *
  * @param display The display to use to render the image
  * @param file Filename of the image file to open. Only PNG images are supported.
+ * @param parent Renderable the TextOSD to be created renders over
  * @param err return location for a GError, or NULL
  * @return ImageOSD entity or NULL if the creation failed
  */
-ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err);
+ImageOSD *image_osd_create(Display *display, const gchar *file, const Renderable *parent, GError **err);
 
 /**
  * Set the position of the ImageOSD on the screen
@@ -137,6 +138,24 @@ ImageOSD *image_osd_create(Display *display, const gchar *file, GError **err);
  * @param y number of pixels away from the top side of the window the image is drawn at
  */
 void image_osd_set_position(ImageOSD *image, gint x, gint y);
+
+/**
+ * Set the size of the ImageOSD
+ *
+ * @param image ImageOSD entity
+ * @param width Maximum width of the image
+ * @param height Maximum height of the image
+ */
+void image_osd_set_size(ImageOSD *image, gint width, gint height);
+
+/**
+ * Set the alignment of the ImageOSD within its parent
+ *
+ * @param image ImageOSD entity
+ * @param horizontal Horizontal alignment, can be ALIGN_LEFT, ALIGN_CENTER or ALIGN_RIGHT
+ * @param vertical Vertical alignment, can be ALIGN_TOP, ALIGN_MIDDLE or ALIGN_BOTTOM
+ */
+void image_osd_set_alignment(ImageOSD *image, HorizontalAlignment horizontal, VerticalAlignment vertical);
 
 /**
  * Free an image OSD entity
