@@ -1,0 +1,100 @@
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
+// Copyright (C) 2008 VBA-M development team
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#include "GUI.h"
+
+struct Actionable {
+
+	const Renderable *renderable;
+
+	ActionableAction action;
+
+	gpointer entity;
+};
+
+static GSList *actionables = NULL;
+
+Actionable *actionable_create(gpointer entity, ActionableAction action, const Renderable *renderable) {
+	g_assert(entity != NULL && action != NULL && renderable != NULL);
+
+	Actionable *actionable = g_new(Actionable, 1);
+	actionable->entity = entity;
+	actionable->action = action;
+	actionable->renderable = 0;
+
+	actionables = g_slist_append(actionables, actionable);
+
+	return actionable;
+}
+
+void actionable_free(Actionable *actionable) {
+	if (actionable == NULL)
+		return;
+
+	actionables = g_slist_remove(actionables, actionable);
+
+	g_free(actionable);
+}
+
+static gboolean renderable_is_point_inside(const Renderable *renderable, gint x, gint y) {
+	g_assert(renderable != NULL);
+
+	gint left, top;
+	display_sdl_renderable_get_absolute_position(renderable, &left, &top);
+
+	gint right = left + display_sdl_scale(renderable->display, renderable->width);
+	gint bottom = top + display_sdl_scale(renderable->display, renderable->height);
+
+	if (left <= x && x <= right
+			&& top <= y && y <= bottom) {
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static gboolean actionable_handle_event(Actionable *actionable, const SDL_Event *event) {
+	g_assert(actionable != NULL && event != NULL);
+
+	const Renderable *renderable = actionable->renderable;
+
+	switch (event->type) {
+	case SDL_MOUSEBUTTONUP:
+		if (renderable_is_point_inside(renderable, event->motion.x, event->motion.y)) {
+			if (actionable->action) {
+				actionable->action(actionable->entity);
+			}
+			return TRUE; // The event has been handled
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+gboolean actionables_handle_event(const SDL_Event *event) {
+	GSList *it = actionables;
+	while (it != NULL) {
+		Actionable *actionable = (Actionable *)it->data;
+		it = g_slist_next(it);
+		if (actionable_handle_event(actionable, event)) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}

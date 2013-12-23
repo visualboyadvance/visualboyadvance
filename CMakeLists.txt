@@ -90,6 +90,7 @@ SET(SRC_APU
 SET(SRC_SDL
 	src/sdl/DisplaySDL.c
 	src/sdl/GameScreen.cpp
+	src/sdl/GUI.c
 	src/sdl/InputSDL.c
 	src/sdl/OSD.c
 	src/sdl/PauseScreen.c
