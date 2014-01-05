@@ -46,6 +46,9 @@ struct RectOSD {
 
 	SDL_Color color;
 	gint opacity;
+
+	guint borderThickness;
+	SDL_Color borderColor;
 };
 
 static guint text_compute_size(TextOSD *text) {
@@ -296,6 +299,13 @@ void image_osd_set_alignment(ImageOSD *image, HorizontalAlignment horizontal, Ve
 	display_sdl_renderable_set_alignment(image->renderable, horizontal, vertical);
 }
 
+static void sdl_rect_grow(SDL_Rect *screenRect, guint amount) {
+	screenRect->x -= amount;
+	screenRect->y -= amount;
+	screenRect->w += 2 * amount;
+	screenRect->h += 2 * amount;
+}
+
 static void rect_osd_render(gpointer entity) {
 	RectOSD *rect = entity;
 	Renderable* renderable = rect->renderable;
@@ -309,8 +319,18 @@ static void rect_osd_render(gpointer entity) {
 	screenRect.w = display_sdl_scale(renderable->display, renderable->width);
 	screenRect.h = display_sdl_scale(renderable->display, renderable->height);
 
-	SDL_SetRenderDrawColor(renderable->renderer, rect->color.r, rect->color.g, rect->color.b, rect->opacity * 255 / 100);
+
+	// Draw the border
+	if (rect->borderThickness > 0) {
+		SDL_SetRenderDrawBlendMode(renderable->renderer, SDL_BLENDMODE_ADD);
+		SDL_SetRenderDrawColor(renderable->renderer, rect->borderColor.r, rect->borderColor.g, rect->borderColor.b, rect->opacity * 255 / 100);
+		SDL_RenderFillRect(renderable->renderer, &screenRect);
+	}
+
+	// Draw the background
+	sdl_rect_grow(&screenRect, -rect->borderThickness);
 	SDL_SetRenderDrawBlendMode(renderable->renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(renderable->renderer, rect->color.r, rect->color.g, rect->color.b, rect->opacity * 255 / 100);
 	SDL_RenderFillRect(renderable->renderer, &screenRect);
 }
 
@@ -329,6 +349,11 @@ RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, GEr
 	rect->color.r = 0;
 	rect->color.g = 0;
 	rect->color.b = 0;
+
+	rect->borderThickness = 0;
+	rect->borderColor.r = 0;
+	rect->borderColor.g = 0;
+	rect->borderColor.b = 0;
 
 	return rect;
 }
@@ -353,6 +378,23 @@ void rect_osd_set_alignment(RectOSD *rect, HorizontalAlignment horizontal, Verti
 	g_assert(rect != NULL);
 
 	display_sdl_renderable_set_alignment(rect->renderable, horizontal, vertical);
+}
+
+void rect_osd_set_color(RectOSD *rect, guint8 r, guint8 g, guint8 b) {
+	g_assert(rect != NULL);
+
+	rect->color.r = r;
+	rect->color.g = g;
+	rect->color.b = b;
+}
+
+void rect_osd_set_border(RectOSD *rect, guint thickness, guint8 r, guint8 g, guint8 b) {
+	g_assert(rect != NULL);
+
+	rect->borderThickness = thickness;
+	rect->borderColor.r = r;
+	rect->borderColor.g = g;
+	rect->borderColor.b = b;
 }
 
 const Renderable *rect_osd_get_renderable(RectOSD *rect) {

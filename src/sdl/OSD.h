@@ -205,6 +205,27 @@ const Renderable *rect_osd_get_renderable(RectOSD *rect);
 void rect_osd_set_alignment(RectOSD *rect, HorizontalAlignment horizontal, VerticalAlignment vertical);
 
 /**
+ * Set the color of a RectOSD
+ *
+ * @param rect RectOSD entity
+ * @param r Red color comoponent
+ * @param g Green color comoponent
+ * @param b Blue color comoponent
+ */
+void rect_osd_set_color(RectOSD *rect, guint8 r, guint8 g, guint8 b);
+
+/**
+ * Define the border of a RectOSD
+ *
+ * @param rect RectOSD entity
+ * @param thickness Thickness of the border to draw in native pixels. Zero means no border is drawn
+ * @param r Red color comoponent for the border
+ * @param g Green color comoponent for the border
+ * @param b Blue color comoponent for the border
+ */
+void rect_osd_set_border(RectOSD *rect, guint thickness, guint8 r, guint8 g, guint8 b);
+
+/**
  * Free a rectangle OSD entity
  *
  * @param rect RectOSD entity

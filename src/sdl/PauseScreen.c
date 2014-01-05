@@ -17,7 +17,9 @@
 
 #include "PauseScreen.h"
 #include "DisplaySDL.h"
+#include "GUI.h"
 #include "OSD.h"
+#include "VBA.h"
 #include "../gba/Cartridge.h"
 #include "../common/Util.h"
 
@@ -32,6 +34,9 @@ struct PauseScreen {
 	ImageOSD *flag;
 	TextOSD *title;
 	TextOSD *publisher;
+
+	Button *quit;
+	Button *resume;
 };
 
 static gchar *region_flag_get_path(const gchar *region) {
@@ -45,6 +50,14 @@ static gchar *region_flag_get_path(const gchar *region) {
 
 	g_free(regionImage);
 	return flagFile;
+}
+
+static void pausescreen_on_resume(gpointer entity) {
+	vba_toggle_pause();
+}
+
+static void pausescreen_on_quit(gpointer entity) {
+	vba_quit();
 }
 
 PauseScreen *pausescreen_create(Display *display, GError **err) {
@@ -113,12 +126,28 @@ PauseScreen *pausescreen_create(Display *display, GError **err) {
 	text_osd_set_size(pause->publisher, 212, 5);
 	text_osd_set_color(pause->publisher, 168, 168, 168);
 
+	// Create the action buttons
+	pause->resume = button_create(display, "Resume", 10, 50, 50, 15, &pausescreen_on_resume, err);
+	if (pause->resume == NULL) {
+		pausescreen_free(pause);
+		return NULL;
+	}
+
+	pause->quit = button_create(display, "Quit", 10, 70, 50, 15, &pausescreen_on_quit, err);
+	if (pause->quit == NULL) {
+		pausescreen_free(pause);
+		return NULL;
+	}
+
 	return pause;
 }
 
 void pausescreen_free(PauseScreen *pause) {
 	if (pause == NULL)
 		return;
+
+	button_free(pause->resume);
+	button_free(pause->quit);
 
 	image_osd_free(pause->flag);
 	text_osd_free(pause->title);

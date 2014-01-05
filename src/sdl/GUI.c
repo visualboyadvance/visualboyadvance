@@ -16,7 +16,9 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "GUI.h"
+#include "OSD.h"
 
+typedef struct Actionable Actionable;
 struct Actionable {
 
 	const Renderable *renderable;
@@ -34,7 +36,7 @@ Actionable *actionable_create(gpointer entity, ActionableAction action, const Re
 	Actionable *actionable = g_new(Actionable, 1);
 	actionable->entity = entity;
 	actionable->action = action;
-	actionable->renderable = 0;
+	actionable->renderable = renderable;
 
 	actionables = g_slist_append(actionables, actionable);
 
@@ -97,4 +99,52 @@ gboolean actionables_handle_event(const SDL_Event *event) {
 	}
 
 	return FALSE;
+}
+
+struct Button {
+	RectOSD *background;
+	TextOSD *caption;
+	Actionable *action;
+};
+
+Button *button_create(Display *display, const gchar *caption, gint x, gint y, guint w, guint h, ActionableAction action, GError **err) {
+	g_assert(display != NULL && action != NULL);
+
+	Button *button = g_new(Button, 1);
+
+	button->background = rect_osd_create(display, x, y, w, h, err);
+	if (button->background == NULL) {
+		button_free(button);
+		return NULL;
+	}
+	rect_osd_set_opacity(button->background, 80);
+	rect_osd_set_color(button->background, 0, 0, 64);
+	rect_osd_set_border(button->background, 1, 220, 220, 220);
+
+	const Renderable *backgroundRenderable = rect_osd_get_renderable(button->background);
+
+	button->action = actionable_create(button, action, backgroundRenderable);
+	g_assert(button->action != NULL);
+
+	button->caption = text_osd_create(display, caption, backgroundRenderable, err);
+	if (button->caption == NULL) {
+		button_free(button);
+		return NULL;
+	}
+	text_osd_set_alignment(button->caption, ALIGN_CENTER, ALIGN_MIDDLE);
+	text_osd_set_size(button->caption, w, h * 0.60);
+	text_osd_set_color(button->caption, 220, 220, 220);
+
+	return button;
+}
+
+void button_free(Button *button) {
+	if (button == NULL)
+		return;
+
+	actionable_free(button->action);
+	text_osd_free(button->caption);
+	rect_osd_free(button->background);
+
+	g_free(button);
 }

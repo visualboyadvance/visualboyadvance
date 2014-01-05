@@ -52,6 +52,7 @@ void pausescreen_free(PauseScreen *game);
  *
  * @param game Game screen
  * @param event An event that has just occured
+ * @return TRUE when the event has been handled
  */
 gboolean pausescreen_process_event(PauseScreen *game, const SDL_Event *event);
 

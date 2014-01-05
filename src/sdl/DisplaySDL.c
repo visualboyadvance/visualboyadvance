@@ -47,6 +47,8 @@ void display_sdl_render(Display *display) {
 	g_assert(display != NULL);
 
 	// Clear the screen
+	SDL_SetRenderDrawColor(display->renderer, 0, 0, 0, 0);
+	SDL_SetRenderDrawBlendMode(display->renderer, SDL_BLENDMODE_NONE);
 	SDL_RenderClear(display->renderer);
 
 	// Then render the renderables

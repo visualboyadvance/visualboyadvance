@@ -39,6 +39,11 @@ gboolean vba_toggle_pause();
  */
 gboolean vba_is_paused();
 
+/**
+ * Quit the emulator
+ */
+void vba_quit();
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

@@ -27,6 +27,7 @@
 #include "InputSDL.h"
 #include "SoundSDL.h"
 #include "Timer.h"
+#include "GUI.h"
 #include "VBA.h"
 #include "GameScreen.h"
 #include "PauseScreen.h"
@@ -51,19 +52,12 @@ static gboolean main_process_event(const SDL_Event *event) {
 		switch (event->key.keysym.sym) {
 
 		case SDLK_ESCAPE:
-			emulating = FALSE;
+			vba_toggle_pause();
 			return TRUE;
 		case SDLK_f:
 			if (!(event->key.keysym.mod & MOD_NOCTRL)
 					&& (event->key.keysym.mod & KMOD_CTRL)) {
 				display_sdl_toggle_fullscreen(display, NULL);
-				return TRUE;
-			}
-			break;
-		case SDLK_p:
-			if (!(event->key.keysym.mod & MOD_NOCTRL)
-					&& (event->key.keysym.mod & KMOD_CTRL)) {
-				vba_toggle_pause();
 				return TRUE;
 			}
 			break;
@@ -95,6 +89,10 @@ static void events_poll() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		if (main_process_event(&event)) {
+			continue;
+		}
+
+		if (actionables_handle_event(&event)) {
 			continue;
 		}
 
@@ -280,4 +278,8 @@ gboolean vba_toggle_pause() {
 
 gboolean vba_is_paused() {
 	return paused;
+}
+
+void vba_quit() {
+	emulating = FALSE;
 }
