@@ -18,6 +18,7 @@
 #include "DisplaySDL.h"
 #include "GameScreen.h"
 #include "../common/Settings.h"
+#include "../common/Util.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -73,6 +74,21 @@ void display_sdl_resize(Display *display) {
 	g_node_traverse(display->renderables, G_PRE_ORDER, G_TRAVERSE_ALL, -1, display_sdl_resize_node, NULL);
 }
 
+static gboolean display_sdl_set_window_icon(Display *display, GError **err) {
+	gchar *iconPath = data_get_file_path("icon", "vba.png");
+	SDL_Surface *iconSurface = display_sdl_load_png_to_surface(iconPath, err);
+	g_free(iconPath);
+
+	if (iconSurface == NULL) {
+		return FALSE;
+	}
+
+	SDL_SetWindowIcon(display->window, iconSurface);
+	SDL_FreeSurface(iconSurface);
+
+	return TRUE;
+}
+
 static gboolean display_sdl_create_window(Display *display, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 	g_assert(display != NULL);
@@ -92,6 +108,11 @@ static gboolean display_sdl_create_window(Display *display, GError **err) {
 
 	// Let 480*320 be our minimum screen size
 	SDL_SetWindowMinimumSize(display->window, screenWidth * 2, screenHeigth * 2);
+
+	// Set the window icon
+	if (!display_sdl_set_window_icon(display, err)) {
+		return FALSE;
+	}
 
 	display->renderer = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
 	if (display->renderer == NULL) {
@@ -291,9 +312,8 @@ void display_sdl_renderable_get_absolute_position(const Renderable *renderable, 
 	}
 }
 
-SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GError **err) {
+static png_bytep display_sdl_load_png_to_buffer(const gchar *filename, int *w, int *h, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
-	g_assert(display != NULL);
 
 	png_image image;
 	memset(&image, 0, sizeof(image));
@@ -315,7 +335,28 @@ SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GErro
 		return NULL;
 	}
 
-	SDL_Texture *texture = SDL_CreateTexture(display->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, image.width, image.height);
+	if (w) {
+		*w = image.width;
+	}
+
+	if (h) {
+		*h = image.height;
+	}
+
+	return buffer;
+}
+
+SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+	g_assert(display != NULL);
+
+	int width, height;
+	png_bytep buffer = display_sdl_load_png_to_buffer(filename, &width, &height, err);
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	SDL_Texture *texture = SDL_CreateTexture(display->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, width, height);
 	if (texture == NULL) {
 		g_free(buffer);
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
@@ -324,8 +365,35 @@ SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GErro
 	}
 
 	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-	SDL_UpdateTexture(texture, NULL, buffer, image.width * sizeof(guint32));
+	SDL_UpdateTexture(texture, NULL, buffer, width * sizeof(guint32));
 
 	g_free(buffer);
 	return texture;
+}
+
+SDL_Surface *display_sdl_load_png_to_surface(const gchar *filename, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+
+	int width, height;
+	png_bytep buffer = display_sdl_load_png_to_buffer(filename, &width, &height, err);
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+	if (surface == NULL) {
+		g_free(buffer);
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed create surface : %s", SDL_GetError());
+		return NULL;
+	}
+
+	SDL_LockSurface(surface);
+
+	memcpy(surface->pixels, buffer, width * height * 4);
+
+	SDL_UnlockSurface(surface);
+
+	g_free(buffer);
+	return surface;
 }

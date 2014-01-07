@@ -209,6 +209,17 @@ void display_sdl_resize(Display *display);
 SDL_Texture *display_sdl_load_png(Display *display, const gchar *filename, GError **err);
 
 /**
+ * Loads a given PNG file pointed to by filename into an SDL_Surface.
+ *
+ * Call SDL_FreeSurface on the result to release.
+ *
+ * @param filename Filename of the PNG image
+ * @param err return location for a GError, or NULL
+ * @return a pointer to the surface on success, NULL on failure.
+ */
+SDL_Surface *display_sdl_load_png_to_surface(const gchar *filename, GError **err);
+
+/**
  * Compute the scaled value of an emulated screen dimension
  *
  * The emulated screen width is 240x160. To keep things simple the GUI layouts
