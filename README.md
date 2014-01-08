@@ -18,7 +18,6 @@ Pick from the list of tasks below, go look at the open issues on GitHub, or just
 - Clean up core code, converting it to clean C modules.
 - Port fixes from VBA-M and libretro.
 - Make use of the game database to provide rich features.
-- Port to SDL2
 - Add more features to the SDL frontend
 - Add more frontends
 - Port to more platforms
