@@ -80,6 +80,15 @@ void loader_free(RomLoader *loader);
  */
 gboolean loader_load(RomLoader *loader, guint8 *data, int *size, GError **err);
 
+/**
+ * Load the game code
+ *
+ * @param loader a loader
+ * @param err return location for a GError, or NULL
+ * @return newly allocated game code if successful, NULL otherwise
+ */
+gchar *loader_read_code(RomLoader *loader, GError **err);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
