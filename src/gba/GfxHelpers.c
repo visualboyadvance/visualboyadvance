@@ -1,14 +1,31 @@
-#include "Gfx.h"
+// VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
+// Copyright (C) 1999-2003 Forgotten
+// Copyright (C) 2005-2006 Forgotten and the VBA development team
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or(at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+#include "GfxHelpers.h"
 #include "Globals.h"
 #include "../common/Port.h"
 #include <string.h>
 
-namespace GFX
-{
+static int lineOBJpixleft[128];
 
 //#define SPRITE_DEBUG
 
-void gfxClearArray(u32 *array)
+void gfx_clear_array(u32 *array)
 {
 	for (int i = 0; i < 240; i++)
 	{
@@ -16,6 +33,7 @@ void gfxClearArray(u32 *array)
 	}
 }
 
+typedef union u8h u8h;
 union u8h
 {
 	struct
@@ -26,6 +44,7 @@ union u8h
 	u8 val;
 };
 
+typedef union TileEntry TileEntry;
 union TileEntry
 {
 	struct
@@ -38,6 +57,7 @@ union TileEntry
 	u16 val;
 };
 
+typedef struct TileLine TileLine;
 struct TileLine
 {
 	u32 pixels[8];
@@ -45,12 +65,12 @@ struct TileLine
 
 typedef const TileLine (*TileReader) (const u16 *, const int, const u8 *, u16 *, const u32);
 
-static inline void gfxDrawPixel(u32 *dest, const u8 color, const u16 *palette, const u32 prio)
+static inline void gfx_pixel_draw(u32 *dest, const u8 color, const u16 *palette, const u32 prio)
 {
 	*dest = color ? (READ16LE(&palette[color]) | prio): 0x80000000;
 }
 
-inline const TileLine gfxReadTile(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
+static inline const TileLine gfx_tile_read(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
 {
 	TileEntry tile;
 	tile.val = READ16LE(screenSource);
@@ -63,31 +83,31 @@ inline const TileLine gfxReadTile(const u16 *screenSource, const int yyy, const 
 
 	if (!tile.hFlip)
 	{
-		gfxDrawPixel(&tileLine.pixels[0], tileBase[0], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[1], tileBase[1], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[2], tileBase[2], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[3], tileBase[3], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[4], tileBase[4], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[5], tileBase[5], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[6], tileBase[6], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[7], tileBase[7], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], tileBase[0], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], tileBase[1], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], tileBase[2], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], tileBase[3], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], tileBase[4], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], tileBase[5], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], tileBase[6], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], tileBase[7], palette, prio);
 	}
 	else
 	{
-		gfxDrawPixel(&tileLine.pixels[0], tileBase[7], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[1], tileBase[6], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[2], tileBase[5], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[3], tileBase[4], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[4], tileBase[3], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[5], tileBase[2], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[6], tileBase[1], palette, prio);
-		gfxDrawPixel(&tileLine.pixels[7], tileBase[0], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], tileBase[7], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], tileBase[6], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], tileBase[5], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], tileBase[4], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], tileBase[3], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], tileBase[2], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], tileBase[1], palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], tileBase[0], palette, prio);
 	}
 
 	return tileLine;
 }
 
-inline const TileLine gfxReadTilePal(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
+static inline const TileLine gfx_tile_read_palette(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
 {
 	TileEntry tile;
 	tile.val = READ16LE(screenSource);
@@ -101,42 +121,41 @@ inline const TileLine gfxReadTilePal(const u16 *screenSource, const int yyy, con
 
 	if (!tile.hFlip)
 	{
-		gfxDrawPixel(&tileLine.pixels[0], tileBase[0].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[1], tileBase[0].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[2], tileBase[1].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[3], tileBase[1].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[4], tileBase[2].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[5], tileBase[2].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[6], tileBase[3].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[7], tileBase[3].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], tileBase[0].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], tileBase[0].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], tileBase[1].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], tileBase[1].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], tileBase[2].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], tileBase[2].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], tileBase[3].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], tileBase[3].hi, palette, prio);
 	}
 	else
 	{
-		gfxDrawPixel(&tileLine.pixels[0], tileBase[3].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[1], tileBase[3].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[2], tileBase[2].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[3], tileBase[2].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[4], tileBase[1].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[5], tileBase[1].lo, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[6], tileBase[0].hi, palette, prio);
-		gfxDrawPixel(&tileLine.pixels[7], tileBase[0].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], tileBase[3].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], tileBase[3].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], tileBase[2].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], tileBase[2].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], tileBase[1].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], tileBase[1].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], tileBase[0].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], tileBase[0].lo, palette, prio);
 	}
 
 	return tileLine;
 }
 
-static inline void gfxDrawTile(const TileLine &tileLine, u32 *line)
+static inline void gfx_tile_draw(const TileLine tileLine, u32 *line)
 {
 	memcpy(line, tileLine.pixels, sizeof(tileLine.pixels));
 }
 
-static inline void gfxDrawTileClipped(const TileLine &tileLine, u32 *line, const int start, int w)
+static inline void gfx_tile_draw_clipped(const TileLine tileLine, u32 *line, const int start, int w)
 {
 	memcpy(line, tileLine.pixels + start, w * sizeof(u32));
 }
 
-template<TileReader readTile>
-static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
+static void gfx_text_screen_draw_intern(TileReader readTile, u16 control, u16 hofs, u16 vofs,
                        u32 *line)
 {
 	u16 *palette = (u16 *)paletteRAM;
@@ -164,7 +183,7 @@ static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 	int maskX = sizeX-1;
 	int maskY = sizeY-1;
 
-	bool mosaicOn = (control & 0x40) ? true : false;
+	gboolean mosaicOn = (control & 0x40) ? TRUE : FALSE;
 
 	int xxx = hofs & maskX;
 	int yyy = (vofs + VCOUNT) & maskY;
@@ -197,7 +216,7 @@ static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 	// First tile, if clipped
 	if (firstTileX)
 	{
-		gfxDrawTileClipped(readTile(screenSource, yyy, charBase, palette, prio), &line[x], firstTileX, 8 - firstTileX);
+		gfx_tile_draw_clipped(readTile(screenSource, yyy, charBase, palette, prio), &line[x], firstTileX, 8 - firstTileX);
 		screenSource++;
 		x += 8 - firstTileX;
 		xxx += 8 - firstTileX;
@@ -216,7 +235,7 @@ static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 	// Middle tiles, full
 	while (x < 240 - firstTileX)
 	{
-		gfxDrawTile(readTile(screenSource, yyy, charBase, palette, prio), &line[x]);
+		gfx_tile_draw(readTile(screenSource, yyy, charBase, palette, prio), &line[x]);
 		screenSource++;
 		xxx += 8;
 		x += 8;
@@ -235,7 +254,7 @@ static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 	// Last tile, if clipped
 	if (firstTileX)
 	{
-		gfxDrawTileClipped(readTile(screenSource, yyy, charBase, palette, prio), &line[x], 0, firstTileX);
+		gfx_tile_draw_clipped(readTile(screenSource, yyy, charBase, palette, prio), &line[x], 0, firstTileX);
 	}
 
 	if (mosaicOn)
@@ -257,18 +276,18 @@ static void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs,
 	}
 }
 
-void gfxDrawTextScreen(u16 control, u16 hofs, u16 vofs, u32 *line)
+void gfx_text_screen_draw(u16 control, u16 hofs, u16 vofs, u32 *line)
 {
 	if (control & 0x80) // 1 pal / 256 col
-		gfxDrawTextScreen<gfxReadTile>(control, hofs, vofs, line);
+		gfx_text_screen_draw_intern(&gfx_tile_read, control, hofs, vofs, line);
 	else // 16 pal / 16 col
-		gfxDrawTextScreen<gfxReadTilePal>(control, hofs, vofs, line);
+		gfx_text_screen_draw_intern(&gfx_tile_read_palette, control, hofs, vofs, line);
 }
 
-void gfxDrawRotScreen(u16 control,
+void gfx_rot_screen_draw(u16 control,
                       u16 pa,  u16 pb,
                       u16 pc,  u16 pd,
-                      int& currentX, int& currentY,
+                      int *currentX, int *currentY,
                       u32 *line)
 {
 	u16 *palette = (u16 *)paletteRAM;
@@ -311,8 +330,8 @@ void gfxDrawRotScreen(u16 control,
 	if (pd & 0x8000)
 		dmy |= 0xFFFF8000;
 
-	int realX = currentX;
-	int realY = currentY;
+	int realX = *currentX;
+	int realY = *currentY;
 
 	if (control & 0x40)
 	{
@@ -391,16 +410,16 @@ void gfxDrawRotScreen(u16 control,
 		}
 	}
 
-	currentX += dmx;
-	currentY += dmy;
+	*currentX += dmx;
+	*currentY += dmy;
 }
 
-void gfxDrawRotScreen16Bit(u16 control,
+void gfx_rot_screen_draw_16bit(u16 control,
                            u16 x_l, u16 x_h,
                            u16 y_l, u16 y_h,
                            u16 pa,  u16 pb,
                            u16 pc,  u16 pd,
-                           int& currentX, int& currentY,
+                           int *currentX, int *currentY,
                            u32 *line)
 {
 	u16 *screenBase = (u16 *)&vram[0];
@@ -428,8 +447,8 @@ void gfxDrawRotScreen16Bit(u16 control,
 	if (pd & 0x8000)
 		dmy |= 0xFFFF8000;
 
-	int realX = currentX;
-	int realY = currentY;
+	int realX = *currentX;
+	int realY = *currentY;
 
 	if (control & 0x40)
 	{
@@ -481,16 +500,16 @@ void gfxDrawRotScreen16Bit(u16 control,
 		}
 	}
 
-	currentX += dmx;
-	currentY += dmy;
+	*currentX += dmx;
+	*currentY += dmy;
 }
 
-void gfxDrawRotScreen256(u16 control,
+void gfx_rot_screen_draw_256(u16 control,
                          u16 x_l, u16 x_h,
                          u16 y_l, u16 y_h,
                          u16 pa,  u16 pb,
                          u16 pc,  u16 pd,
-                         int &currentX, int& currentY,
+                         int *currentX, int *currentY,
                          u32 *line)
 {
 	u16 *palette = (u16 *)paletteRAM;
@@ -519,8 +538,8 @@ void gfxDrawRotScreen256(u16 control,
 	if (pd & 0x8000)
 		dmy |= 0xFFFF8000;
 
-	int realX = currentX;
-	int realY = currentY;
+	int realX = *currentX;
+	int realY = *currentY;
 
 	if (control & 0x40)
 	{
@@ -575,16 +594,16 @@ void gfxDrawRotScreen256(u16 control,
 		}
 	}
 
-	currentX += dmx;
-	currentY += dmy;
+	*currentX += dmx;
+	*currentY += dmy;
 }
 
-void gfxDrawRotScreen16Bit160(u16 control,
+void gfx_rot_screen_draw_16bit160(u16 control,
                               u16 x_l, u16 x_h,
                               u16 y_l, u16 y_h,
                               u16 pa,  u16 pb,
                               u16 pc,  u16 pd,
-                              int& currentX, int& currentY,
+                              int *currentX, int *currentY,
                               u32 *line)
 {
 	u16 *screenBase = (DISPCNT & 0x0010) ? (u16 *)&vram[0xa000] :
@@ -613,8 +632,8 @@ void gfxDrawRotScreen16Bit160(u16 control,
 	if (pd & 0x8000)
 		dmy |= 0xFFFF8000;
 
-	int realX = currentX;
-	int realY = currentY;
+	int realX = *currentX;
+	int realY = *currentY;
 
 	if (control & 0x40)
 	{
@@ -666,18 +685,18 @@ void gfxDrawRotScreen16Bit160(u16 control,
 		}
 	}
 
-	currentX += dmx;
-	currentY += dmy;
+	*currentX += dmx;
+	*currentY += dmy;
 }
 
-void gfxDrawSprites(u32 *lineOBJ)
+void gfx_sprites_draw(u32 *lineOBJ)
 {
 	// lineOBJpix is used to keep track of the drawn OBJs
 	// and to stop drawing them if the 'maximum number of OBJ per line'
 	// has been reached.
 	int lineOBJpix = (DISPCNT & 0x20) ? 954 : 1226;
 	int m=0;
-	gfxClearArray(lineOBJ);
+	gfx_clear_array(lineOBJ);
 	if (layerEnable & 0x1000)
 	{
 		u16 *sprites = (u16 *)oam;
@@ -1200,9 +1219,9 @@ void gfxDrawSprites(u32 *lineOBJ)
 	}
 }
 
-void gfxDrawOBJWin(u32 *lineOBJWin)
+void gfx_obj_win_draw(u32 *lineOBJWin)
 {
-	gfxClearArray(lineOBJWin);
+	gfx_clear_array(lineOBJWin);
 	if ((layerEnable & 0x9000) == 0x9000)
 	{
 		u16 *sprites = (u16 *)oam;
@@ -1572,7 +1591,7 @@ void gfxDrawOBJWin(u32 *lineOBJWin)
 	}
 }
 
-u32 gfxIncreaseBrightness(u32 color, int coeff)
+u32 gfx_brightness_increase(u32 color, int coeff)
 {
 	color &= 0xffff;
 	color = ((color << 16) | color) & 0x3E07C1F;
@@ -1583,7 +1602,7 @@ u32 gfxIncreaseBrightness(u32 color, int coeff)
 	return (color >> 16) | color;
 }
 
-u32 gfxDecreaseBrightness(u32 color, int coeff)
+u32 gfx_brightness_decrease(u32 color, int coeff)
 {
 	color &= 0xffff;
 	color = ((color << 16) | color) & 0x3E07C1F;
@@ -1593,7 +1612,7 @@ u32 gfxDecreaseBrightness(u32 color, int coeff)
 	return (color >> 16) | color;
 }
 
-u32 gfxAlphaBlend(u32 color, u32 color2, int ca, int cb)
+u32 gfx_alpha_blend(u32 color, u32 color2, int ca, int cb)
 {
 	if (color < 0x80000000)
 	{
@@ -1620,4 +1639,3 @@ u32 gfxAlphaBlend(u32 color, u32 color2, int ca, int cb)
 	return color;
 }
 
-} // namespace GFX

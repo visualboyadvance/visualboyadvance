@@ -12,14 +12,14 @@ void mode3RenderLine()
 
 	if (layerEnable & 0x0400)
 	{
-		gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+		gfx_rot_screen_draw_16bit(BG2CNT, BG2X_L, BG2X_H,
 		                      BG2Y_L, BG2Y_H, BG2PA, BG2PB,
 		                      BG2PC, BG2PD,
-		                      gfxBG2X, gfxBG2Y,
+		                      &gfxBG2X, &gfxBG2Y,
 		                      line2);
 	}
 
-	gfxDrawSprites(lineOBJ);
+	gfx_sprites_draw(lineOBJ);
 
 	u32 background = (READ16LE(&palette[0]) | 0x30000000);
 
@@ -53,7 +53,7 @@ void mode3RenderLine()
 			}
 
 			if (top2 & (BLDMOD>>8))
-				color = gfxAlphaBlend(color, back,
+				color = gfx_alpha_blend(color, back,
 				                      coeff[COLEV & 0x1F],
 				                      coeff[(COLEV >> 8) & 0x1F]);
 			else
@@ -62,11 +62,11 @@ void mode3RenderLine()
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfxIncreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfxDecreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
 					break;
 				}
 			}
@@ -82,14 +82,14 @@ void mode3RenderLineNoWindow()
 
 	if (layerEnable & 0x0400)
 	{
-		gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+		gfx_rot_screen_draw_16bit(BG2CNT, BG2X_L, BG2X_H,
 		                      BG2Y_L, BG2Y_H, BG2PA, BG2PB,
 		                      BG2PC, BG2PD,
-		                      gfxBG2X, gfxBG2Y,
+		                      &gfxBG2X, &gfxBG2Y,
 		                      line2);
 	}
 
-	gfxDrawSprites(lineOBJ);
+	gfx_sprites_draw(lineOBJ);
 
 	u32 background = (READ16LE(&palette[0]) | 0x30000000);
 
@@ -142,7 +142,7 @@ void mode3RenderLineNoWindow()
 					}
 
 					if (top2 & (BLDMOD>>8))
-						color = gfxAlphaBlend(color, back,
+						color = gfx_alpha_blend(color, back,
 						                      coeff[COLEV & 0x1F],
 						                      coeff[(COLEV >> 8) & 0x1F]);
 
@@ -151,11 +151,11 @@ void mode3RenderLineNoWindow()
 			break;
 			case 2:
 				if (BLDMOD & top)
-					color = gfxIncreaseBrightness(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
 				break;
 			case 3:
 				if (BLDMOD & top)
-					color = gfxDecreaseBrightness(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
 				break;
 			}
 		}
@@ -172,7 +172,7 @@ void mode3RenderLineNoWindow()
 			}
 
 			if (top2 & (BLDMOD>>8))
-				color = gfxAlphaBlend(color, back,
+				color = gfx_alpha_blend(color, back,
 				                      coeff[COLEV & 0x1F],
 				                      coeff[(COLEV >> 8) & 0x1F]);
 			else
@@ -181,11 +181,11 @@ void mode3RenderLineNoWindow()
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfxIncreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfxDecreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
 					break;
 				}
 			}
@@ -225,15 +225,15 @@ void mode3RenderLineAll()
 
 	if (layerEnable & 0x0400)
 	{
-		gfxDrawRotScreen16Bit(BG2CNT, BG2X_L, BG2X_H,
+		gfx_rot_screen_draw_16bit(BG2CNT, BG2X_L, BG2X_H,
 		                      BG2Y_L, BG2Y_H, BG2PA, BG2PB,
 		                      BG2PC, BG2PD,
-		                      gfxBG2X, gfxBG2Y,
+		                      &gfxBG2X, &gfxBG2Y,
 		                      line2);
 	}
 
-	gfxDrawSprites(lineOBJ);
-	gfxDrawOBJWin(lineOBJWin);
+	gfx_sprites_draw(lineOBJ);
+	gfx_obj_win_draw(lineOBJWin);
 
 	u8 inWin0Mask = WININ & 0xFF;
 	u8 inWin1Mask = WININ >> 8;
@@ -291,7 +291,7 @@ void mode3RenderLineAll()
 			}
 
 			if (top2 & (BLDMOD>>8))
-				color = gfxAlphaBlend(color, back,
+				color = gfx_alpha_blend(color, back,
 				                      coeff[COLEV & 0x1F],
 				                      coeff[(COLEV >> 8) & 0x1F]);
 			else
@@ -300,11 +300,11 @@ void mode3RenderLineAll()
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfxIncreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfxDecreaseBrightness(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
 					break;
 				}
 			}
@@ -341,7 +341,7 @@ void mode3RenderLineAll()
 					}
 
 					if (top2 & (BLDMOD>>8))
-						color = gfxAlphaBlend(color, back,
+						color = gfx_alpha_blend(color, back,
 						                      coeff[COLEV & 0x1F],
 						                      coeff[(COLEV >> 8) & 0x1F]);
 
@@ -350,11 +350,11 @@ void mode3RenderLineAll()
 			break;
 			case 2:
 				if (BLDMOD & top)
-					color = gfxIncreaseBrightness(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
 				break;
 			case 3:
 				if (BLDMOD & top)
-					color = gfxDecreaseBrightness(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
 				break;
 			}
 		}

@@ -40,7 +40,6 @@ u32 lineOBJWin[240];
 u32 lineMix[240];
 bool gfxInWin0[240];
 bool gfxInWin1[240];
-int lineOBJpixleft[128];
 
 int gfxBG2X = 0;
 int gfxBG2Y = 0;
@@ -124,19 +123,19 @@ void clearRenderBuffers(bool force)
 {
 	if (!(layerEnable & 0x0100) || force)
 	{
-		gfxClearArray(line0);
+		gfx_clear_array(line0);
 	}
 	if (!(layerEnable & 0x0200) || force)
 	{
-		gfxClearArray(line1);
+		gfx_clear_array(line1);
 	}
 	if (!(layerEnable & 0x0400) || force)
 	{
-		gfxClearArray(line2);
+		gfx_clear_array(line2);
 	}
 	if (!(layerEnable & 0x0800) || force)
 	{
-		gfxClearArray(line3);
+		gfx_clear_array(line3);
 	}
 }
 

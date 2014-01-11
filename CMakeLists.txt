@@ -65,7 +65,7 @@ SET(SRC_GBA
 	src/gba/Display.c
 	src/gba/GBA.cpp
 	src/gba/Gfx.cpp
-	src/gba/GfxHelpers.cpp
+	src/gba/GfxHelpers.c
 	src/gba/GfxMode0.cpp
 	src/gba/GfxMode1.cpp
 	src/gba/GfxMode2.cpp
