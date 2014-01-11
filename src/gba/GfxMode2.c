@@ -3,10 +3,7 @@
 #include "GfxHelpers.h"
 #include "../common/Port.h"
 
-namespace GFX
-{
-
-void mode2RenderLine()
+void gfx_mode2_line_render()
 {
 	u16 *palette = (u16 *)paletteRAM;
 
@@ -14,17 +11,17 @@ void mode2RenderLine()
 	{
 		gfx_rot_screen_draw(BG2CNT,
 		                 BG2PA, BG2PB, BG2PC, BG2PD, &gfxBG2X, &gfxBG2Y,
-		                 line2);
+		                 gfxLine2);
 	}
 
 	if (layerEnable & 0x0800)
 	{
 		gfx_rot_screen_draw(BG3CNT,
 		                 BG3PA, BG3PB, BG3PC, BG3PD, &gfxBG3X, &gfxBG3Y,
-		                 line3);
+		                 gfxLine3);
 	}
 
-	gfx_sprites_draw(lineOBJ);
+	gfx_sprites_draw(gfxLineOBJ);
 
 	u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
 
@@ -34,21 +31,21 @@ void mode2RenderLine()
 		u8 top = 0x20;
 
 
-		if ((u8)(line2[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLine2[x]>>24) < (u8)(color >> 24))
 		{
-			color = line2[x];
+			color = gfxLine2[x];
 			top = 0x04;
 		}
 
-		if ((u8)(line3[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLine3[x]>>24) < (u8)(color >> 24))
 		{
-			color = line3[x];
+			color = gfxLine3[x];
 			top = 0x08;
 		}
 
-		if ((u8)(lineOBJ[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLineOBJ[x]>>24) < (u8)(color >> 24))
 		{
-			color = lineOBJ[x];
+			color = gfxLineOBJ[x];
 			top = 0x10;
 		}
 
@@ -58,43 +55,43 @@ void mode2RenderLine()
 			u32 back = backdrop;
 			u8 top2 = 0x20;
 
-			if ((u8)(line2[x]>>24) < (u8)(back >> 24))
+			if ((u8)(gfxLine2[x]>>24) < (u8)(back >> 24))
 			{
-				back = line2[x];
+				back = gfxLine2[x];
 				top2 = 0x04;
 			}
 
-			if ((u8)(line3[x]>>24) < (u8)(back >> 24))
+			if ((u8)(gfxLine3[x]>>24) < (u8)(back >> 24))
 			{
-				back = line3[x];
+				back = gfxLine3[x];
 				top2 = 0x08;
 			}
 
 			if (top2 & (BLDMOD>>8))
 				color = gfx_alpha_blend(color, back,
-				                      coeff[COLEV & 0x1F],
-				                      coeff[(COLEV >> 8) & 0x1F]);
+				                      gfxCoeff[COLEV & 0x1F],
+				                      gfxCoeff[(COLEV >> 8) & 0x1F]);
 			else
 			{
 				switch ((BLDMOD >> 6) & 3)
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				}
 			}
 		}
 
-		lineMix[x] = color;
+		gfxLineMix[x] = color;
 	}
 }
 
-void mode2RenderLineNoWindow()
+void gfx_mode2_line_render_no_window()
 {
 	u16 *palette = (u16 *)paletteRAM;
 
@@ -102,17 +99,17 @@ void mode2RenderLineNoWindow()
 	{
 		gfx_rot_screen_draw(BG2CNT,
 		                 BG2PA, BG2PB, BG2PC, BG2PD, &gfxBG2X, &gfxBG2Y,
-		                 line2);
+		                 gfxLine2);
 	}
 
 	if (layerEnable & 0x0800)
 	{
 		gfx_rot_screen_draw(BG3CNT,
 		                 BG3PA, BG3PB, BG3PC, BG3PD, &gfxBG3X, &gfxBG3Y,
-		                 line3);
+		                 gfxLine3);
 	}
 
-	gfx_sprites_draw(lineOBJ);
+	gfx_sprites_draw(gfxLineOBJ);
 
 	u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
 
@@ -122,21 +119,21 @@ void mode2RenderLineNoWindow()
 		u8 top = 0x20;
 
 
-		if ((u8)(line2[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLine2[x]>>24) < (u8)(color >> 24))
 		{
-			color = line2[x];
+			color = gfxLine2[x];
 			top = 0x04;
 		}
 
-		if ((u8)(line3[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLine3[x]>>24) < (u8)(color >> 24))
 		{
-			color = line3[x];
+			color = gfxLine3[x];
 			top = 0x08;
 		}
 
-		if ((u8)(lineOBJ[x]>>24) < (u8)(color >> 24))
+		if ((u8)(gfxLineOBJ[x]>>24) < (u8)(color >> 24))
 		{
-			color = lineOBJ[x];
+			color = gfxLineOBJ[x];
 			top = 0x10;
 		}
 
@@ -153,47 +150,47 @@ void mode2RenderLineNoWindow()
 					u32 back = backdrop;
 					u8 top2 = 0x20;
 
-					if ((u8)(line2[x]>>24) < (u8)(back >> 24))
+					if ((u8)(gfxLine2[x]>>24) < (u8)(back >> 24))
 					{
 						if (top != 0x04)
 						{
-							back = line2[x];
+							back = gfxLine2[x];
 							top2 = 0x04;
 						}
 					}
 
-					if ((u8)(line3[x]>>24) < (u8)(back >> 24))
+					if ((u8)(gfxLine3[x]>>24) < (u8)(back >> 24))
 					{
 						if (top != 0x08)
 						{
-							back = line3[x];
+							back = gfxLine3[x];
 							top2 = 0x08;
 						}
 					}
 
-					if ((u8)(lineOBJ[x]>>24) < (u8)(back >> 24))
+					if ((u8)(gfxLineOBJ[x]>>24) < (u8)(back >> 24))
 					{
 						if (top != 0x10)
 						{
-							back = lineOBJ[x];
+							back = gfxLineOBJ[x];
 							top2 = 0x10;
 						}
 					}
 
 					if (top2 & (BLDMOD>>8))
 						color = gfx_alpha_blend(color, back,
-						                      coeff[COLEV & 0x1F],
-						                      coeff[(COLEV >> 8) & 0x1F]);
+						                      gfxCoeff[COLEV & 0x1F],
+						                      gfxCoeff[(COLEV >> 8) & 0x1F]);
 				}
 			}
 			break;
 			case 2:
 				if (BLDMOD & top)
-					color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_increase(color, gfxCoeff[COLY & 0x1F]);
 				break;
 			case 3:
 				if (BLDMOD & top)
-					color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_decrease(color, gfxCoeff[COLY & 0x1F]);
 				break;
 			}
 		}
@@ -203,48 +200,48 @@ void mode2RenderLineNoWindow()
 			u32 back = backdrop;
 			u8 top2 = 0x20;
 
-			if ((u8)(line2[x]>>24) < (u8)(back >> 24))
+			if ((u8)(gfxLine2[x]>>24) < (u8)(back >> 24))
 			{
-				back = line2[x];
+				back = gfxLine2[x];
 				top2 = 0x04;
 			}
 
-			if ((u8)(line3[x]>>24) < (u8)(back >> 24))
+			if ((u8)(gfxLine3[x]>>24) < (u8)(back >> 24))
 			{
-				back = line3[x];
+				back = gfxLine3[x];
 				top2 = 0x08;
 			}
 
 			if (top2 & (BLDMOD>>8))
 				color = gfx_alpha_blend(color, back,
-				                      coeff[COLEV & 0x1F],
-				                      coeff[(COLEV >> 8) & 0x1F]);
+				                      gfxCoeff[COLEV & 0x1F],
+				                      gfxCoeff[(COLEV >> 8) & 0x1F]);
 			else
 			{
 				switch ((BLDMOD >> 6) & 3)
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				}
 			}
 		}
 
-		lineMix[x] = color;
+		gfxLineMix[x] = color;
 	}
 }
 
-void mode2RenderLineAll()
+void gfx_mode2_line_render_all()
 {
 	u16 *palette = (u16 *)paletteRAM;
 
-	bool inWindow0 = false;
-	bool inWindow1 = false;
+	gboolean inWindow0 = FALSE;
+	gboolean inWindow1 = FALSE;
 
 	if (layerEnable & 0x2000)
 	{
@@ -271,18 +268,18 @@ void mode2RenderLineAll()
 	{
 		gfx_rot_screen_draw(BG2CNT,
 		                 BG2PA, BG2PB, BG2PC, BG2PD, &gfxBG2X, &gfxBG2Y,
-		                 line2);
+		                 gfxLine2);
 	}
 
 	if (layerEnable & 0x0800)
 	{
 		gfx_rot_screen_draw(BG3CNT,
 		                 BG3PA, BG3PB, BG3PC, BG3PD, &gfxBG3X, &gfxBG3Y,
-		                 line3);
+		                 gfxLine3);
 	}
 
-	gfx_sprites_draw(lineOBJ);
-	gfx_obj_win_draw(lineOBJWin);
+	gfx_sprites_draw(gfxLineOBJ);
+	gfx_obj_win_draw(gfxLineOBJWin);
 
 	u32 backdrop = (READ16LE(&palette[0]) | 0x30000000);
 
@@ -296,7 +293,7 @@ void mode2RenderLineAll()
 		u8 top = 0x20;
 		u8 mask = outMask;
 
-		if (!(lineOBJWin[x] & 0x80000000))
+		if (!(gfxLineOBJWin[x] & 0x80000000))
 		{
 			mask = WINOUT >> 8;
 		}
@@ -315,21 +312,21 @@ void mode2RenderLineAll()
 			}
 		}
 
-		if (line2[x] < color && (mask & 4))
+		if (gfxLine2[x] < color && (mask & 4))
 		{
-			color = line2[x];
+			color = gfxLine2[x];
 			top = 0x04;
 		}
 
-		if ((u8)(line3[x]>>24) < (u8)(color >> 24) && (mask & 8))
+		if ((u8)(gfxLine3[x]>>24) < (u8)(color >> 24) && (mask & 8))
 		{
-			color = line3[x];
+			color = gfxLine3[x];
 			top = 0x08;
 		}
 
-		if ((u8)(lineOBJ[x]>>24) < (u8)(color >> 24) && (mask & 16))
+		if ((u8)(gfxLineOBJ[x]>>24) < (u8)(color >> 24) && (mask & 16))
 		{
-			color = lineOBJ[x];
+			color = gfxLineOBJ[x];
 			top = 0x10;
 		}
 
@@ -339,33 +336,33 @@ void mode2RenderLineAll()
 			u32 back = backdrop;
 			u8 top2 = 0x20;
 
-			if ((mask & 4) && line2[x] < back)
+			if ((mask & 4) && gfxLine2[x] < back)
 			{
-				back = line2[x];
+				back = gfxLine2[x];
 				top2 = 0x04;
 			}
 
-			if ((mask & 8) && (u8)(line3[x]>>24) < (u8)(back >> 24))
+			if ((mask & 8) && (u8)(gfxLine3[x]>>24) < (u8)(back >> 24))
 			{
-				back = line3[x];
+				back = gfxLine3[x];
 				top2 = 0x08;
 			}
 
 			if (top2 & (BLDMOD>>8))
 				color = gfx_alpha_blend(color, back,
-				                      coeff[COLEV & 0x1F],
-				                      coeff[(COLEV >> 8) & 0x1F]);
+				                      gfxCoeff[COLEV & 0x1F],
+				                      gfxCoeff[(COLEV >> 8) & 0x1F]);
 			else
 			{
 				switch ((BLDMOD >> 6) & 3)
 				{
 				case 2:
 					if (BLDMOD & top)
-						color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_increase(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				case 3:
 					if (BLDMOD & top)
-						color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
+						color = gfx_brightness_decrease(color, gfxCoeff[COLY & 0x1F]);
 					break;
 				}
 			}
@@ -384,53 +381,51 @@ void mode2RenderLineAll()
 					u32 back = backdrop;
 					u8 top2 = 0x20;
 
-					if ((mask & 4) && line2[x] < back)
+					if ((mask & 4) && gfxLine2[x] < back)
 					{
 						if (top != 0x04)
 						{
-							back = line2[x];
+							back = gfxLine2[x];
 							top2 = 0x04;
 						}
 					}
 
-					if ((mask & 8) && (u8)(line3[x]>>24) < (u8)(back >> 24))
+					if ((mask & 8) && (u8)(gfxLine3[x]>>24) < (u8)(back >> 24))
 					{
 						if (top != 0x08)
 						{
-							back = line3[x];
+							back = gfxLine3[x];
 							top2 = 0x08;
 						}
 					}
 
-					if ((mask & 16) && (u8)(lineOBJ[x]>>24) < (u8)(back >> 24))
+					if ((mask & 16) && (u8)(gfxLineOBJ[x]>>24) < (u8)(back >> 24))
 					{
 						if (top != 0x10)
 						{
-							back = lineOBJ[x];
+							back = gfxLineOBJ[x];
 							top2 = 0x10;
 						}
 					}
 
 					if (top2 & (BLDMOD>>8))
 						color = gfx_alpha_blend(color, back,
-						                      coeff[COLEV & 0x1F],
-						                      coeff[(COLEV >> 8) & 0x1F]);
+						                      gfxCoeff[COLEV & 0x1F],
+						                      gfxCoeff[(COLEV >> 8) & 0x1F]);
 				}
 			}
 			break;
 			case 2:
 				if (BLDMOD & top)
-					color = gfx_brightness_increase(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_increase(color, gfxCoeff[COLY & 0x1F]);
 				break;
 			case 3:
 				if (BLDMOD & top)
-					color = gfx_brightness_decrease(color, coeff[COLY & 0x1F]);
+					color = gfx_brightness_decrease(color, gfxCoeff[COLY & 0x1F]);
 				break;
 			}
 		}
 
-		lineMix[x] = color;
+		gfxLineMix[x] = color;
 	}
 }
-
-} // namespace GFX

@@ -64,14 +64,14 @@ SET(SRC_GBA
 	src/gba/CPUThumb.cpp
 	src/gba/Display.c
 	src/gba/GBA.cpp
-	src/gba/Gfx.cpp
+	src/gba/Gfx.c
 	src/gba/GfxHelpers.c
-	src/gba/GfxMode0.cpp
-	src/gba/GfxMode1.cpp
-	src/gba/GfxMode2.cpp
-	src/gba/GfxMode3.cpp
-	src/gba/GfxMode4.cpp
-	src/gba/GfxMode5.cpp
+	src/gba/GfxMode0.c
+	src/gba/GfxMode1.c
+	src/gba/GfxMode2.c
+	src/gba/GfxMode3.c
+	src/gba/GfxMode4.c
+	src/gba/GfxMode5.c
 	src/gba/Globals.c
 	src/gba/Link.cpp
 	src/gba/MMU.cpp

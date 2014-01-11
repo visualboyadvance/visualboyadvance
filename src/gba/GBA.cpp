@@ -346,10 +346,10 @@ gboolean CPUReadState(gzFile gzFile, GError **err) {
 	// set pointers!
 	layerEnable = DISPCNT;
 
-	GFX::chooseRenderer();
-	GFX::clearRenderBuffers(true);
-	GFX::updateWindow0();
-	GFX::updateWindow1();
+	gfx_renderer_choose();
+	gfx_buffers_clear(true);
+	gfx_window0_update();
+	gfx_window1_update();
 
 	if (CPU::armState)
 	{
@@ -389,7 +389,7 @@ gboolean CPUInitMemory(GError **err) {
 		return FALSE;
 	}
 
-	GFX::clearRenderBuffers(TRUE);
+	gfx_buffers_clear(TRUE);
 
 	return TRUE;
 }
@@ -844,11 +844,11 @@ void CPUUpdateRegister(u32 address, u16 value)
 				CPUCompareVCOUNT();
 			}
 		}
-		GFX::chooseRenderer();
+		gfx_renderer_choose();
 		// we only care about changes in BG0-BG3
 		if (changeBG)
 		{
-			GFX::clearRenderBuffers(false);
+			gfx_buffers_clear(false);
 		}
 		break;
 	}
@@ -926,22 +926,22 @@ void CPUUpdateRegister(u32 address, u16 value)
 	case 0x28:
 		BG2X_L = value;
 		UPDATE_REG(0x28, BG2X_L);
-		GFX::updateBG2X();
+		gfx_BG2X_update();
 		break;
 	case 0x2A:
 		BG2X_H = (value & 0xFFF);
 		UPDATE_REG(0x2A, BG2X_H);
-		GFX::updateBG2X();
+		gfx_BG2X_update();
 		break;
 	case 0x2C:
 		BG2Y_L = value;
 		UPDATE_REG(0x2C, BG2Y_L);
-		GFX::updateBG2Y();
+		gfx_BG2Y_update();
 		break;
 	case 0x2E:
 		BG2Y_H = value & 0xFFF;
 		UPDATE_REG(0x2E, BG2Y_H);
-		GFX::updateBG2Y();
+		gfx_BG2Y_update();
 		break;
 	case 0x30:
 		BG3PA = value;
@@ -962,32 +962,32 @@ void CPUUpdateRegister(u32 address, u16 value)
 	case 0x38:
 		BG3X_L = value;
 		UPDATE_REG(0x38, BG3X_L);
-		GFX::updateBG3X();
+		gfx_BG3X_update();
 		break;
 	case 0x3A:
 		BG3X_H = value & 0xFFF;
 		UPDATE_REG(0x3A, BG3X_H);
-		GFX::updateBG3X();
+		gfx_BG3X_update();
 		break;
 	case 0x3C:
 		BG3Y_L = value;
 		UPDATE_REG(0x3C, BG3Y_L);
-		GFX::updateBG3Y();
+		gfx_BG3Y_update();
 		break;
 	case 0x3E:
 		BG3Y_H = value & 0xFFF;
 		UPDATE_REG(0x3E, BG3Y_H);
-		GFX::updateBG3Y();
+		gfx_BG3Y_update();
 		break;
 	case 0x40:
 		WIN0H = value;
 		UPDATE_REG(0x40, WIN0H);
-		GFX::updateWindow0();
+		gfx_window0_update();
 		break;
 	case 0x42:
 		WIN1H = value;
 		UPDATE_REG(0x42, WIN1H);
-		GFX::updateWindow1();
+		gfx_window1_update();
 		break;
 	case 0x44:
 		WIN0V = value;
@@ -1012,7 +1012,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	case 0x50:
 		BLDMOD = value & 0x3FFF;
 		UPDATE_REG(0x50, BLDMOD);
-		GFX::chooseRenderer();
+		gfx_renderer_choose();
 		break;
 	case 0x52:
 		COLEV = value & 0x1F1F;
@@ -1562,15 +1562,15 @@ void CPUReset()
 	dma2Dest = 0;
 	dma3Source = 0;
 	dma3Dest = 0;
-	GFX::chooseRenderer();
+	gfx_renderer_choose();
 	layerEnable = DISPCNT;
 
-	GFX::clearRenderBuffers(true);
+	gfx_buffers_clear(true);
 
 	cartridge_reset();
 
-	GFX::updateWindow0();
-	GFX::updateWindow1();
+	gfx_window0_update();
+	gfx_window1_update();
 
 	soundReset();
 
@@ -1670,7 +1670,7 @@ updateLoop:
 						VCOUNT = 0;
 						UPDATE_REG(0x06, VCOUNT);
 						CPUCompareVCOUNT();
-						GFX::newFrame();
+						gfx_frame_new();
 					}
 				}
 				else
@@ -1749,8 +1749,8 @@ updateLoop:
 					}
 					else
 					{
-						GFX::renderLine();
-						display_draw_line(VCOUNT, GFX::lineMix);
+						gfx_line_render();
+						display_draw_line(VCOUNT, gfxLineMix);
 
 						// entering H-Blank
 						DISPSTAT |= 2;
