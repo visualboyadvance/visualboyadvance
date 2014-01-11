@@ -24,11 +24,6 @@
 typedef struct {
 	GameInfos *game;
 
-	gboolean isInGameTag;
-	gboolean isInTitleTag;
-	gboolean isInRegionTag;
-	gboolean isInPublisherTag;
-	gboolean isInCodeTag;
 	gboolean foundCode;
 	gboolean gameLoaded;
 
@@ -45,6 +40,27 @@ static int findv(const gchar **strings, const gchar *needle) {
 	return -1;
 }
 
+static gboolean g_markup_is_in_element(GMarkupParseContext *context, ...) {
+	va_list ap;
+
+	va_start(ap, context);
+
+	// Get the first items
+	const GSList *current_stack = g_markup_parse_context_get_element_stack(context);
+	const gchar *item = va_arg(ap, const gchar *);
+
+	// Compare items from both lists
+	while (current_stack != NULL && item != NULL && !g_strcmp0(current_stack->data, item)) {
+		current_stack = g_slist_next(current_stack);
+		item = va_arg(ap, const gchar *);
+	}
+
+	va_end(ap);
+
+	// Ensure the end of both lists was reached
+	return current_stack == NULL && item == NULL;
+}
+
 static void on_start_element(GMarkupParseContext *context,
                           const gchar         *element_name,
                           const gchar        **attribute_names,
@@ -58,39 +74,21 @@ static void on_start_element(GMarkupParseContext *context,
 		return;
 	}
 	
-	if (g_strcmp0(element_name, "game") == 0)
+	if (g_markup_is_in_element(context, "game", "games", NULL))
 	{
-		db->isInGameTag = TRUE;
-		
 		// Reset our cartridge data
 		game_infos_free(db->game);
 		db->game = game_infos_new();
 	}
-	else if (g_strcmp0(element_name, "title") == 0)
-	{
-		db->isInTitleTag = TRUE;
-	}
-	else if (g_strcmp0(element_name, "code") == 0)
-	{
-		db->isInCodeTag = TRUE;
-	}
-	else if (g_strcmp0(element_name, "region") == 0)
-	{
-		db->isInRegionTag = TRUE;
-	}
-	else if (g_strcmp0(element_name, "publisher") == 0)
-	{
-		db->isInPublisherTag = TRUE;
-	}
-	else if (g_strcmp0(element_name, "sram") == 0)
+	else if (g_markup_is_in_element(context, "sram", "cartridge", "game", "games", NULL))
 	{
 		db->game->hasSRAM = TRUE;
 	}
-	else if (g_strcmp0(element_name, "hasRTC") == 0)
+	else if (g_markup_is_in_element(context, "hasRTC", "cartridge", "game", "games", NULL))
 	{
 		db->game->hasRTC = TRUE;
 	}
-	else if (g_strcmp0(element_name, "eeprom") == 0)
+	else if (g_markup_is_in_element(context, "eeprom", "cartridge", "game", "games", NULL))
 	{
 		db->game->hasEEPROM = TRUE;
 		int sizeIndex = findv(attribute_names, "size");
@@ -99,7 +97,7 @@ static void on_start_element(GMarkupParseContext *context,
 			db->game->EEPROMSize = atoi(attribute_values[sizeIndex]);
 		}
 	}
-	else if (g_strcmp0(element_name, "flash") == 0)
+	else if (g_markup_is_in_element(context, "flash", "cartridge", "game", "games", NULL))
 	{
 		db->game->hasFlash = TRUE;
 		int sizeIndex = findv(attribute_names, "size");
@@ -117,29 +115,12 @@ static void on_end_element(GMarkupParseContext *context,
 {
 	GameDBParserContext *db = (GameDBParserContext *)user_data;
 	
-	if (g_strcmp0(element_name, "game") == 0)
+	if (g_markup_is_in_element(context, "game", "games", NULL))
 	{
-		db->isInGameTag = FALSE;
 		if (db->foundCode)
 		{
 			db->gameLoaded = TRUE;
 		}
-	}
-	else if (g_strcmp0(element_name, "title") == 0)
-	{
-		db->isInTitleTag = FALSE;
-	}
-	else if (g_strcmp0(element_name, "code") == 0)
-	{
-		db->isInCodeTag = FALSE;
-	}
-	else if (g_strcmp0(element_name, "region") == 0)
-	{
-		db->isInRegionTag = FALSE;
-	}
-	else if (g_strcmp0(element_name, "publisher") == 0)
-	{
-		db->isInPublisherTag = FALSE;
 	}
 }
 
@@ -155,22 +136,22 @@ static void on_text(GMarkupParseContext *context,
 		return;
 	}
 	
-	if (db->isInGameTag && db->isInTitleTag)
+	if (g_markup_is_in_element(context, "title", "game", "games", NULL))
 	{
 		g_free(db->game->title);
 		db->game->title = g_strdup(text);
 	}
-	else if (db->isInGameTag && db->isInRegionTag)
+	else if (g_markup_is_in_element(context, "region", "game", "games", NULL))
 	{
 		g_free(db->game->region);
 		db->game->region = g_strdup(text);
 	}
-	else if (db->isInGameTag && db->isInPublisherTag)
+	else if (g_markup_is_in_element(context, "publisher", "game", "games", NULL))
 	{
 		g_free(db->game->publisher);
 		db->game->publisher = g_strdup(text);
 	}
-	else if (db->isInGameTag && db->isInCodeTag)
+	else if (g_markup_is_in_element(context, "code", "cartridge", "game", "games", NULL))
 	{
 		if (g_strcmp0(text, db->lookupCode) == 0) {
 			db->foundCode = TRUE;
@@ -200,11 +181,6 @@ GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 	db->lookupCode = code;
 	db->foundCode = FALSE;
 	db->gameLoaded = FALSE;
-	db->isInGameTag = FALSE;
-	db->isInTitleTag = FALSE;
-	db->isInCodeTag = FALSE;
-	db->isInRegionTag = FALSE;
-	db->isInPublisherTag = FALSE;
 
 	GMarkupParser parser;
 	parser.start_element = &on_start_element;
