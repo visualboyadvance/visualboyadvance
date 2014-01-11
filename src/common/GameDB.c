@@ -24,7 +24,6 @@
 typedef struct {
 	GameInfos *game;
 
-	gboolean foundCode;
 	gboolean gameLoaded;
 
 	const gchar *lookupCode;
@@ -76,11 +75,25 @@ static void on_start_element(GMarkupParseContext *context,
 	
 	if (g_markup_is_in_element(context, "game", "games", NULL))
 	{
-		// Reset our cartridge data
-		game_infos_free(db->game);
-		db->game = game_infos_new();
+		// Read the current game code
+		const gchar *code = NULL;
+		gboolean r = g_markup_collect_attributes(element_name, attribute_names, attribute_values, error,
+				G_MARKUP_COLLECT_STRING, "code", &code,
+				G_MARKUP_COLLECT_STRING | G_MARKUP_COLLECT_OPTIONAL, "cloneOf", NULL,
+				G_MARKUP_COLLECT_INVALID);
+
+		// Is the current code matching the one we search
+		if (r && !g_strcmp0(code, db->lookupCode)) {
+			db->game = game_infos_new();
+			db->game->code = g_strdup(code);
+		}
 	}
-	else if (g_markup_is_in_element(context, "sram", "cartridge", "game", "games", NULL))
+
+	if (!db->game) {
+		return;
+	}
+
+	if (g_markup_is_in_element(context, "sram", "cartridge", "game", "games", NULL))
 	{
 		db->game->hasSRAM = TRUE;
 	}
@@ -117,7 +130,7 @@ static void on_end_element(GMarkupParseContext *context,
 	
 	if (g_markup_is_in_element(context, "game", "games", NULL))
 	{
-		if (db->foundCode)
+		if (db->game)
 		{
 			db->gameLoaded = TRUE;
 		}
@@ -136,29 +149,21 @@ static void on_text(GMarkupParseContext *context,
 		return;
 	}
 	
+	if (!db->game) {
+		return;
+	}
+
 	if (g_markup_is_in_element(context, "title", "game", "games", NULL))
 	{
-		g_free(db->game->title);
 		db->game->title = g_strdup(text);
 	}
 	else if (g_markup_is_in_element(context, "region", "game", "games", NULL))
 	{
-		g_free(db->game->region);
 		db->game->region = g_strdup(text);
 	}
 	else if (g_markup_is_in_element(context, "publisher", "game", "games", NULL))
 	{
-		g_free(db->game->publisher);
 		db->game->publisher = g_strdup(text);
-	}
-	else if (g_markup_is_in_element(context, "code", "cartridge", "game", "games", NULL))
-	{
-		if (g_strcmp0(text, db->lookupCode) == 0) {
-			db->foundCode = TRUE;
-
-			g_free(db->game->code);
-			db->game->code = g_strdup(text);
-		}
 	}
 }
 
@@ -179,7 +184,6 @@ GameInfos *game_db_lookup_code(const gchar *code, GError **err)
 	GameDBParserContext *db = g_new(GameDBParserContext, 1);
 	db->game = NULL;
 	db->lookupCode = code;
-	db->foundCode = FALSE;
 	db->gameLoaded = FALSE;
 
 	GMarkupParser parser;
