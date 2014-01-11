@@ -21,6 +21,8 @@
 #include "Loader.h"
 #include "Util.h"
 
+static const int DATABASE_VERSION = 2;
+
 typedef struct {
 	GameInfos *game;
 
@@ -73,6 +75,23 @@ static void on_start_element(GMarkupParseContext *context,
 		return;
 	}
 	
+	if (g_markup_is_in_element(context, "games", NULL))
+	{
+		int version = -1;
+
+		// Check the database version
+		int versionIndex = findv(attribute_names, "version");
+		if (versionIndex >= 0)
+		{
+			version = atoi(attribute_values[versionIndex]);
+		}
+
+		if (version != DATABASE_VERSION) {
+			g_set_error(error, LOADER_ERROR, G_LOADER_ERROR_FAILED,
+					"Incorrect database version '%d', expected '%d'", version, DATABASE_VERSION);
+		}
+	}
+
 	if (g_markup_is_in_element(context, "game", "games", NULL))
 	{
 		// Read the current game code
