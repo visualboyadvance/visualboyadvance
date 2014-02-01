@@ -52,10 +52,8 @@ gchar *settings_parse_command_line(gint *argc, gchar ***argv, GError **err);
 /**
  * Prints an help text regarding the available command line options
  * on the standard output.
- *
- * @param err optional error message to display
  */
-void settings_display_usage(GError *err);
+void settings_display_usage();
 
 /**
  * Override the current settings with the values from the configuration file

@@ -175,10 +175,11 @@ typedef struct RectOSD RectOSD;
  * @param y number of pixels away from the top side of the window the rectangle is drawn at
  * @param w Maximum width of the rectangle
  * @param h Maximum height of the rectangle
+ * @param parent Renderable the RectOSD to be created renders over
  * @param err return location for a GError, or NULL
  * @return RectOSD entity or NULL if the creation failed
  */
-RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, GError **err);
+RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, const Renderable *parent, GError **err);
 
 /**
  * Set the opacity of the RectOSD

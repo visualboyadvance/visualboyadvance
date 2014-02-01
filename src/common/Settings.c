@@ -134,15 +134,10 @@ void settings_free() {
 	g_free(settings.batteryDir);
 }
 
-void settings_display_usage(GError *err) {
+void settings_display_usage() {
 	GOptionContext *context = g_option_context_new(NULL);
 	gchar *usage = g_option_context_get_help(context, FALSE, NULL);
 	g_option_context_free(context);
-
-	if (err != NULL) {
-		g_printerr("%s\n", err->message);
-	}
-
 	g_print("%s", usage);
 	g_free(usage);
 }

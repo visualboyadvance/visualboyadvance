@@ -83,7 +83,7 @@ static struct archive *loader_open_archive(RomLoader *loader, GError **err) {
 
 	if (r != ARCHIVE_OK) {
 		g_set_error(err, LOADER_ERROR, G_LOADER_ERROR_FAILED,
-				"Error loading %s : %s", loader->filename, archive_error_string(a));
+				"Loading error : %s", archive_error_string(a));
 		archive_read_free(a);
 		return NULL;
 	}

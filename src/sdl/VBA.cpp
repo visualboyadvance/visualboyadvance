@@ -29,6 +29,7 @@
 #include "Timer.h"
 #include "GUI.h"
 #include "VBA.h"
+#include "ErrorScreen.h"
 #include "GameScreen.h"
 #include "PauseScreen.h"
 #include "../common/Settings.h"
@@ -37,6 +38,8 @@
 
 static Display *display = NULL;
 static SoundDriver *soundDriver = NULL;
+static InputDriver *inputDriver = NULL;
+gchar *filename = NULL;
 
 static gboolean emulating = FALSE;
 
@@ -120,40 +123,73 @@ static gboolean loadROM(const char *file, GError **err) {
 	return TRUE;
 }
 
+static void vba_free() {
+	soundShutdown();
+	cartridge_unload();
+	display_free();
+	CPUCleanUp();
+
+	screens_free_all();
+	sound_sdl_free(soundDriver);
+	input_sdl_free(inputDriver);
+	display_sdl_free(display);
+
+	settings_free();
+
+	g_free(filename);
+}
+
+__attribute__((noreturn)) static void vba_fatal_error(GError *err) {
+	if (display == NULL) {
+		g_printerr("%s\n", err->message);
+		g_clear_error(&err);
+	} else {
+		screens_free_all();
+
+		errorscreen_create(display, err->message, NULL);
+		g_clear_error(&err);
+
+		emulating = TRUE;
+
+		while (emulating) {
+			screens_update_current();
+			display_sdl_render(display);
+			events_poll();
+		}
+	}
+
+	vba_free();
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
 	fprintf(stdout, "VBA version %s\n", VERSION);
 
 	GError *err = NULL;
-	gchar *filename = NULL;
 
 	// Read config file
 	settings_init();
 	if (!settings_read_config_file(&err)) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 
 	// Parse command line
 	filename = settings_parse_command_line(&argc, &argv, &err);
 	if (filename == NULL) {
-		settings_display_usage(err);
-		settings_free();
+		settings_display_usage();
+		vba_fatal_error(err);
+	}
 
-		g_clear_error(&err);
-		exit(1);
+	// Init the display driver
+	display = display_sdl_init(&err);
+	if (display == NULL) {
+		vba_fatal_error(err);
 	}
 
 	// Check the settings
 	if (!settings_check(&err)) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 
 	// Make sure the batteries dir exists
@@ -164,24 +200,10 @@ int main(int argc, char **argv)
 	const gchar* savesDir = settings_get_save_dir();
 	g_mkdir_with_parents(savesDir, 0777);
 
-	// Init the display driver
-	display = display_sdl_init(&err);
-	if (display == NULL) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
-	}
-
 	// Init the game screen
 	GameScreen *game = gamescreen_create(display, &err);
 	if (game == NULL) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 
 	display_init(gamescreen_get_display_driver(game));
@@ -189,33 +211,20 @@ int main(int argc, char **argv)
 	// Init the sound driver
 	soundDriver = sound_sdl_init(&err);
 	if (soundDriver == NULL) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 	soundSetVolume(settings_sound_volume());
 	soundInit(soundDriver);
 
 	// Init the input driver
-	InputDriver *inputDriver = input_sdl_init(&err);
+	inputDriver = input_sdl_init(&err);
 	if (inputDriver == NULL) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-		sound_sdl_free(soundDriver);
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 	gba_init_input(inputDriver);
 
     if(!loadROM(filename, &err)) {
-		g_printerr("%s\n", err->message);
-		settings_free();
-
-		g_clear_error(&err);
-		exit(1);
+		vba_fatal_error(err);
 	}
 
 	gamescreen_read_battery(game);
@@ -234,19 +243,7 @@ int main(int argc, char **argv)
 	fprintf(stdout, "Shutting down\n");
 	gamescreen_write_battery(game);
 
-	soundShutdown();
-	cartridge_unload();
-	display_free();
-	CPUCleanUp();
-
-	screens_free_all();
-	sound_sdl_free(soundDriver);
-	input_sdl_free(inputDriver);
-	display_sdl_free(display);
-
-	settings_free();
-
-	g_free(filename);
+	vba_free();
 
 	return 0;
 }

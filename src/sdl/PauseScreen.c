@@ -109,7 +109,7 @@ PauseScreen *pausescreen_create(Display *display, GError **err) {
 
 
 	// Create a semi-transparent background
-	pause->background = rect_osd_create(display, 0, 0, screenWidth, screenHeight, err);
+	pause->background = rect_osd_create(display, 0, 0, screenWidth, screenHeight, NULL, err);
 	if (pause->background == NULL) {
 		pausescreen_free(pause);
 		return NULL;
@@ -168,13 +168,13 @@ PauseScreen *pausescreen_create(Display *display, GError **err) {
 	text_osd_set_color(pause->publisher, 168, 168, 168);
 
 	// Create the action buttons
-	pause->resume = button_create(display, "Resume", 10, 50, 50, 15, &pausescreen_on_resume, err);
+	pause->resume = button_create(display, "Resume", 10, 50, 50, 15, &pausescreen_on_resume, parent, err);
 	if (pause->resume == NULL) {
 		pausescreen_free(pause);
 		return NULL;
 	}
 
-	pause->quit = button_create(display, "Quit", 10, 70, 50, 15, &pausescreen_on_quit, err);
+	pause->quit = button_create(display, "Quit", 10, 70, 50, 15, &pausescreen_on_quit, parent, err);
 	if (pause->quit == NULL) {
 		pausescreen_free(pause);
 		return NULL;

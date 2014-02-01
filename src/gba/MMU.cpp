@@ -174,6 +174,14 @@ void uninit()
 	delete[] bios;
 	delete[] oam;
 	delete[] ioMem;
+
+	vram = 0;
+	paletteRAM = 0;
+	internalRAM = 0;
+	workRAM = 0;
+	bios = 0;
+	oam = 0;
+	ioMem = 0;
 }
 
 u32 read32(u32 address)

@@ -107,12 +107,12 @@ struct Button {
 	Actionable *action;
 };
 
-Button *button_create(Display *display, const gchar *caption, gint x, gint y, guint w, guint h, ActionableAction action, GError **err) {
+Button *button_create(Display *display, const gchar *caption, gint x, gint y, guint w, guint h, ActionableAction action, const Renderable *parent, GError **err) {
 	g_assert(display != NULL && action != NULL);
 
 	Button *button = g_new(Button, 1);
 
-	button->background = rect_osd_create(display, x, y, w, h, err);
+	button->background = rect_osd_create(display, x, y, w, h, parent, err);
 	if (button->background == NULL) {
 		button_free(button);
 		return NULL;

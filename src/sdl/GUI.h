@@ -50,10 +50,11 @@ typedef struct Button Button;
  * @param w Maximum width of the rectangle
  * @param h Maximum height of the rectangle
  * @param action Function to be called when the button is triggered
+ * @param parent Renderable the Button to be created renders over
  * @param err return location for a GError, or NULL
  * @return Button entity or NULL if the creation failed
  */
-Button *button_create(Display *display, const gchar *caption, gint x, gint y, guint w, guint h, ActionableAction action, GError **err);
+Button *button_create(Display *display, const gchar *caption, gint x, gint y, guint w, guint h, ActionableAction action, const Renderable *parent, GError **err);
 
 /**
  * Free a button entity

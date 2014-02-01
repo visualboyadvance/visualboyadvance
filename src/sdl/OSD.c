@@ -334,11 +334,11 @@ static void rect_osd_render(gpointer entity) {
 	SDL_RenderFillRect(renderable->renderer, &screenRect);
 }
 
-RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, GError **err) {
+RectOSD *rect_osd_create(Display *display, gint x, gint y, guint w, guint h, const Renderable *parent, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 
 	RectOSD *rect = g_new(RectOSD, 1);
-	rect->renderable = display_sdl_renderable_create(display, rect, NULL);
+	rect->renderable = display_sdl_renderable_create(display, rect, parent);
 	rect->renderable->render = rect_osd_render;
 	rect->renderable->x = x;
 	rect->renderable->y = y;
