@@ -16,6 +16,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "GameScreen.h"
+#include "GUI.h"
 #include "DisplaySDL.h"
 #include "InputSDL.h"
 #include "OSD.h"
@@ -31,8 +32,10 @@ static const int screenWidth = 240;
 static const int screenHeight = 160;
 
 struct GameScreen {
+	Screen *screen;
+
 	Renderable *renderable;
-	SDL_Texture *screen;
+	SDL_Texture *screenTexture;
 
 	DisplayDriver *displayDriver;
 	Display *display;
@@ -43,6 +46,10 @@ struct GameScreen {
 
 	gboolean inactive;
 };
+
+GQuark gamescreen_quark() {
+	return g_quark_from_static_string("gamescreen_quark");
+}
 
 static void gamescreen_update_speed(TextOSD *speed) {
 	if (speed == NULL)
@@ -56,7 +63,7 @@ static void gamescreen_update_speed(TextOSD *speed) {
 static void gamescreen_update_texture(GameScreen *game, guint16 *pix) {
 	g_assert(game != NULL);
 
-	SDL_UpdateTexture(game->screen, NULL, pix, screenWidth * sizeof(*pix));
+	SDL_UpdateTexture(game->screenTexture, NULL, pix, screenWidth * sizeof(*pix));
 	// TODO: Error checking
 
 	gamescreen_update_speed(game->speed);
@@ -72,68 +79,11 @@ static void gamescreen_render(gpointer entity) {
 	screenRect.h = display_sdl_scale(game->display, screenHeight);
 	display_sdl_renderable_get_absolute_position(game->renderable, &screenRect.x, &screenRect.y);
 
-	SDL_RenderCopy(game->renderable->renderer, game->screen, NULL, &screenRect);
+	SDL_RenderCopy(game->renderable->renderer, game->screenTexture, NULL, &screenRect);
 }
 
 static void gamescreen_mouse_hide(gpointer entity) {
 	SDL_ShowCursor(FALSE);
-}
-
-GameScreen *gamescreen_create(Display *display, GError **err) {
-	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
-	g_assert(display != NULL);
-
-	GameScreen *game = g_new(GameScreen, 1);
-
-	game->displayDriver = NULL;
-	game->status = NULL;
-	game->speed = NULL;
-	game->display = display;
-	game->renderable = display_sdl_renderable_create(display, game, NULL);
-	game->renderable->render = gamescreen_render;
-	game->mouseTimeout = timeout_create(game, gamescreen_mouse_hide);
-	game->inactive = FALSE;
-
-	display_sdl_renderable_set_size(game->renderable, screenWidth, screenHeight);
-	display_sdl_renderable_set_alignment(game->renderable, ALIGN_CENTER, ALIGN_MIDDLE);
-
-	game->screen = SDL_CreateTexture(game->renderable->renderer, SDL_PIXELFORMAT_BGR555,
-			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeight);
-
-	if (game->screen == NULL) {
-		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed to create screen: %s", SDL_GetError());
-		gamescreen_free(game);
-		return NULL;
-	}
-
-	if (settings_show_speed()) {
-		game->speed = text_osd_create(display, " ", NULL, err);
-		if (game->speed == NULL) {
-			gamescreen_free(game);
-			return NULL;
-		}
-
-		text_osd_set_color(game->speed, 255, 0, 0);
-		text_osd_set_position(game->speed, 5, 5);
-		text_osd_set_size(game->speed, 240, 5);
-		text_osd_set_opacity(game->speed, 75);
-	}
-
-	if (!settings_disable_status_messages()) {
-		game->status = text_osd_create(display, " ", NULL, err);
-		if (game->status == NULL) {
-			gamescreen_free(game);
-			return NULL;
-		}
-
-		text_osd_set_color(game->status, 255, 0, 0);
-		text_osd_set_alignment(game->status, ALIGN_LEFT, ALIGN_BOTTOM);
-		text_osd_set_position(game->status, 5, 5);
-		text_osd_set_size(game->status, 240, 5);
-	}
-
-	return game;
 }
 
 void gamescreen_show_status_message(GameScreen *game, const gchar *msg) {
@@ -147,7 +97,7 @@ void gamescreen_show_status_message(GameScreen *game, const gchar *msg) {
 	g_message("%s", msg);
 }
 
-void gamescreen_free(GameScreen *game) {
+static void gamescreen_free(GameScreen *game) {
 	if (game == NULL)
 		return;
 
@@ -155,9 +105,15 @@ void gamescreen_free(GameScreen *game) {
 	text_osd_free(game->speed);
 
 	display_sdl_renderable_free(game->renderable);
-	SDL_DestroyTexture(game->screen);
+	SDL_DestroyTexture(game->screenTexture);
 	g_free(game->displayDriver);
+	screen_free(game->screen);
+
 	g_free(game);
+}
+
+static void gamescreen_free_from_entity(gpointer entity) {
+	gamescreen_free((GameScreen *) entity);
 }
 
 static void gamescreen_draw_screen(const DisplayDriver *driver, guint16 *pix) {
@@ -249,7 +205,10 @@ void gamescreen_read_battery(GameScreen *game) {
 		gamescreen_show_status_message(game, "Loaded battery");
 }
 
-gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
+static gboolean gamescreen_process_event(gpointer entity, const SDL_Event *event) {
+	GameScreen *game = (GameScreen *)entity;
+	g_assert(game != NULL);
+
 	switch (event->type) {
 	case SDL_WINDOWEVENT_FOCUS_LOST:
 		if (!vba_is_paused() && settings_pause_when_inactive()) {
@@ -314,10 +273,74 @@ gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event) {
 	return TRUE; // No more handlers should be called
 }
 
-void gamescreen_update(GameScreen *game) {
+static void gamescreen_update(gpointer entity) {
+	GameScreen *game = (GameScreen *) entity;
+	g_assert(game != NULL);
+
 	if (!game->inactive) {
 		CPULoop(250000);
 	} else {
 		SDL_Delay(500);
 	}
+}
+
+GameScreen *gamescreen_create(Display *display, GError **err) {
+	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
+	g_assert(display != NULL);
+
+	GameScreen *game = g_new(GameScreen, 1);
+
+	game->displayDriver = NULL;
+	game->status = NULL;
+	game->speed = NULL;
+	game->display = display;
+	game->renderable = display_sdl_renderable_create(display, game, NULL);
+	game->renderable->render = gamescreen_render;
+	game->mouseTimeout = timeout_create(game, gamescreen_mouse_hide);
+	game->inactive = FALSE;
+	game->screen = screen_create(game, gamescreen_quark());
+	game->screen->free = gamescreen_free_from_entity;
+	game->screen->update = gamescreen_update;
+	game->screen->process_event = gamescreen_process_event;
+
+	display_sdl_renderable_set_size(game->renderable, screenWidth, screenHeight);
+	display_sdl_renderable_set_alignment(game->renderable, ALIGN_CENTER, ALIGN_MIDDLE);
+
+	game->screenTexture = SDL_CreateTexture(game->renderable->renderer, SDL_PIXELFORMAT_BGR555,
+			SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeight);
+
+	if (game->screenTexture == NULL) {
+		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
+				"Failed to create screen: %s", SDL_GetError());
+		gamescreen_free(game);
+		return NULL;
+	}
+
+	if (settings_show_speed()) {
+		game->speed = text_osd_create(display, " ", NULL, err);
+		if (game->speed == NULL) {
+			gamescreen_free(game);
+			return NULL;
+		}
+
+		text_osd_set_color(game->speed, 255, 0, 0);
+		text_osd_set_position(game->speed, 5, 5);
+		text_osd_set_size(game->speed, 240, 5);
+		text_osd_set_opacity(game->speed, 75);
+	}
+
+	if (!settings_disable_status_messages()) {
+		game->status = text_osd_create(display, " ", NULL, err);
+		if (game->status == NULL) {
+			gamescreen_free(game);
+			return NULL;
+		}
+
+		text_osd_set_color(game->status, 255, 0, 0);
+		text_osd_set_alignment(game->status, ALIGN_LEFT, ALIGN_BOTTOM);
+		text_osd_set_position(game->status, 5, 5);
+		text_osd_set_size(game->status, 240, 5);
+	}
+
+	return game;
 }

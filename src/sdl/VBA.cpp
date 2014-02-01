@@ -35,13 +35,10 @@
 
 #include <glib.h>
 
-static GameScreen *game = NULL;
-static PauseScreen *pauseScreen = NULL;
 static Display *display = NULL;
 static SoundDriver *soundDriver = NULL;
 
 static gboolean emulating = FALSE;
-static gboolean paused = FALSE;
 
 static gboolean main_process_event(const SDL_Event *event) {
 	switch (event->type) {
@@ -96,11 +93,7 @@ static void events_poll() {
 			continue;
 		}
 
-		if (!vba_is_paused()) {
-			gamescreen_process_event(game, &event);
-		} else {
-			pausescreen_process_event(pauseScreen, &event);
-		}
+		screens_process_event_current(&event);
 	}
 }
 
@@ -182,7 +175,7 @@ int main(int argc, char **argv)
 	}
 
 	// Init the game screen
-	game = gamescreen_create(display, &err);
+	GameScreen *game = gamescreen_create(display, &err);
 	if (game == NULL) {
 		g_printerr("%s\n", err->message);
 		settings_free();
@@ -232,11 +225,7 @@ int main(int argc, char **argv)
 	display_sdl_set_window_title(display, cartridge_get_game_title());
 
 	while (emulating) {
-		if (!vba_is_paused()) {
-			gamescreen_update(game);
-		} else {
-			pausescreen_update(pauseScreen);
-		}
+		screens_update_current();
 		display_sdl_render(display);
 		timers_update();
 		events_poll();
@@ -250,7 +239,7 @@ int main(int argc, char **argv)
 	display_free();
 	CPUCleanUp();
 
-	gamescreen_free(game);
+	screens_free_all();
 	sound_sdl_free(soundDriver);
 	input_sdl_free(inputDriver);
 	display_sdl_free(display);
@@ -263,21 +252,20 @@ int main(int argc, char **argv)
 }
 
 gboolean vba_toggle_pause() {
-	paused = !paused;
+	gboolean paused = !vba_is_paused();
 	soundPause(paused);
 
 	if (paused) {
-		pauseScreen = pausescreen_create(display, NULL);
+		pausescreen_create(display, NULL);
 	} else {
-		pausescreen_free(pauseScreen);
-		pauseScreen = NULL;
+		screens_pop();
 	}
 
 	return paused;
 }
 
 gboolean vba_is_paused() {
-	return paused;
+	return screens_current_is(PAUSE_SCREEN);
 }
 
 void vba_quit() {

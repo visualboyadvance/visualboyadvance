@@ -148,3 +148,68 @@ void button_free(Button *button) {
 
 	g_free(button);
 }
+
+static GSList *screens = NULL;
+
+Screen *screen_create(gpointer entity, GQuark type) {
+	g_assert(entity != NULL && type != 0);
+
+	Screen *screen = g_new0(Screen, 1);
+	screen->entity = entity;
+	screen->type = type;
+
+	screens = g_slist_prepend(screens, screen);
+
+	return screen;
+}
+
+void screen_free(Screen *screen) {
+	if (screen == NULL)
+		return;
+
+	screens = g_slist_remove(screens, screen);
+
+	g_free(screen);
+}
+
+void screens_update_current() {
+	if (screens == NULL)
+		return;
+
+	Screen *current = screens->data;
+	current->update(current->entity);
+}
+
+void screens_process_event_current(const SDL_Event *event) {
+	if (screens == NULL)
+		return;
+
+	Screen *current = screens->data;
+	current->process_event(current->entity, event);
+}
+
+void screens_free_all() {
+	GSList *it = screens;
+	while (it != NULL) {
+		Screen *screen = (Screen *)it->data;
+		it = g_slist_next(it);
+		screen->free(screen->entity);
+	}
+}
+
+void screens_pop() {
+	if (screens == NULL)
+		return;
+
+	Screen *current = screens->data;
+	current->free(current->entity);
+}
+
+gboolean screens_current_is(GQuark type) {
+	if (screens == NULL)
+		return FALSE;
+
+	Screen *current = screens->data;
+
+	return current->type == type;
+}

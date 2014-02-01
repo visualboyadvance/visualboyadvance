@@ -31,37 +31,18 @@ extern "C" {
  */
 typedef struct PauseScreen PauseScreen;
 
+/** Pause Screen type, identifies the pause screen in the screens stack */
+#define PAUSE_SCREEN (pausescreen_quark())
+GQuark pausescreen_quark();
+
 /**
- * Create a game screen entity
+ * Create a pause screen entity
  *
  * @param display Display to use for rendering
  * @param err return location for a GError, or NULL
- * @return Newly allocated PauseScreen object
+ * @return PauseScreen object, to be freed when removed from the screens stack
  */
 PauseScreen *pausescreen_create(Display *display, GError **err);
-
-/**
- * Free a game screen
- *
- * @param game Game screen to free
- */
-void pausescreen_free(PauseScreen *game);
-
-/**
- * Process an SDL event to update the game screen
- *
- * @param game Game screen
- * @param event An event that has just occured
- * @return TRUE when the event has been handled
- */
-gboolean pausescreen_process_event(PauseScreen *game, const SDL_Event *event);
-
-/**
- * Main loop element allowing the game to advance
- *
- * @param game Game screen
- */
-void pausescreen_update(PauseScreen *game);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

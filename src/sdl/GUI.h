@@ -62,6 +62,81 @@ Button *button_create(Display *display, const gchar *caption, gint x, gint y, gu
  */
 void button_free(Button *button);
 
+
+/**
+ * Component allowing to handle screens in a generic way.
+ *
+ * All instanciated screens are stored in a stack.
+ */
+typedef struct Screen Screen;
+struct Screen {
+	/** Process an SDL event to update the screen */
+	gboolean (*process_event)(gpointer entity, const SDL_Event *event);
+
+	/** Main loop element allowing the screen to update */
+	void (*update)(gpointer entity);
+
+	/** Free the owning entity */
+	void (*free)(gpointer entity);
+
+	/** Type allowing to distinguish screens in the stack */
+	GQuark type;
+
+	/** Pointer to the parent entity */
+	gpointer entity;
+};
+
+/**
+ * Create a Screen component for an entity and add on top of the stack
+ *
+ * @param entity Owning entity
+ * @param type Screen type
+ * @return The newly instanciated Screen
+ */
+Screen *screen_create(gpointer entity, GQuark type);
+
+/**
+ * Free a Screen component and remove it from the stack
+ *
+ * @param screen The Screen to free
+ */
+void screen_free(Screen *screen);
+
+/**
+ * Check whether the current Screen is of the specified type
+ *
+ * @param type The type to test the current screen against
+ */
+gboolean screens_current_is(GQuark type);
+
+/**
+ * Update the current Screen.
+ *
+ * Called from the main loop
+ */
+void screens_update_current();
+
+/**
+ * Have the current Screen process an event
+ *
+ * @param event An event that has just occured
+ */
+void screens_process_event_current(const SDL_Event *event);
+
+/**
+ * Remove the current Screen from the stack, making the next one active
+ *
+ * Also frees the associated entity
+ */
+void screens_pop();
+
+/**
+ * Remove all the Screens from the stack
+ *
+ * Also frees the associated entities
+ */
+void screens_free_all();
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

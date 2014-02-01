@@ -32,21 +32,18 @@ extern "C" {
  */
 typedef struct GameScreen GameScreen;
 
+/** Game Screen type, identifies the game screen in the screens stack */
+#define PAUSE_SCREEN (pausescreen_quark())
+GQuark pausescreen_quark();
+
 /**
  * Create a game screen entity
  *
  * @param display Display to use for rendering
  * @param err return location for a GError, or NULL
- * @return Newly allocated GameScreen object
+ * @return GameScreen object, to be freed when removed from the screens stack
  */
 GameScreen *gamescreen_create(Display *display, GError **err);
-
-/**
- * Free a game screen
- *
- * @param game Game screen to free
- */
-void gamescreen_free(GameScreen *game);
 
 /**
  * Display an on screen text message
@@ -62,21 +59,6 @@ void gamescreen_show_status_message(GameScreen *game, const gchar *msg);
  * @param game Game screen
  */
 const DisplayDriver *gamescreen_get_display_driver(GameScreen *game);
-
-/**
- * Process an SDL event to update the game screen
- *
- * @param game Game screen
- * @param event An event that has just occured
- */
-gboolean gamescreen_process_event(GameScreen *game, const SDL_Event *event);
-
-/**
- * Main loop element allowing the game to advance
- *
- * @param game Game screen
- */
-void gamescreen_update(GameScreen *game);
 
 /**
  * Write the battery and display a status message

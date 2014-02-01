@@ -27,6 +27,8 @@ static const int screenWidth = 240;
 static const int screenHeight = 160;
 
 struct PauseScreen {
+	Screen *screen;
+
 	Display *display;
 
 	RectOSD *background;
@@ -38,6 +40,10 @@ struct PauseScreen {
 	Button *quit;
 	Button *resume;
 };
+
+GQuark pausescreen_quark() {
+	return g_quark_from_static_string("pausescreen_quark");
+}
 
 static gchar *region_flag_get_path(const gchar *region) {
 	gchar *regionImage = g_strconcat(region, ".png", NULL);
@@ -60,12 +66,47 @@ static void pausescreen_on_quit(gpointer entity) {
 	vba_quit();
 }
 
+static void pausescreen_free(PauseScreen *pause) {
+	if (pause == NULL)
+		return;
+
+	button_free(pause->resume);
+	button_free(pause->quit);
+
+	image_osd_free(pause->flag);
+	text_osd_free(pause->title);
+	text_osd_free(pause->publisher);
+	text_osd_free(pause->pauseMessage);
+	rect_osd_free(pause->background);
+
+	screen_free(pause->screen);
+
+	g_free(pause);
+}
+
+static void pausescreen_free_from_entity(gpointer entity) {
+	pausescreen_free(entity);
+}
+
+static gboolean pausescreen_process_event(gpointer entity, const SDL_Event *event) {
+	return TRUE; // No more handlers should be called
+}
+
+static void pausescreen_update(gpointer entity) {
+	SDL_Delay(50);
+}
+
 PauseScreen *pausescreen_create(Display *display, GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
 	g_assert(display != NULL);
 
 	PauseScreen *pause = g_new(PauseScreen, 1);
 	pause->display = display;
+	pause->screen = screen_create(pause, pausescreen_quark());
+	pause->screen->free = pausescreen_free_from_entity;
+	pause->screen->update = pausescreen_update;
+	pause->screen->process_event = pausescreen_process_event;
+
 
 	// Create a semi-transparent background
 	pause->background = rect_osd_create(display, 0, 0, screenWidth, screenHeight, err);
@@ -140,28 +181,4 @@ PauseScreen *pausescreen_create(Display *display, GError **err) {
 	}
 
 	return pause;
-}
-
-void pausescreen_free(PauseScreen *pause) {
-	if (pause == NULL)
-		return;
-
-	button_free(pause->resume);
-	button_free(pause->quit);
-
-	image_osd_free(pause->flag);
-	text_osd_free(pause->title);
-	text_osd_free(pause->publisher);
-	text_osd_free(pause->pauseMessage);
-	rect_osd_free(pause->background);
-
-	g_free(pause);
-}
-
-gboolean pausescreen_process_event(PauseScreen *game, const SDL_Event *event) {
-	return TRUE; // No more handlers should be called
-}
-
-void pausescreen_update(PauseScreen *game) {
-	SDL_Delay(50);
 }
