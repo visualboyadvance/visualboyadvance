@@ -312,6 +312,11 @@ gboolean settings_read_config_file(GError **err) {
 gboolean settings_write_config_file(GError **err) {
 	g_return_val_if_fail(err == NULL || *err == NULL, FALSE);
 
+	// Make sure the destination path exists
+	gchar *configFileDir = g_path_get_dirname(settings.configFileName);
+	g_mkdir_with_parents(configFileDir, 0777);
+	g_free(configFileDir);
+
 	GKeyFile *file = g_key_file_new();
 
 	// Intentional no error checking
