@@ -33,29 +33,31 @@ void gfx_clear_array(u32 *array)
 	}
 }
 
-typedef union u8h u8h;
-union u8h
-{
-	struct
-	{
-		/* 0*/	unsigned lo:4;
-		/* 4*/	unsigned hi:4;
-	} __attribute__ ((packed));
-	u8 val;
-};
+static inline u8 u8_upper_half(u8 v) {
+	return v >> 4;
+}
 
-typedef union TileEntry TileEntry;
-union TileEntry
-{
-	struct
-	{
-	/* 0*/	unsigned tileNum:10;
-	/*12*/	unsigned hFlip:1;
-	/*13*/	unsigned vFlip:1;
-	/*14*/	unsigned palette:4;
-	};
-	u16 val;
-};
+static inline u8 u8_lower_half(u8 v) {
+	return v & 0x0F;
+}
+
+typedef u16 TileEntry;
+
+static inline u16 tileentry_tile_num(TileEntry t) {
+	return (t >>  0) & 0x03FF;
+}
+
+static inline u16 tileentry_h_flip(TileEntry t) {
+	return (t >> 10) & 0x0001;
+}
+
+static inline u16 tileentry_v_flip(TileEntry t) {
+	return (t >> 11) & 0x0001;
+}
+
+static inline u16 tileentry_palette(TileEntry t) {
+	return (t >> 12) & 0x000F;
+}
 
 typedef struct TileLine TileLine;
 struct TileLine
@@ -73,15 +75,15 @@ static inline void gfx_pixel_draw(u32 *dest, const u8 color, const u16 *palette,
 static inline const TileLine gfx_tile_read(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
 {
 	TileEntry tile;
-	tile.val = READ16LE(screenSource);
+	tile = READ16LE(screenSource);
 
 	int tileY = yyy & 7;
-	if (tile.vFlip) tileY = 7 - tileY;
+	if (tileentry_v_flip(tile)) tileY = 7 - tileY;
 	TileLine tileLine;
 
-	const u8 *tileBase = &charBase[tile.tileNum * 64 + tileY * 8];
+	const u8 *tileBase = &charBase[tileentry_tile_num(tile) * 64 + tileY * 8];
 
-	if (!tile.hFlip)
+	if (!tileentry_h_flip(tile))
 	{
 		gfx_pixel_draw(&tileLine.pixels[0], tileBase[0], palette, prio);
 		gfx_pixel_draw(&tileLine.pixels[1], tileBase[1], palette, prio);
@@ -110,36 +112,36 @@ static inline const TileLine gfx_tile_read(const u16 *screenSource, const int yy
 static inline const TileLine gfx_tile_read_palette(const u16 *screenSource, const int yyy, const u8 *charBase, u16 *palette, const u32 prio)
 {
 	TileEntry tile;
-	tile.val = READ16LE(screenSource);
+	tile = READ16LE(screenSource);
 
 	int tileY = yyy & 7;
-	if (tile.vFlip) tileY = 7 - tileY;
-	palette += tile.palette * 16;
+	if (tileentry_v_flip(tile)) tileY = 7 - tileY;
+	palette += tileentry_palette(tile) * 16;
 	TileLine tileLine;
 
-	const u8h *tileBase = (u8h*) &charBase[tile.tileNum * 32 + tileY * 4];
+	const u8 *tileBase = &charBase[tileentry_tile_num(tile) * 32 + tileY * 4];
 
-	if (!tile.hFlip)
+	if (!tileentry_h_flip(tile))
 	{
-		gfx_pixel_draw(&tileLine.pixels[0], tileBase[0].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[1], tileBase[0].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[2], tileBase[1].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[3], tileBase[1].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[4], tileBase[2].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[5], tileBase[2].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[6], tileBase[3].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[7], tileBase[3].hi, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], u8_lower_half(tileBase[0]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], u8_upper_half(tileBase[0]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], u8_lower_half(tileBase[1]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], u8_upper_half(tileBase[1]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], u8_lower_half(tileBase[2]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], u8_upper_half(tileBase[2]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], u8_lower_half(tileBase[3]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], u8_upper_half(tileBase[3]), palette, prio);
 	}
 	else
 	{
-		gfx_pixel_draw(&tileLine.pixels[0], tileBase[3].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[1], tileBase[3].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[2], tileBase[2].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[3], tileBase[2].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[4], tileBase[1].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[5], tileBase[1].lo, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[6], tileBase[0].hi, palette, prio);
-		gfx_pixel_draw(&tileLine.pixels[7], tileBase[0].lo, palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[0], u8_upper_half(tileBase[3]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[1], u8_lower_half(tileBase[3]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[2], u8_upper_half(tileBase[2]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[3], u8_lower_half(tileBase[2]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[4], u8_upper_half(tileBase[1]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[5], u8_lower_half(tileBase[1]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[6], u8_upper_half(tileBase[0]), palette, prio);
+		gfx_pixel_draw(&tileLine.pixels[7], u8_lower_half(tileBase[0]), palette, prio);
 	}
 
 	return tileLine;
