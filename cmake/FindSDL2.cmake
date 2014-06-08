@@ -4,6 +4,14 @@
 # SDL2_FOUND, if false, do not try to link to SDL2
 # SDL2_INCLUDE_DIR, where to find SDL.h
 #
+# This module responds to the the flag:
+#  SDL2_BUILDING_LIBRARY
+#    If this is defined, then no SDL2_main will be linked in because
+#    only applications need main().
+#    Otherwise, it is assumed you are building an application and this
+#    module will attempt to locate and set the the proper link flags
+#    as part of the returned SDL2_LIBRARY variable.
+#
 # $SDL2DIR is an environment variable that would
 # correspond to the ./configure --prefix=$SDL2DIR
 # used in building SDL2.
@@ -67,6 +75,17 @@ FIND_LIBRARY(SDL2_LIBRARY_TEMP
 	PATHS ${SDL2_SEARCH_PATHS}
 )
 
+if(NOT SDL2_BUILDING_LIBRARY)
+  FIND_LIBRARY(SDL2MAIN_LIBRARY
+    NAMES SDL2main
+    HINTS
+    $ENV{SDL2DIR}
+    PATH_SUFFIXES lib64 lib
+    PATHS ${SDL2_SEARCH_PATHS}
+    )
+endif()
+
+
 # SDL2 may require threads on your system.
 # The Apple build may not need an explicit flag because one of the
 # frameworks may already provide it.
@@ -83,6 +102,15 @@ IF(MINGW)
 ENDIF(MINGW)
 
 IF(SDL2_LIBRARY_TEMP)
+  # For SDL2main
+  if(SDL2MAIN_LIBRARY AND NOT SDL2_BUILDING_LIBRARY)
+    list(FIND SDL2_LIBRARY_TEMP "${SDLMAIN_LIBRARY}" _SDL2_MAIN_INDEX)
+    if(_SDL2_MAIN_INDEX EQUAL -1)
+      set(SDL2_LIBRARY_TEMP "${SDL2MAIN_LIBRARY}" ${SDL2_LIBRARY_TEMP})
+    endif()
+    unset(_SDL2_MAIN_INDEX)
+  endif()
+
 	# For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
 	# CMake doesn't display the -framework Cocoa string in the UI even
 	# though it actually is there if I modify a pre-used variable.
