@@ -28,6 +28,9 @@
 #include "../gba/Sound.h"
 #include "../common/Settings.h"
 
+#include <glib/gprintf.h>
+#include <math.h>
+
 static const int screenWidth = 240;
 static const int screenHeight = 160;
 
@@ -56,7 +59,7 @@ static void gamescreen_update_speed(TextOSD *speed) {
 		return;
 
 	char buffer[50];
-	sprintf(buffer, "%d%%", gba_get_speed());
+	g_sprintf(buffer, "%d%%", gba_get_speed());
 	text_osd_set_message(speed, buffer);
 }
 
@@ -146,7 +149,7 @@ static void gamescreen_change_volume(GameScreen *game, float d)
 
 	if (fabs(newVolume - oldVolume) > 0.001) {
 		char tmp[32];
-		sprintf(tmp, "Volume: %i%%", (int)(newVolume*100.0+0.5));
+		g_sprintf(tmp, "Volume: %i%%", (int)(newVolume*100.0+0.5));
 		gamescreen_show_status_message(game, tmp);
 		soundSetVolume(newVolume);
 	}
@@ -157,7 +160,7 @@ static void gamescreen_write_state(GameScreen *game, int num) {
 	GError *err = NULL;
 
 	if (!savestate_save_slot(num, &err)) {
-		message = strdup(err->message);
+		message = g_strdup(err->message);
 		g_clear_error(&err);
 	} else {
 		message = g_strdup_printf("Wrote state %d", num + 1);
@@ -172,7 +175,7 @@ static void gamescreen_read_state(GameScreen *game, int num) {
 	GError *err = NULL;
 
 	if (!savestate_load_slot(num, &err)) {
-		message = strdup(err->message);
+		message = g_strdup(err->message);
 		g_clear_error(&err);
 	} else {
 		message = g_strdup_printf("Loaded state %d", num + 1);
@@ -187,7 +190,7 @@ void gamescreen_write_battery(GameScreen *game) {
 	GError *err = NULL;
 
 	if (!cartridge_write_battery(&err)) {
-		message = strdup(err->message);
+		message = g_strdup(err->message);
 		g_clear_error(&err);
 	} else {
 		message = g_strdup_printf("Wrote battery");
@@ -317,7 +320,7 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	}
 
 	if (settings_show_speed()) {
-		game->speed = text_osd_create(display, " ", NULL, err);
+		game->speed = text_osd_create(display, NULL, NULL, err);
 		if (game->speed == NULL) {
 			gamescreen_free(game);
 			return NULL;
@@ -330,7 +333,7 @@ GameScreen *gamescreen_create(Display *display, GError **err) {
 	}
 
 	if (!settings_disable_status_messages()) {
-		game->status = text_osd_create(display, " ", NULL, err);
+		game->status = text_osd_create(display, NULL, NULL, err);
 		if (game->status == NULL) {
 			gamescreen_free(game);
 			return NULL;

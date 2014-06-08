@@ -127,6 +127,10 @@ static void osd_render(Renderable *renderable, SDL_Texture *texture) {
 static void text_osd_render(gpointer entity) {
 	TextOSD *text = entity;
 
+	if (text->message == NULL) {
+		return; // Nothing to render
+	}
+
 	if (text->texture == NULL) {
 		text_update_texture(text, NULL);
 	}
@@ -159,7 +163,7 @@ TextOSD *text_osd_create(Display *display, const gchar *message, const Renderabl
 	text->texture = NULL;
 
 	// Render here to perform error checking
-	if (!text_update_texture(text, err)) {
+	if (text->message && !text_update_texture(text, err)) {
 		text_osd_free(text);
 		return NULL;
 	}

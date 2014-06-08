@@ -35,6 +35,8 @@
 #include "../common/Settings.h"
 
 #include <glib.h>
+#include <glib/gprintf.h>
+#include <stdlib.h>
 
 static Display *display = NULL;
 static SoundDriver *soundDriver = NULL;
@@ -164,7 +166,7 @@ __attribute__((noreturn)) static void vba_fatal_error(GError *err) {
 
 int main(int argc, char **argv)
 {
-	fprintf(stdout, "VBA version %s\n", VERSION);
+	g_fprintf(stdout, "VBA version %s\n", VERSION);
 
 	GError *err = NULL;
 
