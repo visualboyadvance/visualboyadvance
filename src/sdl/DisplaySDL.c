@@ -321,7 +321,7 @@ static png_bytep display_sdl_load_png_to_buffer(const gchar *filename, int *w, i
 
 	if (!png_image_begin_read_from_file(&image, filename)) {
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed to load png: %s", image.message);
+				"Failed to load '%s': %s", filename, image.message);
 		return NULL;
 	}
 
@@ -331,7 +331,7 @@ static png_bytep display_sdl_load_png_to_buffer(const gchar *filename, int *w, i
 	if (!png_image_finish_read(&image, NULL, buffer, 0, NULL)) {
 		g_free(buffer);
 		g_set_error(err, DISPLAY_ERROR, G_DISPLAY_ERROR_FAILED,
-				"Failed to load png: %s", image.message);
+				"Failed to load '%s': %s", filename, image.message);
 		return NULL;
 	}
 
